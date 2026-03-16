@@ -21,3 +21,6 @@ build/
 dist/
 .vscode/
 .idea/
+.next/
+db.sqlite3
+logs/*
