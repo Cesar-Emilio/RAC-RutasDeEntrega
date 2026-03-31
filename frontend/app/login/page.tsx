@@ -53,76 +53,104 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f1217] text-white">
-      <div className="mx-auto grid min-h-screen max-w-6xl grid-cols-1 lg:grid-cols-[1.3fr_1fr]">
-        <div className="hidden bg-[#0e1116] lg:block" />
-        <div className="flex items-center justify-center px-6 py-12">
-          <section className="w-full max-w-sm rounded-2xl bg-[#0f1217]">
-            <h1 className="text-2xl font-semibold text-[#e5e7eb]">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      <div className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-[1fr_1fr]">
+          <div className="relative hidden overflow-hidden border-r border-[var(--border-soft)] bg-[var(--surface)] lg:block">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,140,43,0.12),transparent_55%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0f1115] to-transparent" />
+          </div>
+          <div className="flex items-center justify-center px-8 py-12">
+            <section className="w-full max-w-sm rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-strong)] p-8 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--foreground-subtle)]">
+              Login
+            </span>
+            <h1 className="mt-4 text-[28px] font-semibold text-[var(--foreground)]">
               Bienvenido de vuelta
             </h1>
-            <p className="mt-2 text-sm text-[#a1a1aa]">
+            <p className="mt-2 text-sm text-[var(--foreground-muted)]">
               Ingresa tus credenciales para acceder a tu panel
             </p>
             <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-              <label className="block text-sm text-[#cbd5f5]">
+              <label className="block text-sm text-[var(--foreground-muted)]">
                 Correo electronico
                 <input
                   type="email"
                   value={form.email}
                   onChange={onChange("email")}
                   required
-                  className="mt-2 w-full rounded-lg border border-[#1f2937] bg-[#111827] px-4 py-2 text-sm text-white outline-none ring-[#f59e0b]/40 transition focus:ring-2"
+                  className="mt-2 w-full rounded-lg border border-[var(--border-soft)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[var(--accent)]/30 transition focus:ring-2"
                   placeholder="tu@correo.com"
                 />
               </label>
-              <label className="block text-sm text-[#cbd5f5]">
+              <label className="block text-sm text-[var(--foreground-muted)]">
                 Contrasena
                 <input
                   type="password"
                   value={form.password}
                   onChange={onChange("password")}
                   required
-                  className="mt-2 w-full rounded-lg border border-[#1f2937] bg-[#111827] px-4 py-2 text-sm text-white outline-none ring-[#f59e0b]/40 transition focus:ring-2"
+                  className="mt-2 w-full rounded-lg border border-[var(--border-soft)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[var(--accent)]/30 transition focus:ring-2"
                   placeholder="Ingresa tu contrasena"
                 />
               </label>
-              <label className="flex items-center gap-2 text-xs text-[#9ca3af]">
+              <label className="flex items-center gap-2 text-xs text-[var(--foreground-subtle)]">
                 <input
                   type="checkbox"
                   checked={form.remember}
                   onChange={onChange("remember")}
-                  className="h-3.5 w-3.5 rounded border border-[#1f2937] bg-[#111827]"
+                  className="h-3.5 w-3.5 rounded border border-[var(--border-soft)] bg-[var(--surface)]"
                 />
                 Mantener la sesion iniciada
               </label>
               {error ? (
-                <div className="rounded-lg border border-[#7c2d12] bg-[#29150f] px-3 py-2 text-xs text-[#fdba74]">
+                <div className="rounded-lg border border-[#ef4444] bg-[#2a1414] px-3 py-2 text-xs text-[#fca5a5]">
                   {error}
                 </div>
               ) : null}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex w-full items-center justify-center rounded-lg bg-[#f97316] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#fb923c] disabled:cursor-not-allowed disabled:opacity-70"
+                className="flex w-full items-center justify-center rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[#0f1115] transition hover:bg-[var(--accent-soft)] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSubmitting ? "Iniciando..." : "Iniciar sesion"}
               </button>
             </form>
-            <div className="mt-5 text-center text-xs text-[#9ca3af]">
+            <div className="mt-5 text-center text-xs text-[var(--foreground-subtle)]">
               O inicia sesion con
             </div>
             <button
               type="button"
               onClick={onGoogleLogin}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-[#1f2937] bg-[#111827] px-4 py-2 text-sm text-[#e5e7eb]"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--border-soft)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--foreground)]"
             >
-              <span className="text-base">G</span>
-              Google
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 48 48"
+                className="h-4 w-4"
+              >
+                <path
+                  fill="#EA4335"
+                  d="M24 9.5c3.1 0 5.7 1.1 7.9 2.9l5.9-5.9C34 3.5 29.4 1.5 24 1.5 14.9 1.5 7.1 6.7 3.4 14.3l6.9 5.3C12.1 13.8 17.6 9.5 24 9.5z"
+                />
+                <path
+                  fill="#4285F4"
+                  d="M24 46.5c5.4 0 10-1.8 13.3-4.9l-6.6-5.1c-1.8 1.2-4.1 2-6.7 2-6.4 0-11.8-4.3-13.6-10.1l-6.9 5.3C7.1 41.3 14.9 46.5 24 46.5z"
+                />
+                
+                <path
+                  fill="#34A853"
+                  d="M10.3 28.4c-1-2.9-1-6.1 0-9l-6.9-5.3c-3 6-3 13.6 0 19.6l6.9-5.3z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M46.5 24.5c0-1.6-.1-2.7-.4-4H24v7.6h12.7c-.3 2-1.9 5-5.4 7.1l6.6 5.1c3.8-3.5 5.9-8.6 5.9-14.8z"
+                />
+              </svg>
+              <span>Google</span>
             </button>
-          </section>
+            </section>
+          </div>
         </div>
-      </div>
     </div>
   );
 }
