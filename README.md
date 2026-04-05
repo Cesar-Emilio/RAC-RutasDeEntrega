@@ -1,44 +1,24 @@
-# RAC — Plataforma de Gestión de Rutas de Entrega
+# RAC — Sistema de Gestión de Rutas de Entrega
 
-Sistema web que permite calcular rutas óptimas de entrega para una flota de vehículos, a partir de un conjunto de direcciones proporcionadas por empresas, utilizando algoritmos de búsqueda de caminos (Dijkstra y A\*).
+## Introducción
 
-El sistema genera rutas visualizables en mapas interactivos y archivos descargables con los resultados.
+RAC es un sistema web diseñado para la **gestión y optimización de rutas de entrega para empresas**, permitiendo calcular rutas eficientes para vehículos de reparto a partir de múltiples direcciones.
 
----
+El sistema permite planificar entregas, gestionar empresas, almacenes y direcciones de destino, además de calcular rutas óptimas mediante algoritmos de búsqueda de caminos.
 
-## Objetivo
-
-Desarrollar un sistema modular, escalable y eficiente para el cálculo de rutas óptimas, con:
-
-- Procesamiento eficiente
-- Arquitectura desacoplada
-- Visualización clara
-- Escalabilidad futura para múltiples vehículos
+El objetivo del proyecto es desarrollar una plataforma **segura, modular y escalable** que facilite la administración logística de rutas de distribución.
 
 ---
 
-## Características principales
+# Metodología de desarrollo
 
-### Gestión de usuarios y empresas
-- Autenticación mediante JWT
-- Roles: Administrador y Empresa
-- CRUD completo de empresas
+El desarrollo del sistema se realiza mediante una **metodología iterativa e incremental**, permitiendo la entrega de funcionalidades parciales durante el proceso de desarrollo.
 
-### Gestión de consultas
-- Carga de archivos con múltiples direcciones
-- Definición de punto inicial
-- Historial de consultas
+Este enfoque permite mejorar el sistema de forma continua mediante ciclos de desarrollo, pruebas y retroalimentación.
 
-### Procesamiento de rutas
-- Algoritmos:
-        - Dijkstra
-        - A*
-- Generación de rutas óptimas
-- Exportación de resultados
+Además, el proyecto adopta el enfoque **Secure Software Development Life Cycle (S-SDLC)**, integrando prácticas de seguridad durante todas las fases del desarrollo para prevenir vulnerabilidades y proteger la información del sistema.
 
-### Visualización
-- Mapas interactivos
-- Visualización clara de trayectos
+---
 
 # Fases del desarrollo
 
@@ -227,15 +207,6 @@ cp .env.example .env
 
 Luego se deben completar las variables correspondientes.
 
-Variables requeridas para Google OAuth (backend)
-
-```
-GOOGLE_CLIENT_ID=tu_client_id
-GOOGLE_CLIENT_SECRET=tu_client_secret
-GOOGLE_REDIRECT_URI=http://localhost:8000/api/auth/google/callback/
-FRONTEND_BASE_URL=http://localhost:3000
-```
-
 ---
 
 # Configuración del Backend
@@ -264,55 +235,12 @@ Instalar dependencias
 
 ```
 pip install -r requirements.txt
-pip install cryptography
 ```
 
 Aplicar migraciones
 
 ```
 python manage.py migrate
-```
-
-Crear usuarios demo (opcional)
-
-```
-python manage.py shell
-```
-
-Dentro del shell:
-
-```
-from apps.users.models import User
-from apps.companies.models import Company
-
-company, _ = Company.objects.get_or_create(
-        rfc="RAC123456ABC",
-        defaults={"name": "RAC Demo", "active": True},
-)
-
-User.objects.get_or_create(
-        email="empresa@rac.com",
-        defaults={
-                "name": "Empresa Demo",
-                "role": "company",
-                "company": company,
-                "active": True,
-        },
-)
-
-admin, _ = User.objects.get_or_create(
-        email="admin@rac.com",
-        defaults={
-                "name": "Admin RAC",
-                "role": "admin",
-                "is_staff": True,
-                "is_superuser": True,
-                "active": True,
-        },
-)
-
-admin.set_password("Empresa2026!")
-admin.save()
 ```
 
 Ejecutar servidor
@@ -325,40 +253,6 @@ Servidor disponible en
 
 ```
 http://127.0.0.1:8000
-```
-
----
-
-# Endpoints de autenticación
-
-```
-POST /api/auth/login/
-POST /api/auth/refresh/
-GET  /api/auth/me/
-POST /api/auth/logout/
-GET  /api/auth/google/login/
-GET  /api/auth/google/callback/
-```
-
-Formato de respuesta estándar
-
-```
-{
-        "status": "success" | "error",
-        "message": "...",
-        "data": { ... } | null,
-        "errors": { ... } | null
-}
-```
-
----
-
-# Inicio rápido
-
-```
-python manage.py migrate
-python manage.py shell
-python manage.py runserver
 ```
 
 ---
@@ -546,4 +440,3 @@ Además se aplican prácticas como:
 * Uso de estándares de codificación
 * Refactorización continua
 * Control de calidad del código
->>>>>>> Stashed changes
