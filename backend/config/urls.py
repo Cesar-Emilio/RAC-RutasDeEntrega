@@ -1,6 +1,5 @@
 """
 URL configuration for config project.
-
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/6.0/topics/http/urls/
 Examples:
@@ -15,8 +14,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from django.conf import settings
+from django.conf.urls.static import static
+
+from apps.warehouses.views import WarehouseViewSet
+
+router = DefaultRouter()
+router.register(r'warehouses', WarehouseViewSet, basename='warehouse')
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('api/', include(router.urls)),
 ]
