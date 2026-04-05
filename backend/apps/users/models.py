@@ -36,11 +36,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
 
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='company')
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='company')
     
-    company_id = models.ForeignKey(
-        'Company',
-        on_delete= models.CASCADE,
+    company = models.ForeignKey(
+        'companies.Company',
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name='users'
@@ -59,5 +59,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
 
+    # Validacion para el email y sin duplicados
+    def save(self, *args, **kwargs):
+        self.email = self.email.lower()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.email
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['email']),
+        ]
