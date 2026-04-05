@@ -22,11 +22,16 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 # viewSets de las apps
+from apps.users.views import RegisterView
 from apps.companies.views import CompanyViewSet
 
 router = DefaultRouter()
 router.register(r'companies', CompanyViewSet, basename='company')
 
 urlpatterns = [
+    # Rutas de las apps
     path('api/', include(router.urls)),
+
+    # Registro de usuarios
+    path('api/users/register/', RegisterView.as_view(), name='register'),
 ]
