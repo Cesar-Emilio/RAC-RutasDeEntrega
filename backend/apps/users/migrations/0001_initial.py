@@ -1,6 +1,6 @@
 from django.db import migrations, models
 import django.db.models.deletion
-import users.models
+import apps.users.models as users_models
 
 
 class Migration(migrations.Migration):
@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
             managers=[
-                ('objects', users.models.UserManager()),
+                ('objects', users_models.UserManager()),
             ],
         ),
     ]
