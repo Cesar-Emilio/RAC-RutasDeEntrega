@@ -56,11 +56,12 @@ class LoginView(APIView):
                 http_status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as exc:
+            logger.exception("Unexpected login error: %s", exc)
             return api_response(
                 "error",
                 "Login failed.",
-                errors={"detail": str(exc)},
-                http_status=status.HTTP_400_BAD_REQUEST,
+                errors={"detail": "Unable to process login."},
+                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
         return api_response(
@@ -234,10 +235,11 @@ class GoogleCallbackView(APIView):
                 client_id,
             )
         except Exception as exc:
+            logger.warning("Google id token validation failed: %s", exc)
             return api_response(
                 "error",
                 "Google token invalid.",
-                errors={"detail": str(exc)},
+                errors={"detail": "Invalid Google token."},
                 http_status=status.HTTP_400_BAD_REQUEST,
             )
 
