@@ -5,7 +5,10 @@ const envBaseUrl =
   process.env.NEXT_PUBLIC_API_URL ||
   defaultBaseUrl;
 
-export const API_BASE_URL = envBaseUrl.replace(/\/$/, "");
+const normalizedBaseUrl = envBaseUrl.replace(/\/$/, "");
+export const API_BASE_URL = normalizedBaseUrl.endsWith("/api")
+  ? normalizedBaseUrl.slice(0, -4)
+  : normalizedBaseUrl;
 
 export async function requestJson<T>(
   input: string,

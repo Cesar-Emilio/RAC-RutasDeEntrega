@@ -26,7 +26,12 @@ load_dotenv(BASE_DIR / ".env")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("SECRET_KEY")
 if not SECRET_KEY:
-    raise ImproperlyConfigured("DJANGO_SECRET_KEY or SECRET_KEY must be set.")
+    settings_module = os.getenv("DJANGO_SETTINGS_MODULE", "")
+    if settings_module.endswith(".dev"):
+        # Local fallback only for development convenience.
+        SECRET_KEY = "dev-only-insecure-secret-key-change-for-prod"
+    else:
+        raise ImproperlyConfigured("DJANGO_SECRET_KEY or SECRET_KEY must be set.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
@@ -92,7 +97,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME', 'rac_db'),
         'USER': os.getenv('DB_USER', 'rac_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'root'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '3306'),
     }

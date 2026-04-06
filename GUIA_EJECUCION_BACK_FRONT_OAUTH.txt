@@ -1,0 +1,182 @@
+RAC - GUIA DE EJECUCION Y VALIDACION (BACKEND + FRONTEND + OAUTH)
+Fecha: 2026-04-06
+
+1) REQUISITOS PREVIOS
+- Python 3.14.x
+- Node.js 20+
+- npm 10+
+- MySQL 8.x activo en localhost:3306
+- Google Cloud OAuth 2.0 (Web Application)
+
+2) PREPARACION DE VARIABLES DE ENTORNO
+2.1 Backend
+- Ruta: backend/.env
+- Crear desde plantilla:
+  cp backend/.env.example backend/.env
+- Revisar y completar minimo:
+  DJANGO_SECRET_KEY=...
+  DB_NAME=rac_db
+  DB_USER=root
+  DB_PASSWORD=root
+  DB_HOST=localhost
+  DB_PORT=3306
+  CORS_ALLOWED_ORIGINS=http://localhost:3000
+  FRONTEND_BASE_URL=http://localhost:3000
+  GOOGLE_CLIENT_ID=...
+  GOOGLE_CLIENT_SECRET=...
+  GOOGLE_REDIRECT_URI=http://localhost:8000/api/auth/google/callback/
+
+2.2 Frontend
+- Ruta: frontend/.env.local
+- Crear desde plantilla:
+  cp frontend/.env.example frontend/.env.local
+- Validar:
+  NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
+
+IMPORTANTE DE SEGURIDAD
+- backend/.env NO se sube a git.
+- Nunca subir secretos reales a backend/.env.example.
+
+3) LEVANTAR BACKEND (DJANGO)
+Desde raiz del repo:
+  source .venv/bin/activate
+  cd backend
+  ../.venv/bin/python -m pip install -r requirements.txt
+  ../.venv/bin/python manage.py migrate
+  ../.venv/bin/python manage.py check
+  ../.venv/bin/python manage.py runserver
+
+Backend esperado:
+- http://127.0.0.1:8000
+
+4) LEVANTAR FRONTEND (NEXT)
+Desde raiz del repo:
+  cd frontend
+  npm install
+  npm run dev
+
+Frontend esperado:
+- http://localhost:3000
+
+5) CONFIGURACION DE GOOGLE OAUTH EN GOOGLE CLOUD
+- Tipo: OAuth Client ID -> Web application
+- Origenes autorizados (JavaScript):
+  http://localhost:3000
+  http://localhost:8000
+- URI de redireccion autorizado:
+  http://localhost:8000/api/auth/google/callback/
+
+Nota:
+- Si agregas tambien http://localhost:8000/api/auth/callback/ no afecta,
+  pero el backend de este proyecto usa /api/auth/google/callback/.
+
+6) PRUEBAS RAPIDAS POR CONSOLA
+6.1 Verificar variables OAuth cargadas
+  cd backend
+  ../.venv/bin/python manage.py shell -c "import os; print(bool(os.getenv('GOOGLE_CLIENT_ID')), bool(os.getenv('GOOGLE_CLIENT_SECRET')), bool(os.getenv('GOOGLE_REDIRECT_URI')))"
+Resultado esperado:
+  True True True
+
+6.2 Probar login por credenciales
+  curl -s -X POST http://127.0.0.1:8000/api/auth/login/ \
+    -H "Content-Type: application/json" \
+    -d '{"email":"20233tn058@utez.edu.mx","password":"mart1nez123"}'
+Resultado esperado:
+- status=success
+- access y refresh presentes
+
+6.3 Probar perfil /me
+  curl -s http://127.0.0.1:8000/api/auth/me/ \
+    -H "Authorization: Bearer ACCESS_TOKEN"
+
+6.4 Probar logout con blacklist
+  curl -s -X POST http://127.0.0.1:8000/api/auth/logout/ \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ACCESS_TOKEN" \
+    -d '{"refresh":"REFRESH_TOKEN"}'
+
+6.5 Probar inicio OAuth (redireccion a Google)
+  curl -i http://127.0.0.1:8000/api/auth/google/login/
+Resultado esperado:
+- HTTP 302
+- Location: https://accounts.google.com/...
+
+7) PRUEBAS EN POSTMAN
+Coleccion sugerida:
+- POST /api/auth/login/
+- POST /api/auth/refresh/
+- GET /api/auth/me/
+- POST /api/auth/logout/
+- GET /api/auth/google/login/ (abre navegador para completar OAuth)
+
+Headers base:
+- Content-Type: application/json
+- Authorization: Bearer {{access_token}}  (para /me y /logout)
+
+Body ejemplo login:
+{
+  "email": "20233tn058@utez.edu.mx",
+  "password": "mart1nez123"
+}
+
+Body ejemplo refresh:
+{
+  "refresh": "{{refresh_token}}"
+}
+
+Body ejemplo logout:
+{
+  "refresh": "{{refresh_token}}"
+}
+
+8) ERRORES COMUNES Y SOLUCION
+A) Error: Google OAuth not configured / Missing Google OAuth configuration
+- Causa: backend/.env inexistente o incompleto.
+- Solucion: crear backend/.env y reiniciar runserver.
+
+B) Error: That port is already in use
+- Causa: otro proceso ocupando 8000.
+- Solucion:
+  lsof -i :8000
+  kill -9 <PID>
+  volver a correr runserver
+
+C) Error: zsh: command not found: python
+- Causa: no se activo el venv o no existe alias python.
+- Solucion: usar path directo:
+  ../.venv/bin/python manage.py runserver
+
+D) Error MySQL caching_sha2_password requiere cryptography
+- Causa: dependencia faltante.
+- Solucion:
+  ../.venv/bin/python -m pip install cryptography
+  y validar que requirements.txt lo incluya.
+
+E) Error de redirect_uri_mismatch en Google
+- Causa: URI distinta entre .env y Google Cloud.
+- Solucion: debe coincidir EXACTAMENTE:
+  http://localhost:8000/api/auth/google/callback/
+
+9) CHECKLIST PRE-PR
+- backend/.env no trackeado.
+- backend/.env.example sin secretos reales.
+- ../.venv/bin/python manage.py check OK.
+- ../.venv/bin/python manage.py migrate OK.
+- npm run lint OK.
+- npm run build OK.
+- Login normal y logout funcionando.
+- Inicio de Google OAuth redirecciona correctamente.
+
+10) NOTAS SOBRE COMENTARIOS DE CESAR (ESTADO ACTUAL)
+- company_id nullable en JWT/user payload: manejado (solo se agrega a token si no es None).
+- Estado OAuth (state) generado, guardado en sesion y validado en callback: implementado.
+- Logout con blacklist de refresh token: implementado.
+- Mensajes de error Google token exchange: se loguea detalle y se devuelve mensaje generico.
+- create_user con google_id al crear usuario OAuth: implementado.
+- SECRET_KEY en produccion: exige variable, fallback solo para entorno dev.
+- CORS_ALLOWED_ORIGINS: se toma de variable de entorno.
+- users 0001_initial existe y 0002 depende correctamente de 0001.
+
+11) NOTA DE RAMA / INTEGRACION
+- Si aparecen imports faltantes de otras ramas (por ejemplo feature/auth-frontend),
+  rebase/merge contra la rama base correcta antes del PR final para evitar conflictos de integracion.
