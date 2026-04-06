@@ -41,8 +41,19 @@ export default function LoginPage() {
     try {
       await login(form.email.trim(), form.password, form.remember);
       router.push("/");
-    } catch {
-      setError("Invalid credentials or inactive account.");
+    } catch (err) {
+      const maybeError = err as {
+        errors?: { detail?: string | string[] };
+        message?: string;
+      };
+      const detail = maybeError?.errors?.detail;
+      if (Array.isArray(detail) && detail.length > 0) {
+        setError(String(detail[0]));
+      } else if (typeof detail === "string" && detail.trim().length > 0) {
+        setError(detail);
+      } else {
+        setError(maybeError?.message || "Invalid credentials or inactive account.");
+      }
     } finally {
       setIsSubmitting(false);
     }
