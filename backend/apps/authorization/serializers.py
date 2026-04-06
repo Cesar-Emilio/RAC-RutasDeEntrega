@@ -14,9 +14,7 @@ def _serialize_user(user):
         "email": getattr(user, "email", None),
         "role": getattr(user, "role", None),
         "company_id": company_id,
-        "active": getattr(user, "active", None)
-        if hasattr(user, "active")
-        else getattr(user, "is_active", True),
+        "is_active": getattr(user, "is_active", True),
     }
 
 
@@ -26,14 +24,14 @@ class LoginSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
         if hasattr(user, "role"):
             token["role"] = user.role
-        if hasattr(user, "company_id"):
+        if getattr(user, "company_id", None) is not None:
             token["company_id"] = user.company_id
         return token
 
     def validate(self, attrs):
         data = super().validate(attrs)
         user = self.user
-        if hasattr(user, "active") and not user.active:
+        if not getattr(user, "is_active", True):
             raise serializers.ValidationError("User is inactive.")
         data["user"] = _serialize_user(user)
         return data
