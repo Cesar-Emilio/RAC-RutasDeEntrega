@@ -14,6 +14,7 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('role', 'admin')
+        extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -41,13 +42,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     company = models.ForeignKey(
         'companies.Company',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='users'
     )
-
-    active = models.BooleanField(default=True)
     
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

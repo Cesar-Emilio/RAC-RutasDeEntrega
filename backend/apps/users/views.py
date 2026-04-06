@@ -7,6 +7,6 @@ from apps.authorization.permissions import IsAdminRole
 User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.filter(active=True)
+    queryset = User.objects.filter(is_active=True)
     permission_classes = (IsAdminRole,)
     serializer_class = RegisterSerializer
