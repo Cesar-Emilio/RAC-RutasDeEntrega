@@ -33,12 +33,13 @@ export async function meRequest(access: string) {
   );
 }
 
-export async function logoutRequest(access: string) {
+export async function logoutRequest(access: string, refresh: string) {
   return requestJson<AuthResponse<null>>(`${API_BASE_URL}/api/auth/logout/`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${access}`,
     },
+    body: JSON.stringify({ refresh }),
   });
 }
 

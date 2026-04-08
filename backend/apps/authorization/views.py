@@ -115,6 +115,16 @@ class LogoutView(APIView):
         if refresh_token:
             try:
                 token = RefreshToken(refresh_token)
+                token_user_id = token.payload.get("user_id")
+                if token_user_id is None or str(token_user_id) != str(request.user.id):
+                    return api_response(
+                        "error",
+                        "Refresh token does not belong to the authenticated user.",
+                        errors={
+                            "detail": "Refresh token does not belong to the authenticated user."
+                        },
+                        http_status=status.HTTP_403_FORBIDDEN,
+                    )
                 token.blacklist()
             except TokenError:
                 return api_response(
@@ -233,6 +243,7 @@ class GoogleCallbackView(APIView):
                 id_token_value,
                 google_requests.Request(),
                 client_id,
+                clock_skew_in_seconds=30,
             )
         except Exception as exc:
             logger.warning("Google id token validation failed: %s", exc)
@@ -287,9 +298,9 @@ class GoogleCallbackView(APIView):
             "user": _serialize_user(user),
         }
 
-        frontend_base = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000")
-        query = urllib.parse.urlencode(
+        frontend_base = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000").rstrip("/")
+        fragment = urllib.parse.urlencode(
             {"access": data["access"], "refresh": data["refresh"]}
         )
-        redirect_url = f"{frontend_base}/auth/google/callback?{query}"
+        redirect_url = f"{frontend_base}/auth/google/callback#{fragment}"
         return HttpResponseRedirect(redirect_url)

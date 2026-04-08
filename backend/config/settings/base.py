@@ -10,15 +10,6 @@ from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
-try:
-    import pymysql
-
-    pymysql.version_info = (2, 2, 4, "final", 0)
-    pymysql.__version__ = "2.2.4"
-    pymysql.install_as_MySQLdb()
-except Exception:
-    pass
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(BASE_DIR / ".env")
@@ -34,7 +25,7 @@ if not SECRET_KEY:
         raise ImproperlyConfigured("DJANGO_SECRET_KEY or SECRET_KEY must be set.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = []
 
@@ -162,6 +153,6 @@ def _env_list(name, default=None):
         return default or []
     return [item.strip() for item in value.split(",") if item.strip()]
 
-
+ALLOWED_HOSTS = _env_list('ALLOWED_HOSTS', [])
 CORS_ALLOWED_ORIGINS = _env_list('CORS_ALLOWED_ORIGINS', ['http://localhost:3000'])
 CORS_ALLOW_ALL_ORIGINS = False

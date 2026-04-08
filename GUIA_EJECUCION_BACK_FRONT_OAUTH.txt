@@ -146,11 +146,11 @@ C) Error: zsh: command not found: python
 - Solucion: usar path directo:
   ../.venv/bin/python manage.py runserver
 
-D) Error MySQL caching_sha2_password requiere cryptography
-- Causa: dependencia faltante.
+D) Error de MySQL / MySQLdb al arrancar Django
+- Causa: dependencias del driver no instaladas o desalineadas.
 - Solucion:
-  ../.venv/bin/python -m pip install cryptography
-  y validar que requirements.txt lo incluya.
+  ../.venv/bin/python -m pip install -r requirements.txt
+  y validar que mysqlclient esté instalado en el entorno.
 
 E) Error de redirect_uri_mismatch en Google
 - Causa: URI distinta entre .env y Google Cloud.

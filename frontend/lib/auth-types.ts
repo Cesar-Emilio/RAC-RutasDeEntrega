@@ -6,7 +6,7 @@ export type AuthUser = {
   email: string | null;
   role: AuthRole | null;
   company_id: number | null;
-  active: boolean | null;
+  is_active: boolean | null;
 };
 
 export type AuthTokens = {

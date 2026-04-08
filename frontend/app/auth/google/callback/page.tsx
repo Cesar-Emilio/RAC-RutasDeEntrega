@@ -1,14 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { authStorage } from "@/lib/auth-storage";
 
 export default function GoogleCallbackPage() {
-  const router = useRouter();
-
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(window.location.hash.slice(1));
     const access = params.get("access");
     const refresh = params.get("refresh");
 
@@ -16,8 +13,8 @@ export default function GoogleCallbackPage() {
       authStorage.setTokens({ access, refresh }, true);
     }
 
-    router.replace("/");
-  }, [router]);
+    window.location.replace("/");
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#0f1217] text-white">

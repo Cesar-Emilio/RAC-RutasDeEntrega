@@ -103,9 +103,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    if (tokens?.access) {
+    if (tokens?.access && tokens?.refresh) {
       try {
-        await logoutRequest(tokens.access);
+        await logoutRequest(tokens.access, tokens.refresh);
       } catch {
         // Ignore logout errors since tokens are removed locally.
       }
