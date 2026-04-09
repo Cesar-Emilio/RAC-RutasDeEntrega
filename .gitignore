@@ -24,3 +24,6 @@ dist/
 .idea/
 .next/
 logs/*
+
+.agents
+.github
