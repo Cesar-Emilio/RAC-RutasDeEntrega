@@ -25,3 +25,7 @@ dist/
 .next/
 db.sqlite3
 logs/*
+logs/*
+
+.agents
+.github
