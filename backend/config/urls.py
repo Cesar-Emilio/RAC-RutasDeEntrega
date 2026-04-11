@@ -16,14 +16,20 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from django.conf import settings
-from django.conf.urls.static import static
 
+from apps.users.views import RegisterView
+from apps.companies.views import CompanyViewSet
 from apps.warehouses.views import WarehouseViewSet
 
 router = DefaultRouter()
+router.register(r'companies', CompanyViewSet, basename='company')
 router.register(r'warehouses', WarehouseViewSet, basename='warehouse')
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
+
+    # Rutas API
     path('api/', include(router.urls)),
+    path('api/auth/', include('apps.authorization.urls')),
+    path('api/users/register/', RegisterView.as_view(), name='register'),
 ]
