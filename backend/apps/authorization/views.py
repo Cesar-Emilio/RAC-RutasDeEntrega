@@ -20,11 +20,9 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .permissions import IsActiveUser
 from .serializers import LoginSerializer, MeSerializer, _serialize_user
 from .throttles import LoginRateThrottle
-from .utils import api_response
-
+from backend.utils.response_helper import ApiResponse
 
 logger = logging.getLogger(__name__)
-
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -35,40 +33,33 @@ class LoginView(APIView):
         try:
             serializer.is_valid(raise_exception=True)
         except TokenError:
-            return api_response(
-                "error",
-                "Invalid credentials.",
+            return ApiResponse.error(
+                message="Invalid credentials.",
                 errors={"detail": "Invalid credentials."},
-                http_status=status.HTTP_401_UNAUTHORIZED,
+                status=status.HTTP_401_UNAUTHORIZED,
             )
         except AuthenticationFailed as exc:
-            return api_response(
-                "error",
-                "Invalid credentials.",
+            return ApiResponse.error(
+                message="Invalid credentials.",
                 errors={"detail": exc.detail},
-                http_status=status.HTTP_401_UNAUTHORIZED,
+                status=status.HTTP_401_UNAUTHORIZED,
             )
         except ValidationError as exc:
-            return api_response(
-                "error",
-                "Login failed.",
+            return ApiResponse.error(
+                message="Login failed.",
                 errors={"detail": exc.detail},
-                http_status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as exc:
             logger.exception("Unexpected login error: %s", exc)
-            return api_response(
-                "error",
-                "Login failed.",
+            return ApiResponse.error(
+                message="Login failed.",
                 errors={"detail": "Unable to process login."},
-                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        return api_response(
-            "success",
-            "Login successful.",
+        return ApiResponse.success(
+            message="Login successful.",
             data=serializer.validated_data,
-            http_status=status.HTTP_200_OK,
         )
 
 
@@ -79,18 +70,15 @@ class RefreshView(TokenRefreshView):
         try:
             response = super().post(request, *args, **kwargs)
         except TokenError:
-            return api_response(
-                "error",
-                "Invalid refresh token.",
+            return ApiResponse.error(
+                message="Invalid refresh token.",
                 errors={"detail": "Invalid refresh token."},
-                http_status=status.HTTP_401_UNAUTHORIZED,
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        return api_response(
-            "success",
-            "Token refreshed.",
+        return ApiResponse.success(
+            message="Token refreshed.",
             data=response.data,
-            http_status=status.HTTP_200_OK,
         )
 
 
@@ -99,11 +87,10 @@ class MeView(APIView):
 
     def get(self, request):
         serializer = MeSerializer(instance=request.user)
-        return api_response(
-            "success",
-            "User profile retrieved.",
+        return ApiResponse.success(
+            message="User profile retrieved.",
             data=serializer.data,
-            http_status=status.HTTP_200_OK,
+            status=status.HTTP_200_OK,
         )
 
 
@@ -117,28 +104,25 @@ class LogoutView(APIView):
                 token = RefreshToken(refresh_token)
                 token_user_id = token.payload.get("user_id")
                 if token_user_id is None or str(token_user_id) != str(request.user.id):
-                    return api_response(
-                        "error",
-                        "Refresh token does not belong to the authenticated user.",
+                    return ApiResponse.error(
+                        message="Refresh token does not belong to the authenticated user.",
                         errors={
                             "detail": "Refresh token does not belong to the authenticated user."
                         },
-                        http_status=status.HTTP_403_FORBIDDEN,
+                        status=status.HTTP_403_FORBIDDEN,
                     )
                 token.blacklist()
             except TokenError:
-                return api_response(
-                    "error",
-                    "Invalid refresh token.",
+                return ApiResponse.error(
+                    message="Invalid refresh token.",
                     errors={"detail": "Invalid refresh token."},
-                    http_status=status.HTTP_400_BAD_REQUEST,
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        return api_response(
-            "success",
-            "Logout successful.",
+        return ApiResponse.success(
+            message="Logout successful.",
             data=None,
-            http_status=status.HTTP_200_OK,
+            status=status.HTTP_200_OK,
         )
 
 
@@ -149,11 +133,10 @@ class GoogleLoginView(APIView):
         client_id = os.getenv("GOOGLE_CLIENT_ID")
         redirect_uri = os.getenv("GOOGLE_REDIRECT_URI")
         if not client_id or not redirect_uri:
-            return api_response(
-                "error",
-                "Google OAuth not configured.",
+            return ApiResponse.error(
+                message="Google OAuth not configured.",
                 errors={"detail": "Missing Google OAuth configuration."},
-                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
         state = secrets.token_urlsafe(16)
@@ -182,19 +165,15 @@ class GoogleCallbackView(APIView):
         expected_state = request.session.get("google_oauth_state")
 
         if not code:
-            return api_response(
-                "error",
-                "Missing authorization code.",
+            return ApiResponse.error(
+                message="Missing authorization code.",
                 errors={"detail": "Missing code."},
-                http_status=status.HTTP_400_BAD_REQUEST,
             )
 
         if not state or state != expected_state:
-            return api_response(
-                "error",
-                "Invalid Google OAuth state.",
+            return ApiResponse.error(
+                message="Invalid Google OAuth state.",
                 errors={"detail": "Invalid state."},
-                http_status=status.HTTP_400_BAD_REQUEST,
             )
 
         request.session.pop("google_oauth_state", None)
@@ -203,11 +182,10 @@ class GoogleCallbackView(APIView):
         client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
         redirect_uri = os.getenv("GOOGLE_REDIRECT_URI")
         if not client_id or not client_secret or not redirect_uri:
-            return api_response(
-                "error",
-                "Google OAuth not configured.",
+            return ApiResponse.error(
+                message="Google OAuth not configured.",
                 errors={"detail": "Missing Google OAuth configuration."},
-                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
         token_url = "https://oauth2.googleapis.com/token"
@@ -221,21 +199,19 @@ class GoogleCallbackView(APIView):
         token_response = requests.post(token_url, data=token_payload, timeout=10)
         if token_response.status_code != 200:
             logger.warning("Google token exchange failed: %s", token_response.text)
-            return api_response(
-                "error",
-                "Google authentication failed.",
+            return ApiResponse.error(
+                message="Google authentication failed.",
                 errors={"detail": "Unable to complete Google authentication."},
-                http_status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         token_data = token_response.json()
         id_token_value = token_data.get("id_token")
         if not id_token_value:
-            return api_response(
-                "error",
-                "Google token missing.",
+            return ApiResponse.error(
+                message="Google token missing.",
                 errors={"detail": "Missing id_token."},
-                http_status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -247,11 +223,10 @@ class GoogleCallbackView(APIView):
             )
         except Exception as exc:
             logger.warning("Google id token validation failed: %s", exc)
-            return api_response(
-                "error",
-                "Google token invalid.",
+            return ApiResponse.error(
+                message="Google token invalid.",
                 errors={"detail": "Invalid Google token."},
-                http_status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         google_id = id_info.get("sub")
@@ -259,11 +234,10 @@ class GoogleCallbackView(APIView):
         name = id_info.get("name") or id_info.get("given_name") or "Google User"
 
         if not google_id or not email:
-            return api_response(
-                "error",
-                "Google user data missing.",
+            return ApiResponse.error(
+                message="Google user data missing.",
                 errors={"detail": "Missing google id or email."},
-                http_status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         User = get_user_model()
@@ -284,11 +258,10 @@ class GoogleCallbackView(APIView):
                 )
 
         if not getattr(user, "is_active", True):
-            return api_response(
-                "error",
-                "User is inactive.",
+            return ApiResponse.error(
+                message="User is inactive.",
                 errors={"detail": "User inactive."},
-                http_status=status.HTTP_403_FORBIDDEN,
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         refresh = RefreshToken.for_user(user)
