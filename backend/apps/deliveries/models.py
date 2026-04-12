@@ -3,8 +3,7 @@ from django.db import models
 class FileType(models.TextChoices):
     """
     Tipos de archivos aceptados por el sistema
-    """
-    
+    """    
     JSON = "json", "JSON"
     CSV = "csv", "CSV"
 
@@ -12,7 +11,6 @@ class Status(models.TextChoices):
     """
     Tipos de estados por los que puede pasar un procesamiento de ruta
     """
-    
     PENDING = "pending", "Pendiente"
     PROCESSING = "processing", "Procesando"
     COMPLETED = "completed", "Completado"
@@ -20,9 +18,11 @@ class Status(models.TextChoices):
     
 class Route(models.Model):
     """
-    Representa una ruta de entregas asociada a una empresa y un almacén
+    Modelo principal que representa una ruta de entregas.
+
+    Agrupa la información necesaria para procesar una optimización de entregas
+    a partir de un conjunto de puntos asociados a una empresa y un almacén.
     """
-    
     company = models.ForeignKey(
         "companies.Company",
         on_delete=models.CASCADE,
@@ -50,7 +50,9 @@ class Route(models.Model):
     
 class RouteInputFile(models.Model):
     """
-    Es el archivo de entrada a procesar. Se almacena en memoria dentro de la carpeta media/routes/
+    Archivo de entrada asociado a una ruta.
+
+    Contiene el archivo original (CSV o JSON) desde el cual se generan los puntos de entrega.
     """
     route = models.OneToOneField(
         Route,
@@ -69,7 +71,9 @@ class RouteInputFile(models.Model):
     
 class DeliveryPoint(models.Model):
     """
-    Representa un punto de entrega dentro del archivo de paquetes
+    Punto individual de entrega dentro de una ruta.
+
+    Cada instancia representa una ubicación geográfica que debe ser visitada durante la ejecución de la ruta.
     """
     route = models.ForeignKey(
         Route,
@@ -89,11 +93,11 @@ class DeliveryPoint(models.Model):
 
 class RouteSolution(models.Model):
     """
-    Representa el resultado de la optimización de una ruta.
+    Resultado de la optimización de una ruta.
 
-    Contiene métricas agregadas como distancia total y puede tener múltiples versiones por ruta.
+    Almacena métricas agregadas como distancia total y permite
+    mantener múltiples soluciones para una misma ruta.
     """
-    
     route = models.ForeignKey(
         Route,
         on_delete=models.CASCADE,
@@ -106,9 +110,11 @@ class RouteSolution(models.Model):
 
 class RouteSolutionDetail(models.Model):
     """
-    Representa los detalles de la solución de la ruta
+    Detalle de una solución de ruta.
+
+    Define el orden en que deben visitarse los puntos de entrega
+    para una solución específica.
     """
-    
     solution = models.ForeignKey(
         RouteSolution,
         on_delete=models.CASCADE,
