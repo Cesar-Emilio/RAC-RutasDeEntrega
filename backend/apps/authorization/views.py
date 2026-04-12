@@ -20,7 +20,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .permissions import IsActiveUser
 from .serializers import LoginSerializer, MeSerializer, _serialize_user
 from .throttles import LoginRateThrottle
-from backend.utils.response_helper import ApiResponse
+from utils.response_helper import ApiResponse
 
 logger = logging.getLogger(__name__)
 

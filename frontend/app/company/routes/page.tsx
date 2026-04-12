@@ -1,8 +1,8 @@
-import { DashboardShell } from "@/components/layout/DashboardShell";
+import { ContentShell } from "@/components/layout/ContentShell";
 
 export default function CompanyRoutesPage() {
   return (
-    <DashboardShell
+    <ContentShell
       role="company"
       title="Rutas"
       breadcrumbs={["Empresa", "Rutas"]}
@@ -11,6 +11,6 @@ export default function CompanyRoutesPage() {
         Vista base para cargar archivos y calcular rutas. Aqui se integrara el
         flujo de carga y el historial por empresa.
       </div>
-    </DashboardShell>
+    </ContentShell>
   );
 }
