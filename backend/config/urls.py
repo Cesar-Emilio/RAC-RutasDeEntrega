@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
+from apps.administration.views import DashboardSummaryView
 from apps.users.views import RegisterView
 from apps.companies.views import CompanyViewSet
 from apps.warehouses.views import WarehouseViewSet
@@ -32,4 +33,5 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/auth/', include('apps.authorization.urls')),
     path('api/users/register/', RegisterView.as_view(), name='register'),
+    path('api/dashboard/summary/', DashboardSummaryView.as_view(), name='dashboard-summary'),
 ]

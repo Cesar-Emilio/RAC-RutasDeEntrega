@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const persist = authStorage.isPersistent();
         const meResponse = await meRequest(storedTokens.access);
-        if (meResponse.status === "success" && meResponse.data) {
+        if (meResponse.success && meResponse.data) {
           authStorage.setUser(meResponse.data.user, persist);
           setUser(meResponse.data.user);
           setStatus("authenticated");
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const persist = authStorage.isPersistent();
           const refreshed = await refreshRequest(storedTokens.refresh);
-          if (refreshed.status === "success" && refreshed.data) {
+          if (refreshed.success && refreshed.data) {
             const nextTokens = normalizeTokens(
               refreshed.data.access,
               storedTokens.refresh,
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             authStorage.setTokens(nextTokens, persist);
             setTokens(nextTokens);
             const meResponse = await meRequest(nextTokens.access);
-            if (meResponse.status === "success" && meResponse.data) {
+            if (meResponse.success && meResponse.data) {
               authStorage.setUser(meResponse.data.user, persist);
               setUser(meResponse.data.user);
               setStatus("authenticated");
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string, remember: boolean) => {
     const response = await loginRequest(email, password);
-    if (response.status !== "success" || !response.data) {
+    if (!response.success || !response.data) {
       throw response;
     }
 
