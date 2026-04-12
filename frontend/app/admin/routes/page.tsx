@@ -1,8 +1,8 @@
-import { DashboardShell } from "@/components/layout/DashboardShell";
+import { ContentShell } from "@/components/layout/ContentShell";
 
 export default function AdminRoutesPage() {
   return (
-    <DashboardShell
+    <ContentShell
       role="admin"
       title="Rutas"
       breadcrumbs={["Admin", "Rutas"]}
@@ -11,6 +11,6 @@ export default function AdminRoutesPage() {
         Vista base para gestionar rutas desde el administrador. Aqui se mostraran
         los historiales y el detalle por ruta.
       </div>
-    </DashboardShell>
+    </ContentShell>
   );
 }

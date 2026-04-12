@@ -1,8 +1,8 @@
-import { DashboardShell } from "@/components/layout/DashboardShell";
+import { ContentShell } from "@/components/layout/ContentShell";
 
 export default function CompanyWarehousesPage() {
   return (
-    <DashboardShell
+    <ContentShell
       role="company"
       title="Almacenes"
       breadcrumbs={["Empresa", "Almacenes"]}
@@ -11,6 +11,6 @@ export default function CompanyWarehousesPage() {
         Vista base para el CRUD de almacenes. Aqui se integrara la tabla con los
         almacenes activos y el formulario de alta.
       </div>
-    </DashboardShell>
+    </ContentShell>
   );
 }

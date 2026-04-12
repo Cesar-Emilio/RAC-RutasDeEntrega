@@ -15,7 +15,7 @@ export type AuthTokens = {
 };
 
 export type AuthResponse<T> = {
-  status: "success" | "error";
+  success: boolean;
   message: string;
   data: T | null;
   errors: Record<string, unknown> | null;
