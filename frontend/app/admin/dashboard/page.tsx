@@ -1,32 +1,52 @@
-import { DashboardShell } from "@/components/layout/DashboardShell";
+"use client";
 
-export default function AdminDashboardPage() {
+import { useRef } from "react";
+import { ContentShell } from "@/components/layout/ContentShell";
+import { CardStatistics } from "@/components/layout/CardStatistics";
+import { WarehouseCards } from "@/components/layout/WarehouseCards";
+import { TableHistory } from "@/components/layout/TableHistory";
+
+export default function DashboardAdminPage() {
+  const warehousesScrollRef = useRef<HTMLDivElement>(null);
+  const warehousesScrollProgress = 0;
+
   return (
-    <DashboardShell
+    <ContentShell
       role="admin"
-      title="Dashboard general"
+      title="Dashboard Admin"
       breadcrumbs={["Admin", "Dashboard"]}
     >
-      <div className="grid gap-6 md:grid-cols-2">
-        <section className="rounded-2xl border border-[#1f2937] bg-[#111827] p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-[#f97316]">
-            Empresas activas
-          </h2>
-          <p className="mt-3 text-3xl font-semibold text-white">--</p>
-          <p className="mt-2 text-xs text-[#9ca3af]">
-            Pendiente de integracion con el modulo de empresas.
-          </p>
-        </section>
-        <section className="rounded-2xl border border-[#1f2937] bg-[#111827] p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-[#f97316]">
-            Rutas del dia
-          </h2>
-          <p className="mt-3 text-3xl font-semibold text-white">--</p>
-          <p className="mt-2 text-xs text-[#9ca3af]">
-            Pendiente de integracion con el modulo de rutas.
-          </p>
-        </section>
+      <div
+        className="flex min-h-screen flex-col text-[14px] md:text-[15px]"
+        style={{ backgroundColor: "#0f1115" }}
+      >
+        <div className="flex-1 overflow-x-hidden px-4 py-4 md:px-6 md:py-5">
+          <CardStatistics
+            title="Estadisticas del sistema"
+            description="Resumen general del sistema"
+            items={[]}
+            isLoading={false}
+          />
+
+          <WarehouseCards
+            title="Almacenes"
+            description="Lista de almacenes"
+            items={[]}
+            isLoading={false}
+            scrollRef={warehousesScrollRef}
+            scrollProgress={warehousesScrollProgress}
+            linkHref="/admin/companies"
+            linkLabel="Administrar almacenes"
+          />
+
+          <TableHistory
+            title="Actividad reciente"
+            description="Ultimos movimientos administrativos"
+            items={[]}
+            isLoading={false}
+          />
+        </div>
       </div>
-    </DashboardShell>
+    </ContentShell>
   );
 }

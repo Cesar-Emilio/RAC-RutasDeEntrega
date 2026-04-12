@@ -1,49 +1,185 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  ChevronLeft,
+  ChevronRight,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Route,
+  Warehouse,
+  Users,
+} from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
 
-const adminLinks = [
-  { href: "/admin/dashboard", label: "Dashboard" },
-  { href: "/admin/companies", label: "Empresas" },
-  { href: "/admin/routes", label: "Rutas" },
+type SidebarRole = "admin" | "company";
+
+type SidebarItem = {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  isHighlighted?: boolean;
+};
+
+const adminLinks: SidebarItem[] = [
+  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/companies", label: "Empresas", icon: Users },
+  { href: "/admin/routes", label: "Rutas", icon: Route, isHighlighted: true },
 ];
 
-const companyLinks = [
-  { href: "/company/dashboard", label: "Dashboard" },
-  { href: "/company/warehouses", label: "Almacenes" },
-  { href: "/company/routes", label: "Rutas" },
+const companyLinks: SidebarItem[] = [
+  { href: "/company/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/company/warehouses", label: "Almacenes", icon: Warehouse },
+  { href: "/company/routes", label: "Rutas", icon: Route, isHighlighted: true },
 ];
 
-export function Sidebar({ role }: { role: "admin" | "company" }) {
+export function Sidebar({ role }: { role: SidebarRole }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { logout } = useAuth();
   const links = role === "admin" ? adminLinks : companyLinks;
+  const [isOpen, setIsOpen] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
+
+  const isItemActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+  if (!mounted) {
+    return (
+      <aside
+        className="fixed top-0 left-0 z-50 h-screen w-56"
+        style={{ backgroundColor: "#161A20" }}
+      />
+    );
+  }
 
   return (
-    <aside className="flex h-full flex-col border-r border-[#1f2937] bg-[#0e1116] px-6 py-8">
-      <div className="text-sm font-semibold uppercase tracking-[0.3em] text-[#f97316]">
-        RAC
-      </div>
-      <p className="mt-2 text-xs text-[#9ca3af]">
-        {role === "admin" ? "Panel administrador" : "Panel empresa"}
-      </p>
-      <nav className="mt-8 space-y-2">
-        {links.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="block rounded-lg px-3 py-2 text-sm text-[#e5e7eb] transition hover:bg-[#111827]"
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className={`fixed top-4 left-4 z-40 rounded-md p-2 lg:hidden ${isOpen ? "hidden" : "block"}`}
+        style={{ backgroundColor: "#161A20", color: "#BBBDC0" }}
+      >
+        <Menu size={24} />
+      </button>
+
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed top-0 left-0 z-50 flex h-screen flex-col overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? "w-56" : "w-0 lg:w-16"
+        }`}
+        style={{ backgroundColor: "#161A20" }}
+      >
+        <div className="flex h-full min-w-56 flex-col lg:min-w-0">
+          <div
+            className={`flex items-start gap-3 transition-opacity duration-300 ${
+              isOpen ? "justify-between p-6 opacity-100" : "justify-center p-3 opacity-0 lg:opacity-100"
+            }`}
           >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-      <div className="mt-auto">
-        <Link
-          href="/logout"
-          className="mt-6 block rounded-lg border border-[#1f2937] px-3 py-2 text-sm text-[#e5e7eb] transition hover:bg-[#111827]"
-        >
-          Cerrar sesion
-        </Link>
-      </div>
-    </aside>
+            {isOpen ? (
+              <div>
+                <h2 className="text-base font-bold tracking-wide" style={{ color: "#BBBDC0" }}>
+                  {role === "admin" ? "Admin" : "Empresa"}
+                </h2>
+                <p className="mt-1 text-xs" style={{ color: "#6b7280" }}>
+                  {role === "admin" ? "Gestión del sistema" : "Gestión operativa"}
+                </p>
+              </div>
+            ) : null}
+
+            <button
+              onClick={() => setIsOpen((prev) => !prev)}
+              className={`flex min-h-11 items-center gap-3 rounded-md px-3 py-3 transition-all duration-200 ${
+                isOpen ? "" : "justify-center"
+              }`}
+              style={{ color: "#BBBDC0" }}
+              onMouseEnter={(event) => (event.currentTarget.style.backgroundColor = "#252a33")}
+              onMouseLeave={(event) => (event.currentTarget.style.backgroundColor = "transparent")}
+              aria-label={isOpen ? "Colapsar menú" : "Expandir menú"}
+              title={isOpen ? "Colapsar menú" : "Expandir menú"}
+            >
+              {isOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+            </button>
+          </div>
+
+          <nav className="flex-1 px-3">
+            {isOpen && (
+              <h3 className="mb-4 px-3 text-xs font-bold" style={{ color: "#E27D2A" }}>
+                MENÚ
+              </h3>
+            )}
+
+            <div className="space-y-1">
+              {links.map((item) => {
+                const isActive = isItemActive(item.href);
+                const Icon = item.icon;
+
+                return (
+                  <Link key={item.href} href={item.href}>
+                    <div
+                      className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-3 py-3 transition-all duration-200 ${
+                        isOpen ? "" : "justify-center"
+                      }`}
+                      style={{
+                        backgroundColor: isActive ? "#4a2c18" : "transparent",
+                        borderLeft: isActive ? "3px solid #E27D2A" : "3px solid transparent",
+                        color: item.isHighlighted ? "#E27D2A" : isActive ? "#E27D2A" : "#BBBDC0",
+                      }}
+                      onMouseEnter={(event) => {
+                        if (!isActive) {
+                          event.currentTarget.style.backgroundColor = "#252a33";
+                        }
+                      }}
+                      onMouseLeave={(event) => {
+                        if (!isActive) {
+                          event.currentTarget.style.backgroundColor = "transparent";
+                        }
+                      }}
+                    >
+                      <Icon size={20} className="shrink-0" />
+                      {isOpen && <span className="whitespace-nowrap text-sm font-medium">{item.label}</span>}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+
+          <div className="border-t p-4" style={{ borderColor: "#252a33" }}>
+            <button
+              onClick={handleLogout}
+              className={`flex min-h-11 w-full items-center gap-3 rounded-md px-3 py-3 transition-all duration-200 ${
+                isOpen ? "" : "justify-center"
+              }`}
+              style={{ color: "#BBBDC0" }}
+              onMouseEnter={(event) => (event.currentTarget.style.backgroundColor = "#252a33")}
+              onMouseLeave={(event) => (event.currentTarget.style.backgroundColor = "transparent")}
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+            >
+              <LogOut size={20} className="shrink-0" />
+              {isOpen && <span className="text-sm">Cerrar sesión</span>}
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <div className={`transition-all duration-300 ${isOpen ? "hidden lg:block lg:w-56" : "hidden lg:block lg:w-16"}`} />
+    </>
   );
 }
