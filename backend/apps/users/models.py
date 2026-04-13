@@ -1,4 +1,3 @@
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
@@ -65,21 +64,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.email = self.email.lower()
         super().save(*args, **kwargs)
 
-    def clean(self):
-        super().clean()
-        if self.role == 'company' and self.company_id is None:
-            raise ValidationError({'company': 'La empresa es obligatoria para usuarios con rol company.'})
-
     def __str__(self):
         return self.email
     
     class Meta:
         indexes = [
             models.Index(fields=['email']),
-        ]
-        constraints = [
-            models.CheckConstraint(
-                condition=models.Q(is_active=False) | models.Q(role='admin') | models.Q(company__isnull=False),
-                name='user_role_company_requires_company',
-            ),
         ]

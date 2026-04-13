@@ -17,11 +17,6 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if not data.get('password'):
             raise serializers.ValidationError('La contraseña es obligatoria')
-
-        role = data.get('role', 'company')
-        company = data.get('company')
-        if role == 'company' and company is None:
-            raise serializers.ValidationError({'company': 'La empresa es obligatoria para usuarios con rol company.'})
         return data
 
 
