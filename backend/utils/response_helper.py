@@ -3,8 +3,8 @@ from rest_framework import status as http_status
 
 class ApiResponse:
     @staticmethod
-    def success(data=None, message="Success", status=http_status.HTTP_200_OK):
-        return Response({"success": True, "message": message, "data": data}, status=status)
+    def success(data=None, message="Success", status=http_status.HTTP_200_OK, headers = ""):
+        return Response({"success": True, "message": message, "data": data}, status=status, headers=headers)
 
     @staticmethod
     def error(message="Error", errors=None, status=http_status.HTTP_400_BAD_REQUEST):
