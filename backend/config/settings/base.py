@@ -156,3 +156,5 @@ def _env_list(name, default=None):
 ALLOWED_HOSTS = _env_list('ALLOWED_HOSTS', [])
 CORS_ALLOWED_ORIGINS = _env_list('CORS_ALLOWED_ORIGINS', ['http://localhost:3000'])
 CORS_ALLOW_ALL_ORIGINS = False
+
+NOMINATIM_USER_AGENT = "route-optimization-app"
