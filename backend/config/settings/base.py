@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     'corsheaders',
     'rest_framework',
+    'drf_spectacular',
     'rest_framework_simplejwt.token_blacklist',
 
     'apps.administration',
@@ -123,6 +124,13 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'login': os.getenv('LOGIN_THROTTLE_RATE', '3/min'),
     },
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'RAC Rutas de Entrega API',
+    'DESCRIPTION': 'API para la administración de rutas, empresas, almacenes y entregas.',
+    'VERSION': '1.0.0',
 }
 
 SIMPLE_JWT = {
