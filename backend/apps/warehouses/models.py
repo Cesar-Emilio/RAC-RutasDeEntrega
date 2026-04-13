@@ -1,6 +1,42 @@
 from django.db import models
+from django.db.models import Q
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from apps.companies.models import Company
+
+MEXICAN_STATES = [
+    ('Aguascalientes', 'Aguascalientes'),
+    ('Baja California', 'Baja California'),
+    ('Baja California Sur', 'Baja California Sur'),
+    ('Campeche', 'Campeche'),
+    ('Chiapas', 'Chiapas'),
+    ('Chihuahua', 'Chihuahua'),
+    ('Ciudad de México', 'Ciudad de México'),
+    ('Coahuila', 'Coahuila'),
+    ('Colima', 'Colima'),
+    ('Durango', 'Durango'),
+    ('Guanajuato', 'Guanajuato'),
+    ('Guerrero', 'Guerrero'),
+    ('Hidalgo', 'Hidalgo'),
+    ('Jalisco', 'Jalisco'),
+    ('México', 'México'),
+    ('Michoacán', 'Michoacán'),
+    ('Morelos', 'Morelos'),
+    ('Nayarit', 'Nayarit'),
+    ('Nuevo León', 'Nuevo León'),
+    ('Oaxaca', 'Oaxaca'),
+    ('Puebla', 'Puebla'),
+    ('Querétaro', 'Querétaro'),
+    ('Quintana Roo', 'Quintana Roo'),
+    ('San Luis Potosí', 'San Luis Potosí'),
+    ('Sinaloa', 'Sinaloa'),
+    ('Sonora', 'Sonora'),
+    ('Tabasco', 'Tabasco'),
+    ('Tamaulipas', 'Tamaulipas'),
+    ('Tlaxcala', 'Tlaxcala'),
+    ('Veracruz', 'Veracruz'),
+    ('Yucatán', 'Yucatán'),
+    ('Zacatecas', 'Zacatecas'),
+]
 
 
 class Warehouse(models.Model):
@@ -20,41 +56,6 @@ class Warehouse(models.Model):
         regex=r'^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s\-\.]{2,100}$',
         message='El campo solo puede contener letras y debe tener entre 2 y 100 caracteres'
     )
-
-    MEXICAN_STATES = [
-        ('Aguascalientes', 'Aguascalientes'),
-        ('Baja California', 'Baja California'),
-        ('Baja California Sur', 'Baja California Sur'),
-        ('Campeche', 'Campeche'),
-        ('Chiapas', 'Chiapas'),
-        ('Chihuahua', 'Chihuahua'),
-        ('Ciudad de México', 'Ciudad de México'),
-        ('Coahuila', 'Coahuila'),
-        ('Colima', 'Colima'),
-        ('Durango', 'Durango'),
-        ('Guanajuato', 'Guanajuato'),
-        ('Guerrero', 'Guerrero'),
-        ('Hidalgo', 'Hidalgo'),
-        ('Jalisco', 'Jalisco'),
-        ('México', 'México'),
-        ('Michoacán', 'Michoacán'),
-        ('Morelos', 'Morelos'),
-        ('Nayarit', 'Nayarit'),
-        ('Nuevo León', 'Nuevo León'),
-        ('Oaxaca', 'Oaxaca'),
-        ('Puebla', 'Puebla'),
-        ('Querétaro', 'Querétaro'),
-        ('Quintana Roo', 'Quintana Roo'),
-        ('San Luis Potosí', 'San Luis Potosí'),
-        ('Sinaloa', 'Sinaloa'),
-        ('Sonora', 'Sonora'),
-        ('Tabasco', 'Tabasco'),
-        ('Tamaulipas', 'Tamaulipas'),
-        ('Tlaxcala', 'Tlaxcala'),
-        ('Veracruz', 'Veracruz'),
-        ('Yucatán', 'Yucatán'),
-        ('Zacatecas', 'Zacatecas'),
-    ]
 
     company = models.ForeignKey(
         Company,
@@ -130,5 +131,37 @@ class Warehouse(models.Model):
                 'Latitud y longitud deben proporcionarse juntas.'
             )
 
-    # class Meta:
-    #     ordering = ['-created_at']
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(country='México'),
+                name='warehouse_country_mexico'
+            ),
+            models.CheckConstraint(
+                condition=Q(state__in=[state[0] for state in MEXICAN_STATES]),
+                name='warehouse_state_valid'
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(latitude__isnull=True, longitude__isnull=True) |
+                    Q(latitude__isnull=False, longitude__isnull=False)
+                ),
+                name='warehouse_coordinates_complete'
+            ),
+            models.CheckConstraint(
+                condition=Q(latitude__isnull=True) | Q(latitude__gte=14.500000),
+                name='warehouse_latitude_min'
+            ),
+            models.CheckConstraint(
+                condition=Q(latitude__isnull=True) | Q(latitude__lte=32.700000),
+                name='warehouse_latitude_max'
+            ),
+            models.CheckConstraint(
+                condition=Q(longitude__isnull=True) | Q(longitude__gte=-118.400000),
+                name='warehouse_longitude_min'
+            ),
+            models.CheckConstraint(
+                condition=Q(longitude__isnull=True) | Q(longitude__lte=-86.700000),
+                name='warehouse_longitude_max'
+            ),
+        ]
