@@ -6,7 +6,6 @@ import urllib.parse
 import requests
 from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect
-from django.utils.crypto import get_random_string
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 from rest_framework import status
@@ -245,16 +244,27 @@ class GoogleCallbackView(APIView):
         if not user:
             user = User.objects.filter(email=email).first()
             if user:
+                if getattr(user, "role", None) == "company" and getattr(user, "company_id", None) is None:
+                    return ApiResponse.error(
+                        message="User company account is not configured.",
+                        errors={
+                            "detail": (
+                                "La cuenta debe ser creada por un administrador y tener una empresa asignada."
+                            )
+                        },
+                        status=status.HTTP_409_CONFLICT,
+                    )
                 user.google_id = google_id
                 user.save(update_fields=["google_id"])
             else:
-                user = User.objects.create_user(
-                    email=email,
-                    password=get_random_string(32),
-                    name=name,
-                    role="company",
-                    is_active=True,
-                    google_id=google_id,
+                return ApiResponse.error(
+                    message="User account not found.",
+                    errors={
+                        "detail": (
+                            "La cuenta no existe. Debe ser creada por un administrador con empresa asignada."
+                        )
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
                 )
 
         if not getattr(user, "is_active", True):
