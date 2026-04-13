@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from apps.administration.views import DashboardSummaryView
 from apps.users.views import RegisterView
@@ -34,4 +35,8 @@ urlpatterns = [
     path('api/auth/', include('apps.authorization.urls')),
     path('api/users/register/', RegisterView.as_view(), name='register'),
     path('api/dashboard/summary/', DashboardSummaryView.as_view(), name='dashboard-summary'),
+
+    # Swagger/OpenAPI
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
