@@ -14,7 +14,7 @@ import csv
 import json
 import io
 import math
-import logging
+from loguru import logger
 import requests
 from django.conf import settings
 from typing import TypedDict
@@ -29,8 +29,6 @@ from .models import (
     RouteSolutionDetail,
     Status,
 )
-
-logger = logging.getLogger(__name__)
 
 class RawRow(TypedDict):
     """Fila normalizada que sale del parser, antes de geocodificar."""
@@ -216,7 +214,8 @@ def save_delivery_points(route: Route, rows: list[ResolvedRow]) -> list[Delivery
         )
         for row in rows
     ]
-    return DeliveryPoint.objects.bulk_create(points)
+    DeliveryPoint.objects.bulk_create(points)
+    return list(DeliveryPoint.objects.filter(route=route).order_by("id"))
 
 # Umbral para activar k-opt, por encima de este valor se omite la mejora
 K_OPT_THRESHOLD = 50
@@ -606,9 +605,9 @@ def process_route(route_id: int) -> None:
     except RouteProcessingError as exc:
         logger.error("Ruta %s — error controlado: %s", route_id, exc)
         route.status = Status.ERROR
-
+        
     except Exception as exc:
-        logger.exception("Ruta %s — error inesperado: %s", route_id, exc)
+        logger.critical("Ruta %s — error inesperado: %s", route_id, exc)
         route.status = Status.ERROR
 
     finally:

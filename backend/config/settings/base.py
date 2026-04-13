@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
+from loguru import logger
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -158,3 +159,68 @@ CORS_ALLOWED_ORIGINS = _env_list('CORS_ALLOWED_ORIGINS', ['http://localhost:3000
 CORS_ALLOW_ALL_ORIGINS = False
 
 NOMINATIM_USER_AGENT = "route-optimization-app"
+
+LOGGING_CONFIG = None
+
+LOGURU_LOGGINS = {
+    "handlers": [
+        {
+            "sink": BASE_DIR / "logs/debug.log",
+            "level": "DEBUG",
+            "filter": lambda r: r["level"].name == "DEBUG",
+            "format": "{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {name}:{function}:{line} - {message}",
+            "rotation": "10 MB",
+            "retention": "7 days",
+            "compression": "zip",
+        },
+        {
+            "sink": BASE_DIR / "logs/info.log",
+            "level": "INFO",
+            "filter": lambda r: r["level"].name == "INFO",
+            "format": "{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {name}:{function}:{line} - {message}",
+            "rotation": "10 MB",
+            "retention": "7 days",
+            "compression": "zip",
+        },
+        {
+            "sink": BASE_DIR / "logs/warning.log",
+            "level": "WARNING",
+            "filter": lambda r: r["level"].name == "WARNING",
+            "format": "{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {name}:{function}:{line} - {message}",
+            "rotation": "10 MB",
+            "retention": "7 days",
+            "compression": "zip",
+        },
+        {
+            "sink": BASE_DIR / "logs/error.log",
+            "level": "ERROR",
+            "filter": lambda r: r["level"].name == "ERROR",
+            "format": "{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {name}:{function}:{line} - {message}",
+            "rotation": "10 MB",
+            "retention": "7 days",
+            "compression": "zip",
+            "backtrace": True,
+            "diagnose": True,
+        },
+        {
+            "sink": BASE_DIR / "logs/critical.log",
+            "level": "CRITICAL",
+            "filter": lambda r: r["level"].name == "CRITICAL",
+            "format": "{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {name}:{function}:{line} - {message}",
+            "rotation": "10 MB",
+            "retention": "7 days",
+            "compression": "zip",
+            "backtrace": True,
+            "diagnose": True,
+        },
+    ]
+}
+
+logger.configure(**LOGURU_LOGGINS)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"loguru": {"class": "config.interceptor.InterceptorHandler"}},
+    "root": {"handlers": ["loguru"], "level": "DEBUG"},
+}
