@@ -1,46 +1,56 @@
+import logging
 from rest_framework import serializers
-from .models import Route, RouteInputFile, DeliveryPoint, RouteSolution, RouteSolutionDetail
-    
+from .models import Route, RouteInputFile, DeliveryPoint, RouteSolution, RouteSolutionDetail, FileType
+
+logger = logging.getLogger(__name__)
+
 class RouteListSerializer(serializers.ModelSerializer):
     """
-    Serializer para la representación resumida de las rutas
-    
-    Se utiliza en endpoints de listado para devolver la información mínima de cada ruta, intentando reducir el tamaño de la respuesta
-    
-    Solo se incluye su identificador, estado actual y fecha de creación de la ruta
+    Representación resumida de una ruta para el endpoint de listado (GET /).
+
+    Expone solo los campos necesarios para construir una tabla:
+    id, estado, fecha, almacén, empresa y conteo de entregas.
+    El nombre del archivo se limpia para mostrar solo el basename.
     """
+
+    warehouse_name = serializers.CharField(source="warehouse.name", read_only=True)
+    company_name = serializers.CharField(source="company.name", read_only=True)
+    file_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Route
-        fields = ["id", "status", "created_at"]
-        
-class DeliveryPointSerializer(serializers.ModelSerializer):
-    """
-    Serializer para los puntos de entrega
-    
-    Puede ser usado en contextos de detalle o como serializer anidado dentro de otros serializers
-    """
-    class Meta:
-        model = DeliveryPoint
-        fields = "__all__"
-        
-class RouteSolutionSerializer(serializers.ModelSerializer):
-    """
-    Serilaizer para detalles de la solución de una ruta
-    
-    Se puede usar para mostrar los detalles de la solución, contiene la fecha de creación y la distancia de solución (no sé si lo pueda hacer, intentaré)
-    """
-    class Meta:
-        model = RouteSolution
-        fields = "__all__"
+        fields = [
+            "id",
+            "status",
+            "created_at",
+            "company_name",
+            "warehouse_name",
+            "delivery_count",
+            "file_name",
+        ]
 
-class RouteCreateWithFileSerializer(serializers.ModelSerializer):
+    def get_file_name(self, obj):
+        """Devuelve solo el nombre del archivo sin la ruta del storage."""
+        try:
+            return obj.input_file.file.name.split("/")[-1]
+        except RouteInputFile.DoesNotExist:
+            logger.error("route_input_file_error: no existe el archivo en la base de datos")
+            return None
+
+class RouteCreateSerializer(serializers.ModelSerializer):
     """
-    Serializador para la creación de una nueva ruta
-    
-    Este serializador guarda los datos del tipo de archivo en el modelo RouteInputFile al momento de crear una nueva ruta
+    Serializador para la creación de una nueva ruta (POST /create).
+
+    Recibe el archivo y su tipo junto con los datos de la ruta.
+    Crea Route y RouteInputFile en una sola operación.
+    El campo file_type se valida contra el enum FileType.
     """
+
     file = serializers.FileField(write_only=True)
-    file_type = serializers.CharField(write_only=True)
+    file_type = serializers.ChoiceField(
+        choices=FileType.choices,
+        write_only=True,
+    )
 
     class Meta:
         model = Route
@@ -55,48 +65,96 @@ class RouteCreateWithFileSerializer(serializers.ModelSerializer):
         RouteInputFile.objects.create(
             route=route,
             file=file,
-            file_type=file_type
+            file_type=file_type,
         )
 
         return route
-        
-class RouteDetailSerializer(serializers.ModelSerializer):
+
+
+class DeliveryPointSerializer(serializers.ModelSerializer):
     """
-    Serializer para la representación detallada de una ruta.
-    
-    Incluye toda la info de la ruta junto con sus puntos de entrega asociados, utilizando un serializer anidado para exponerlos en la respuesta
+    Punto de entrega individual.
+    Usado como serializer anidado dentro del detalle de solución.
     """
-    
-    delivery_points = DeliveryPointSerializer(many=True, read_only=True)
 
     class Meta:
-        model = Route
-        fields = "__all__"
-        
+        model = DeliveryPoint
+        fields = ["id", "address", "latitude", "longitude"]
+
+
 class RouteSolutionDetailSerializer(serializers.ModelSerializer):
     """
-    Serializador para mostrar los puntos de la solución de una ruta
-    
-    Lo mismo que el de arriba, con la diferencia de que los puntos de aquí ya van con orden
+    Detalle de una solución: un punto de entrega con su índice de orden.
+    Los puntos se devuelven ordenados por order_index desde la query (ver RouteSolutionSerializer).
     """
-    
-    delivery_point = DeliveryPointSerializer()
+
+    delivery_point = DeliveryPointSerializer(read_only=True)
 
     class Meta:
         model = RouteSolutionDetail
         fields = ["order_index", "delivery_point"]
-        
-class RouteSolutionDetailFullSerializer(serializers.ModelSerializer):
-    """
-    Serializer para la representación detallada de una solución de ruta.
 
-    Incluye las métricas principales de la solución, como la distancia total,
-    junto con el listado ordenado de puntos de entrega que conforman la ruta
-    optimizada mediante un serializer anidado.
+
+class RouteSolutionSerializer(serializers.ModelSerializer):
     """
-    
-    details = RouteSolutionDetailSerializer(many=True, read_only=True)
+    Solución de optimización de una ruta.
+    Incluye la distancia total y los puntos ordenados por order_index.
+    """
+
+    details = serializers.SerializerMethodField()
 
     class Meta:
         model = RouteSolution
         fields = ["id", "total_distance", "created_at", "details"]
+
+    def get_details(self, obj):
+        ordered_details = obj.details.select_related("delivery_point").order_by("order_index")
+        return RouteSolutionDetailSerializer(ordered_details, many=True).data
+
+
+class RouteDetailSerializer(serializers.ModelSerializer):
+    """
+    Representación completa de una ruta para el endpoint de detalle (GET /id).
+
+    Incluye:
+    - Datos de la ruta y su estado
+    - Nombre del archivo de entrada
+    - Todos los puntos de entrega registrados
+    - La solución con los puntos ordenados (última solución generada)
+    """
+
+    warehouse_name = serializers.CharField(source="warehouse.name", read_only=True)
+    company_name = serializers.CharField(source="company.name", read_only=True)
+    file_name = serializers.SerializerMethodField()
+    delivery_points = DeliveryPointSerializer(many=True, read_only=True)
+    solution = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Route
+        fields = [
+            "id",
+            "status",
+            "created_at",
+            "company_name",
+            "warehouse_name",
+            "delivery_count",
+            "file_name",
+            "delivery_points",
+            "solution",
+        ]
+
+    def get_file_name(self, obj):
+        try:
+            return obj.input_file.file.name.split("/")[-1]
+        except RouteInputFile.DoesNotExist:
+            return None
+
+    def get_solution(self, obj):
+        """
+        Devuelve la solución más reciente asociada a la ruta.
+        Retorna None si la ruta aún no tiene solución calculada.
+        """
+        solution = obj.solutions.order_by("-created_at").first()
+        if solution is None:
+            return None
+        return RouteSolutionSerializer(solution).data
