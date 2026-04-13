@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 class UserManager(BaseUserManager):
@@ -70,4 +71,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         indexes = [
             models.Index(fields=['email']),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(role__in=['admin', 'company']),
+                name='user_role_valid'
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(role='admin', company__isnull=True) |
+                    Q(role='company', company__isnull=False)
+                ),
+                name='user_role_company_consistency'
+            ),
         ]
