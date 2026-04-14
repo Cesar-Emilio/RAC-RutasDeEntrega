@@ -29,17 +29,21 @@ class CompanyEndpointTests(TestCase):
             rfc='TEST123456789'
         )
 
-    def setUp(self):
-        self.client = APIClient()
-        login_url = reverse('auth-login')
-        response = self.client.post(
-            login_url,
-            {'email': self.admin_user.email, 'password': 'admin123'},
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Login único para toda la clase, evita rate limit por múltiples logins
+        client = APIClient()
+        response = client.post(
+            reverse('auth-login'),
+            {'email': 'admin@test.com', 'password': 'admin123'},
             format='json'
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        token = response.data['data']['access']
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+        cls._admin_token = response.data['data']['access']
+
+    def setUp(self):
+        self.client = APIClient()
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self._admin_token}')
 
     def test_get_companies(self):
         """GET /api/companies/ debe listar compañías activas."""
@@ -47,7 +51,7 @@ class CompanyEndpointTests(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.data.get('results', response.data)
+        data = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
         self.assertTrue(any(item['id'] == self.company.id for item in data))
 
     def test_create_company_valida(self):

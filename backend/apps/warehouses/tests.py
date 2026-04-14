@@ -1,8 +1,4 @@
-"""
-Tests para la app Warehouses.
-Cubre creación de almacenes, permisos y validaciones de modelo.
-"""
-
+"""Tests para la app Warehouses."""
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
@@ -73,32 +69,63 @@ class WarehouseBaseTests(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    def authenticate(self, email, password):
-        login_url = reverse('auth-login')
-        response = self.client.post(
-            login_url,
+    def get_token(self, email, password):
+        """Obtiene token JWT haciendo login. Usar con moderación para evitar rate limit."""
+        client = APIClient()
+        response = client.post(
+            reverse('auth-login'),
             {'email': email, 'password': password},
             format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        token = response.data['data']['access']
+        return response.data['data']['access']
+
+    def authenticate(self, email, password):
+        token = self.get_token(email, password)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
 
 
 class WarehouseEndpointTests(WarehouseBaseTests):
     """Pruebas de los endpoints de almacenes."""
 
+    # Token compartido para todos los tests de esta clase, evita múltiples logins
+    _company_token = None
+    _other_token = None
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Login único por clase para no disparar rate limit
+        client = APIClient()
+        response = client.post(
+            reverse('auth-login'),
+            {'email': 'company@test.com', 'password': 'company123'},
+            format='json'
+        )
+        cls._company_token = response.data['data']['access']
+
+        response = client.post(
+            reverse('auth-login'),
+            {'email': 'other@test.com', 'password': 'other123'},
+            format='json'
+        )
+        cls._other_token = response.data['data']['access']
+
     def setUp(self):
         super().setUp()
-        self.authenticate(self.company_user.email, 'company123')
+        # Por defecto autenticado como company_user
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self._company_token}')
+
+    def authenticate_as_other(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self._other_token}')
 
     def test_get_warehouses(self):
         """GET /api/warehouses/ debe listar solo almacenes activos de la empresa."""
         url = reverse('warehouse-list')
         response = self.client.get(url)
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.data.get('results', response.data)
+        # Soporta tanto respuesta paginada como lista directa
+        data = response.data.get('results', response.data) if isinstance(response.data, dict) else response.data
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]['name'], self.active_warehouse.name)
 
@@ -114,32 +141,30 @@ class WarehouseEndpointTests(WarehouseBaseTests):
             'latitude': 19.4326,
             'longitude': -99.1332
         }
-
         response = self.client.post(url, data, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(Warehouse.objects.filter(name='Nuevo Almacén', company=self.company).exists())
+        self.assertTrue(
+            Warehouse.objects.filter(name='Nuevo Almacén', company=self.company).exists()
+        )
 
     def test_patch_warehouse_parcial(self):
         """PATCH /api/warehouses/{id}/ debe actualizar un almacén existente."""
         url = reverse('warehouse-detail', kwargs={'pk': self.active_warehouse.id})
         response = self.client.patch(url, {'name': 'Almacén Central Editado'}, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.active_warehouse.refresh_from_db()
         self.assertEqual(self.active_warehouse.name, 'Almacén Central Editado')
 
     def test_usuario_sin_permisos_no_puede_editar_almacen_ajeno(self):
         """PATCH /api/warehouses/{id}/ de otra compañía debe devolver 404."""
-        self.authenticate(self.other_company_user.email, 'other123')
+        self.authenticate_as_other()
         url = reverse('warehouse-detail', kwargs={'pk': self.active_warehouse.id})
         response = self.client.patch(url, {'name': 'Intento Editar'}, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_usuario_no_autenticado_no_puede_crear_almacen(self):
         """POST /api/warehouses/ sin autenticación debe devolver 401."""
-        self.client = APIClient()
+        self.client.credentials()  # limpia credenciales
         url = reverse('warehouse-list')
         response = self.client.post(url, {
             'name': 'Sin Auth',
@@ -150,7 +175,6 @@ class WarehouseEndpointTests(WarehouseBaseTests):
             'latitude': 19.4326,
             'longitude': -99.1332
         }, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -176,7 +200,6 @@ class WarehouseModelTests(TestCase):
             latitude=20.6597,
             longitude=-103.3496
         )
-
         with self.assertRaises(ValidationError):
             warehouse.full_clean()
 
@@ -192,7 +215,6 @@ class WarehouseModelTests(TestCase):
             longitude=None,
             company=self.company
         )
-
         with self.assertRaises(ValidationError):
             warehouse.clean()
 
@@ -208,6 +230,5 @@ class WarehouseModelTests(TestCase):
             longitude=None,
             company=self.company
         )
-
         with self.assertRaises(ValidationError):
             warehouse.clean()
