@@ -1,3 +1,9 @@
+import axios, {
+  AxiosHeaders,
+  type AxiosRequestConfig,
+  type Method,
+} from "axios";
+
 const defaultBaseUrl = "http://localhost:8000";
 
 const envBaseUrl =
@@ -10,21 +16,89 @@ export const API_BASE_URL = normalizedBaseUrl.endsWith("/api")
   ? normalizedBaseUrl.slice(0, -4)
   : normalizedBaseUrl;
 
+const ENABLE_PAYLOAD_ENCRYPTION =
+  process.env.NEXT_PUBLIC_ENABLE_PAYLOAD_ENCRYPTION === "true";
+
+function normalizeHeaders(headers?: HeadersInit): Record<string, string> {
+  if (!headers) {
+    return {};
+  }
+
+  const normalized = new Headers(headers);
+  return Object.fromEntries(normalized.entries());
+}
+
+function encodePayload(data: unknown): string {
+  const json = JSON.stringify(data);
+  if (typeof window !== "undefined" && typeof window.btoa === "function") {
+    return window.btoa(unescape(encodeURIComponent(json)));
+  }
+
+  return Buffer.from(json, "utf-8").toString("base64");
+}
+
+const httpClient = axios.create({
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+httpClient.interceptors.request.use((config) => {
+  const method = config.method?.toUpperCase();
+  const shouldEncrypt =
+    ENABLE_PAYLOAD_ENCRYPTION &&
+    method !== "GET" &&
+    method !== "HEAD" &&
+    method !== "OPTIONS" &&
+    config.data !== undefined;
+
+  if (!shouldEncrypt) {
+    return config;
+  }
+
+  config.data = {
+    payload: encodePayload(config.data),
+  };
+
+  const headers = AxiosHeaders.from(config.headers);
+  headers.set("X-Payload-Encrypted", "true");
+  config.headers = headers;
+
+  return config;
+});
+
 export async function requestJson<T>(
   input: string,
   options: RequestInit,
 ): Promise<T> {
-  const response = await fetch(input, {
-    ...options,
+  const axiosConfig: AxiosRequestConfig = {
+    url: input,
+    method: (options.method as Method | undefined) || "GET",
     headers: {
       "Content-Type": "application/json",
-      ...(options.headers || {}),
+      ...normalizeHeaders(options.headers),
     },
-  });
+  };
 
-  const data = (await response.json()) as T;
-  if (!response.ok) {
-    throw data;
+  if (options.body) {
+    if (typeof options.body === "string") {
+      try {
+        axiosConfig.data = JSON.parse(options.body);
+      } catch {
+        axiosConfig.data = options.body;
+      }
+    } else {
+      axiosConfig.data = options.body;
+    }
   }
-  return data;
+
+  try {
+    const response = await httpClient.request<T>(axiosConfig);
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response?.data) {
+      throw error.response.data;
+    }
+    throw error;
+  }
 }

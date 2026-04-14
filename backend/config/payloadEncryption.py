@@ -1,0 +1,73 @@
+import base64
+import io
+import json
+
+from django.http import JsonResponse
+
+
+class PayloadEncryptionMiddleware:
+    """Decode encrypted JSON payloads sent by frontend Axios interceptor."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if self._should_decode(request):
+            error_response = self._decode_request_payload(request)
+            if error_response is not None:
+                return error_response
+
+        return self.get_response(request)
+
+    def _should_decode(self, request):
+        if request.method in {"GET", "HEAD", "OPTIONS"}:
+            return False
+
+        is_encrypted = request.headers.get("X-Payload-Encrypted", "").lower() == "true"
+        content_type = request.headers.get("Content-Type", "")
+
+        return is_encrypted and "application/json" in content_type
+
+    def _decode_request_payload(self, request):
+        try:
+            body_data = json.loads(request.body.decode("utf-8") or "{}")
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Invalid JSON body.",
+                    "errors": {"detail": "Malformed encrypted request payload."},
+                },
+                status=400,
+            )
+
+        payload = body_data.get("payload")
+        if not isinstance(payload, str):
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Invalid encrypted payload.",
+                    "errors": {"detail": "Encrypted payload must be a base64 string."},
+                },
+                status=400,
+            )
+
+        try:
+            decoded_bytes = base64.b64decode(payload)
+            decoded_data = json.loads(decoded_bytes.decode("utf-8"))
+        except (ValueError, UnicodeDecodeError, json.JSONDecodeError):
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Unable to decrypt payload.",
+                    "errors": {"detail": "Encrypted payload is invalid."},
+                },
+                status=400,
+            )
+
+        normalized_body = json.dumps(decoded_data).encode("utf-8")
+        request._body = normalized_body
+        request._stream = io.BytesIO(normalized_body)
+        request.META["CONTENT_LENGTH"] = str(len(normalized_body))
+
+        return None
