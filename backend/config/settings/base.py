@@ -232,3 +232,10 @@ LOGGING = {
     "handlers": {"loguru": {"class": "config.interceptor.InterceptorHandler"}},
     "root": {"handlers": ["loguru"], "level": "DEBUG"},
 }
+
+# Configuración para el servicio de correo de Google Cloud
+EMAIL_BACKEND = 'utils.gmail_backend.GmailBackend'
+DEFAULT_FROM_EMAIL = os.getenv('GOOGLE_EMAIL_USER', 'noreply@example.com')
+
+# Configuración de URL del frontend
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
