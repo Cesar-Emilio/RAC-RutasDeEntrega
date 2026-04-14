@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'rest_framework_simplejwt.token_blacklist',
+    'django_q',
 
     'apps.administration',
     'apps.authorization',
@@ -231,4 +232,14 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {"loguru": {"class": "config.interceptor.InterceptorHandler"}},
     "root": {"handlers": ["loguru"], "level": "DEBUG"},
+}
+
+Q_CLUSTER = {
+    'name': 'myproject',
+    'workers': 4,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default'
 }

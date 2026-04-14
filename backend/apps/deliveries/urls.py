@@ -6,10 +6,10 @@ URLs de la aplicación de solución de una ruta
 /{id} - Ver detalles de una ruta completa
 """
 from django.urls import path
-from .views import RouteListCreateView, RouteDetailView
+from .views import RouteListView, RouteCreateView, RouteDetailView
 
 urlpatterns = [
-    path('', RouteListCreateView.as_view(), name='routes-list'),
-    path('create/', RouteListCreateView.as_view(), name='route-create'),
+    path('', RouteListView.as_view(), name='routes-list'),
+    path('create/', RouteCreateView.as_view(), name='route-create'),
     path('<int:id>/', RouteDetailView.as_view(), name='route-details')
 ]

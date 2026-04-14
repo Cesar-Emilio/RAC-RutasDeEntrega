@@ -33,6 +33,7 @@ urlpatterns = [
     # Rutas API
     path('api/', include(router.urls)),
     path('api/auth/', include('apps.authorization.urls')),
+    path('api/deliveries/', include('apps.deliveries.urls')),
     path('api/users/register/', RegisterView.as_view(), name='register'),
     path('api/dashboard/summary/', DashboardSummaryView.as_view(), name='dashboard-summary'),
 
