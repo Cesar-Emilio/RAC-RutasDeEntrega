@@ -19,8 +19,8 @@ from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from apps.administration.views import DashboardSummaryView
-from apps.users.views import RegisterView
-from apps.companies.views import CompanyViewSet
+from apps.users.views import RegisterView, CompleteRegisterView
+from apps.companies.views import CompanyViewSet, InviteCompanyView
 from apps.warehouses.views import WarehouseViewSet
 
 router = DefaultRouter()
@@ -30,11 +30,13 @@ router.register(r'warehouses', WarehouseViewSet, basename='warehouse')
 urlpatterns = [
     path('admin/', admin.site.urls),
 
+    path('api/companies/invite/', InviteCompanyView.as_view(), name='company-invite'),
+
     # Rutas API
     path('api/', include(router.urls)),
     path('api/auth/', include('apps.authorization.urls')),
-    path('api/deliveries/', include('apps.deliveries.urls')),
     path('api/users/register/', RegisterView.as_view(), name='register'),
+    path('api/register/<str:token>/', CompleteRegisterView.as_view(), name='complete-register'),
     path('api/dashboard/summary/', DashboardSummaryView.as_view(), name='dashboard-summary'),
 
     # Swagger/OpenAPI

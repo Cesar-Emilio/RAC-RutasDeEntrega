@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'rest_framework_simplejwt.token_blacklist',
-    'django_q',
 
     'apps.administration',
     'apps.authorization',
@@ -57,7 +56,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'config.payloadEncryption.PayloadEncryptionMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -235,12 +233,9 @@ LOGGING = {
     "root": {"handlers": ["loguru"], "level": "DEBUG"},
 }
 
-Q_CLUSTER = {
-    'name': 'myproject',
-    'workers': 4,
-    'timeout': 90,
-    'retry': 120,
-    'queue_limit': 50,
-    'bulk': 10,
-    'orm': 'default'
-}
+# Configuración para el servicio de correo de Google Cloud
+EMAIL_BACKEND = 'utils.gmail_backend.GmailBackend'
+DEFAULT_FROM_EMAIL = os.getenv('GOOGLE_EMAIL_USER', 'noreply@example.com')
+
+# Configuración de URL del frontend
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
