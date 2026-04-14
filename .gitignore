@@ -18,6 +18,7 @@ settings_local.py
 .cache/
 node_modules/
 npm-debug.log*
+pnpm-lock.yaml
 build/
 dist/
 .vscode/
