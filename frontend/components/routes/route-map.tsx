@@ -12,8 +12,6 @@ interface RouteMapProps {
 export function RouteMap({ warehouseName, details }: RouteMapProps) {
   const [route, setRoute] = useState<any>(null);
 
-  console.log("api det", details)
-
   useEffect(() => {
     async function load() {
       try {
@@ -23,9 +21,7 @@ export function RouteMap({ warehouseName, details }: RouteMapProps) {
           Number(d.delivery_point.longitude),
           Number(d.delivery_point.latitude),
         ]);
-        console.log("coords:",coords)
         const data = await sendCoordinates(coords);
-        console.log("Respuesta api: ", data)
         setRoute(data);
       } catch (err) {
         console.error("Error fetching route", err);

@@ -50,7 +50,5 @@ export async function sendCoordinates(coords: any) {
   );
 
   const data = await res.json();
-
-  console.log("Response de la api", data);
   return data;
 }
