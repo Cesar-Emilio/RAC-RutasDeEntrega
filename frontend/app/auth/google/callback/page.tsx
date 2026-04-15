@@ -17,8 +17,8 @@ export default function GoogleCallbackPage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0f1217] text-white">
-      <div className="rounded-2xl border border-[#1f2937] bg-[#111827] px-6 py-4 text-sm text-[#e5e7eb]">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--color-background)] text-white">
+      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-4 text-sm text-[var(--color-text-primary)]">
         Procesando inicio de sesion con Google...
       </div>
     </div>

@@ -18,7 +18,7 @@ export function ContentShell({
   children,
 }: ContentShellProps) {
   return (
-    <div className="min-h-screen bg-[#0f1217] text-white">
+    <div className="min-h-screen bg-[var(--color-background)] text-white">
       <div className="flex min-h-screen w-full">
         <Sidebar role={role} />
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">

@@ -29,14 +29,14 @@ export function StatusFilter({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-8 appearance-none rounded-lg border border-[#2a2f38] bg-[#0f1115] py-1 pl-3 pr-9 text-sm text-[#6b7280] outline-none transition focus:border-[#f97316]"
-        style={{ color: "#6b7280" }}
+        className="h-8 appearance-none rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] py-1 pl-3 pr-9 text-sm text-[var(--color-text-muted)] outline-none transition focus:border-[var(--color-primary-500)]"
+        style={{ color: "var(--color-text-muted)" }}
       >
         {options.map((option) => (
           <option
             key={option.value}
             value={option.value}
-            style={{ color: "#6b7280", backgroundColor: "#0f1115" }}
+            style={{ color: "var(--color-text-muted)", backgroundColor: "var(--color-background)" }}
           >
             {option.label}
           </option>
@@ -45,7 +45,7 @@ export function StatusFilter({
 
       <ChevronDown
         size={14}
-        className="pointer-events-none absolute right-3 text-[#9ca3af]"
+        className="pointer-events-none absolute right-3 text-[var(--color-text-muted)]"
       />
     </label>
   );

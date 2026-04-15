@@ -18,8 +18,8 @@ export default function LogoutPage() {
   }, [logout, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f5f1ea]">
-      <div className="rounded-3xl border border-[#e6dfd4] bg-white px-6 py-4 text-sm font-medium text-[#3b342f]">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--color-background)]">
+      <div className="rounded-3xl border border-[var(--color-border)] bg-white px-6 py-4 text-sm font-medium text-[var(--color-text-secondary)]">
         Signing out...
       </div>
     </div>

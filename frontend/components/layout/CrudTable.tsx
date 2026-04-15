@@ -143,26 +143,26 @@ export function CrudTable<T extends { id: string | number }>({
 
   return (
     <section className="min-w-0">
-      <h2 className="mb-1 text-base font-semibold md:text-lg" style={{ color: "#BBBDC0" }}>
+      <h2 className="mb-1 text-base font-semibold md:text-lg" style={{ color: "var(--color-text-secondary)" }}>
         {title}
       </h2>
-      <p className="mb-4 text-sm" style={{ color: "#6b7280" }}>
+      <p className="mb-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
         {isLoading ? "Cargando informacion..." : description}
       </p>
 
       <div
         className="overflow-hidden rounded-xl border"
-        style={{ backgroundColor: "#161A20", borderColor: "#2a2f38" }}
+        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-divider)" }}
       >
         <div className="overflow-x-auto">
           <table className="min-w-200 w-full">
             <thead>
-              <tr style={{ backgroundColor: "#1a1f26" }}>
+              <tr style={{ backgroundColor: "var(--color-surface)" }}>
                 {columns.map((column) => (
                   <th
                     key={String(column.key)}
                     className={`px-3 py-2 text-[11px] font-semibold uppercase tracking-wide ${getAlignmentClass(column.align)}`}
-                    style={{ color: "#6b7280" }}
+                    style={{ color: "var(--color-text-muted)" }}
                   >
                     {column.label}
                   </th>
@@ -170,7 +170,7 @@ export function CrudTable<T extends { id: string | number }>({
                 {hasActions ? (
                   <th
                     className="px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wide"
-                    style={{ color: "#6b7280" }}
+                    style={{ color: "var(--color-text-muted)" }}
                   >
                     Acciones
                   </th>
@@ -187,8 +187,8 @@ export function CrudTable<T extends { id: string | number }>({
                   return (
                     <tr
                       key={String(item.id)}
-                      className="border-t transition-colors hover:bg-[#1a1f26]"
-                      style={{ borderColor: "#2a2f38" }}
+                      className="border-t transition-colors hover:bg-[var(--color-surface)]"
+                      style={{ borderColor: "var(--color-divider)" }}
                     >
                       {columns.map((column) => {
                         const rawValue = item[column.key as keyof T];
@@ -205,7 +205,7 @@ export function CrudTable<T extends { id: string | number }>({
                                 style={{
                                   borderColor: isActive ? "rgba(34,197,94,0.35)" : "rgba(239,68,68,0.35)",
                                   backgroundColor: isActive ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
-                                  color: isActive ? "#22c55e" : "#f87171",
+                                  color: isActive ? "var(--color-success)" : "var(--color-error)",
                                 }}
                               >
                                 {isActive ? "Activo" : "Inactivo"}
@@ -213,7 +213,7 @@ export function CrudTable<T extends { id: string | number }>({
                             ) : column.render ? (
                               column.render(item)
                             ) : (
-                              <span className="text-xs" style={{ color: "#BBBDC0" }}>
+                              <span className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
                                 {String(rawValue ?? "-")}
                               </span>
                             )}
@@ -229,7 +229,7 @@ export function CrudTable<T extends { id: string | number }>({
                                 type="button"
                                 onClick={() => openEditModal(item)}
                                 disabled={actionDisabled}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[#1f2937] text-[#e5e7eb] transition hover:bg-[#111827] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[var(--color-border)] text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)] disabled:cursor-not-allowed disabled:opacity-60"
                                 aria-label="Editar"
                                 title="Editar"
                               >
@@ -245,7 +245,7 @@ export function CrudTable<T extends { id: string | number }>({
                                 className="inline-flex h-7 w-7 items-center justify-center rounded-md border transition disabled:cursor-not-allowed disabled:opacity-60"
                                 style={{
                                   borderColor: isActive ? "rgba(239,68,68,0.35)" : "rgba(34,197,94,0.35)",
-                                  color: isActive ? "#f87171" : "#22c55e",
+                                  color: isActive ? "var(--color-error)" : "var(--color-success)",
                                 }}
                                 aria-label={isActive ? "Desactivar" : "Activar"}
                                 title={isActive ? "Desactivar" : "Activar"}
@@ -262,7 +262,7 @@ export function CrudTable<T extends { id: string | number }>({
               ) : (
                 <tr>
                   <td
-                    className="px-4 py-8 text-center text-sm text-[#6b7280]"
+                    className="px-4 py-8 text-center text-sm text-[var(--color-text-muted)]"
                     colSpan={columns.length + (hasActions ? 1 : 0)}
                   >
                     {isLoading ? "Cargando registros..." : emptyMessage}

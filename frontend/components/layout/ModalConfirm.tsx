@@ -40,7 +40,7 @@ export function ModalConfirm({
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="rounded-lg border border-[#2a2f38] px-4 py-1 text-sm font-medium text-[#e5e7eb] transition hover:bg-[#111827] disabled:cursor-not-allowed disabled:opacity-70"
+            className="rounded-lg border border-[var(--color-divider)] px-4 py-1 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {cancelLabel}
           </button>
@@ -48,7 +48,7 @@ export function ModalConfirm({
             type="button"
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="rounded-lg bg-[#f97316] px-4 py-1 text-sm font-semibold text-[#0f1115] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+            className="rounded-lg bg-[var(--color-primary-500)] px-4 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSubmitting ? "Procesando..." : confirmLabel}
           </button>
