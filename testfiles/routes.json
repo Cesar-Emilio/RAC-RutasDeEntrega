@@ -1,0 +1,27 @@
+[
+  {
+    "address": "Av. Reforma 123, Ciudad de México",
+    "latitude": 19.432608,
+    "longitude": -99.133209
+  },
+  {
+    "address": "Calle 5 de Mayo 456, Puebla",
+    "latitude": 19.041440,
+    "longitude": -98.206272
+  },
+  {
+    "address": "Av. Universidad 789, Guadalajara",
+    "latitude": 20.659698,
+    "longitude": -103.349609
+  },
+  {
+    "address": "Blvd. Díaz Ordaz 321, Monterrey",
+    "latitude": 25.686614,
+    "longitude": -100.316113
+  },
+  {
+    "address": "Calle 60 #123, Mérida",
+    "latitude": 20.967370,
+    "longitude": -89.592586
+  }
+]

@@ -97,11 +97,43 @@ class RouteCreateView(generics.CreateAPIView):
         Inyecta la compañía del usuario autenticado, ignorando cualquier
         valor que el cliente haya enviado en el campo company.
         """
-        serializer.save(company=self.request.user.company)
+        file = self.request.FILES.get("file")
+        delivery_count = self.count_deliveries(file, serializer.validated_data["file_type"])
+ 
+        serializer.save(
+            company=self.request.user.company,
+            delivery_count=delivery_count,
+        )
+    
+    def count_deliveries(self, file, file_type: str) -> int:
+        """
+        Cuenta las entregas del archivo para poblar delivery_count.
+        Se hace aquí para no duplicar la lógica de parseo completa
+        antes de que el worker procese el archivo.
+        """
+        import csv, json, io
+ 
+        file.seek(0)
+        content = file.read()
+        file.seek(0)
+ 
+        try:
+            if file_type == "csv":
+                reader = csv.DictReader(io.StringIO(content.decode("utf-8-sig")))
+                return sum(1 for _ in reader)
+            elif file_type == "json":
+                data = json.loads(content.decode("utf-8"))
+                if isinstance(data, dict):
+                    data = data.get("deliveries", [])
+                return len(data) if isinstance(data, list) else 0
+        except Exception:
+            return 0
  
     def create(self, request, *args, **kwargs):
+    
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        
         self.perform_create(serializer)
         route = serializer.instance
  

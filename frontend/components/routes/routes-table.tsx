@@ -1,18 +1,11 @@
 "use client";
 
+import { RouteTableItem } from "@/types/routes-types";
 import { MapPin } from "lucide-react";
 
-export interface RouteData {
-  id: string;
-  fecha: string;
-  almacen: string;
-  paquetes: number;
-  archivo: string;
-}
-
 interface RoutesTableProps {
-  data: RouteData[];
-  onViewRoute: (route: RouteData) => void;
+  data: RouteTableItem[];
+  onViewRoute: (route: RouteTableItem) => void;
 }
 
 export function RoutesTable({ data, onViewRoute }: RoutesTableProps) {
@@ -52,21 +45,21 @@ export function RoutesTable({ data, onViewRoute }: RoutesTableProps) {
                   {route.id}
                 </td>
                 <td className="px-4 py-4 text-sm text-text-primary">
-                  {route.fecha}
+                  {route.created_at}
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-text-light" />
                     <span className="text-sm text-text-primary">
-                      {route.almacen}
+                      {route.warehouse_name}
                     </span>
                   </div>
                 </td>
                 <td className="px-4 py-4 text-center text-sm text-text-primary">
-                  {route.paquetes}
+                  {route.delivery_count}
                 </td>
                 <td className="px-4 py-4 text-sm text-text-secondary truncate max-w-[180px]">
-                  {route.archivo}
+                  {route.file_name}
                 </td>
                 <td className="px-4 py-4 text-center">
                   <button
