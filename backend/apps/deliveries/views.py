@@ -50,7 +50,7 @@ class CompanyScopedMixin:
     ],
     responses={200: RouteListSerializer(many=True)},
 )
-class RouteListView(generics.ListAPIView):
+class RouteListView(CompanyScopedMixin, generics.ListAPIView):
     """
     Devuelve la lista resumida de todas las rutas accesibles para el usuario.
     """
@@ -136,7 +136,7 @@ class RouteCreateView(generics.CreateAPIView):
         404: OpenApiResponse(description="Ruta no encontrada."),
     },
 )
-class RouteDetailView(generics.RetrieveAPIView):
+class RouteDetailView(CompanyScopedMixin, generics.RetrieveAPIView):
     """
     Devuelve el detalle completo de una ruta con su solución ordenada.
  

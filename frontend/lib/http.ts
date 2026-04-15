@@ -1,8 +1,10 @@
+import { ApiResponse } from "@/types/api-types";
 import axios, {
   AxiosHeaders,
   type AxiosRequestConfig,
   type Method,
 } from "axios";
+import { authStorage } from "./auth-storage";
 
 const defaultBaseUrl = "http://localhost:8000";
 
@@ -45,6 +47,15 @@ const httpClient = axios.create({
 
 httpClient.interceptors.request.use((config) => {
   const method = config.method?.toUpperCase();
+
+  const token = authStorage.getTokens()?.access || null;
+
+  if (token) {
+    const headers = AxiosHeaders.from(config.headers);
+    headers.set("Authorization", `Bearer ${token}`);
+    config.headers = headers;
+  }
+
   const shouldEncrypt =
     ENABLE_PAYLOAD_ENCRYPTION &&
     method !== "GET" &&
@@ -93,9 +104,18 @@ export async function requestJson<T>(
   }
 
   try {
-    const response = await httpClient.request<T>(axiosConfig);
-    return response.data;
+    const response = await httpClient.request<ApiResponse<T>>(axiosConfig);
+    console.log(response);
+
+    const payload = response.data;
+
+    if (!payload.success) {
+      throw payload;
+    }
+
+    return payload.data;  
   } catch (error: unknown) {
+    
     if (axios.isAxiosError(error) && error.response?.data) {
       throw error.response.data;
     }

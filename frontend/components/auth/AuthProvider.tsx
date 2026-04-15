@@ -45,32 +45,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       try {
         const persist = authStorage.isPersistent();
-        const meResponse = await meRequest(storedTokens.access);
-        if (meResponse.success && meResponse.data) {
-          authStorage.setUser(meResponse.data.user, persist);
-          setUser(meResponse.data.user);
-          setStatus("authenticated");
-          return;
-        }
+        const me = await meRequest(storedTokens.access);
+
+        authStorage.setUser(me.user, persist);
+        setUser(me.user);
+        setStatus("authenticated");
+        return;
       } catch {
         try {
           const persist = authStorage.isPersistent();
           const refreshed = await refreshRequest(storedTokens.refresh);
-          if (refreshed.success && refreshed.data) {
-            const nextTokens = normalizeTokens(
-              refreshed.data.access,
-              storedTokens.refresh,
-            );
-            authStorage.setTokens(nextTokens, persist);
-            setTokens(nextTokens);
-            const meResponse = await meRequest(nextTokens.access);
-            if (meResponse.success && meResponse.data) {
-              authStorage.setUser(meResponse.data.user, persist);
-              setUser(meResponse.data.user);
-              setStatus("authenticated");
-              return;
-            }
-          }
+          
+          const nextTokens = normalizeTokens(
+            refreshed.access,
+            storedTokens.refresh,
+          );
+
+          authStorage.setTokens(nextTokens, persist);
+          setTokens(nextTokens);
+          
+          const me = await meRequest(nextTokens.access);
+          authStorage.setUser(me.user, persist);
+          setUser(me.user);
+          setStatus("authenticated");
+          return;
         } catch {
           authStorage.clearAll();
         }
@@ -87,18 +85,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string, remember: boolean) => {
     const response = await loginRequest(email, password);
-    if (!response.success || !response.data) {
-      throw response;
-    }
 
     const nextTokens = normalizeTokens(
-      response.data.access,
-      response.data.refresh,
+      response.access,
+      response.refresh,
     );
     authStorage.setTokens(nextTokens, remember);
-    authStorage.setUser(response.data.user, remember);
+    authStorage.setUser(response.user, remember);
     setTokens(nextTokens);
-    setUser(response.data.user);
+    setUser(response.user);
     setStatus("authenticated");
   }, []);
 
