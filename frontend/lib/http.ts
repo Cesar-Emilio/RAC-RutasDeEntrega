@@ -39,11 +39,7 @@ function encodePayload(data: unknown): string {
   return Buffer.from(json, "utf-8").toString("base64");
 }
 
-const httpClient = axios.create({
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+const httpClient = axios.create();
 
 httpClient.interceptors.request.use((config) => {
   const method = config.method?.toUpperCase();
@@ -56,8 +52,16 @@ httpClient.interceptors.request.use((config) => {
     config.headers = headers;
   }
 
+  const isFormData = config.data instanceof FormData;
+
+
+  if (isFormData) {
+    return config;
+  }
+
   const shouldEncrypt =
     ENABLE_PAYLOAD_ENCRYPTION &&
+    !isFormData &&
     method !== "GET" &&
     method !== "HEAD" &&
     method !== "OPTIONS" &&
@@ -82,12 +86,16 @@ export async function requestJson<T>(
   input: string,
   options: RequestInit,
 ): Promise<T> {
+  const isFormData = options.body instanceof FormData;
+
   const axiosConfig: AxiosRequestConfig = {
     url: input,
     method: (options.method as Method | undefined) || "GET",
     headers: {
-      "Content-Type": "application/json",
-      ...normalizeHeaders(options.headers),
+      ...(isFormData ? {} : {
+        "Content-Type": "application/json",
+        ...normalizeHeaders(options.headers),
+      }),
     },
   };
 
@@ -105,7 +113,6 @@ export async function requestJson<T>(
 
   try {
     const response = await httpClient.request<ApiResponse<T>>(axiosConfig);
-    console.log(response);
 
     const payload = response.data;
 

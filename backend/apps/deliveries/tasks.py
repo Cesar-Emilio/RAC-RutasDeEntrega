@@ -28,7 +28,7 @@ def enqueue_process_route(route_id: int) -> str:
     del estado de la tarea
     """
     task_id = async_task(
-        "deliveries.tasks.task_process_route",
+        "apps.deliveries.tasks.task_process_route",
         route_id,
         task_name=f"process_route_{route_id}",
     )

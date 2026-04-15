@@ -6,6 +6,7 @@ class IsCompanyUser(BasePermission):
     (user.company_id no es None).
     """
     message = "Se requiere una cuenta de empresa para realizar esta acción."
+    
  
     def has_permission(self, request, view):
         return bool(

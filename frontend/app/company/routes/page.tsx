@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 import { ContentShell } from "@/components/layout/ContentShell";
 import { Filters } from "@/components/routes/filters";
-import { RoutesTable, type RouteData } from "@/components/routes/routes-table";
+import { RoutesTable } from "@/components/routes/routes-table";
 import { useRouter } from "next/navigation";
-import { authStorage } from "@/lib/auth-storage";
 import { getDeliveriesRequest } from "@/lib/routes-api";
+import { RouteTableItem } from "@/types/routes-types";
 
 export default function CompanyRoutesPage() {
   const router = useRouter();
 
-  const [routes, setRoutes] = useState<RouteData[]>([]);
+  const [routes, setRoutes] = useState<RouteTableItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,13 +24,7 @@ export default function CompanyRoutesPage() {
         setLoading(true);
         setError(null);
 
-        const token = authStorage.getTokens()?.access
-        if(!token) {
-          throw new Error("No auth")
-        }
-
-        const data = await getDeliveriesRequest(token);
-
+        const data = await getDeliveriesRequest();
         setRoutes(data);
       } catch (err:any) {
         setError(err?.message || "Error al cargar las rutas")
@@ -45,9 +39,9 @@ export default function CompanyRoutesPage() {
   const filteredRoutes = routes.filter((route) => {
     const matchesSearch =
       searchValue === "" ||
-      route.almacen.toLowerCase().includes(searchValue.toLowerCase()) ||
-      route.id.toLowerCase().includes(searchValue.toLowerCase()) ||
-      route.archivo.toLowerCase().includes(searchValue.toLowerCase());
+      route.warehouse_name.toLowerCase().includes(searchValue.toLowerCase()) ||
+      route.id === Number(searchValue) ||
+      route.file_name.toLowerCase().includes(searchValue.toLowerCase());
 
     const matchesStatus = statusFilter === "all" || true;
 
@@ -58,8 +52,8 @@ export default function CompanyRoutesPage() {
     router.push("/company/new-route")
   };
 
-  const handleViewRoute = (route: RouteData) => {
-    router.push(`/company/${route.id}`)
+  const handleViewRoute = (route: RouteTableItem) => {
+    router.push(`/company/routes/${route.id}`)
   };
 
   return (

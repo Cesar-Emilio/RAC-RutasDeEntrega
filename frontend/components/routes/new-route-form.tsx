@@ -6,6 +6,7 @@ import { Warehouse } from "@/types/warehouses-types";
 import { getWarehousesRequest } from "@/lib/warehouses-api";
 import { createRouteRequest } from "@/lib/routes-api";
 import { CreateRoutePayload } from "@/types/routes-types";
+import { useRouter } from "next/navigation";
 
 interface FormState {
   warehouse: number | null;
@@ -14,6 +15,8 @@ interface FormState {
 }
 
 export function NewRouteForm() {
+  const router = useRouter();
+
   const [formState, setFormState] = useState<FormState>({
     warehouse: null,
     file: null,
@@ -33,12 +36,9 @@ export function NewRouteForm() {
         setLoadingWarehouses(true);
         setErrorWarehouses(null);
 
-        console.log("Almacenes: ");
         const data = await getWarehousesRequest();
-        console.log("Almacenes: ", data);
         setWarehouses(data);
       } catch (err: any) {
-        console.log(err);
         setErrorWarehouses(err || "Error al cargar almacenes");
       } finally {
         setLoadingWarehouses(false);
@@ -93,7 +93,6 @@ export function NewRouteForm() {
   };
 
   const handleSubmit = async () => {
-    console.log("Calculating route with:", formState);
     if (!formState.warehouse) {
         //TODO: Validación de formulario
         alert("Selecciona un almacén");
@@ -117,6 +116,7 @@ export function NewRouteForm() {
 
     try {
         const data = await createRouteRequest(payload);
+        router.push(`/company/routes/${data.id}`)
     } catch (err: any) {
         console.log(err)
     }

@@ -78,13 +78,13 @@ def parse_input_file(route: Route) -> list[RawRow]:
 
     # Obtiene solo el archivo y lo procesa según su tipo
     if input_file.file_type == FileType.CSV:
-        return _parse_csv(content)
+        return parse_csv(content)
     elif input_file.file_type == FileType.JSON:
-        return _parse_json(content)
+        return parse_json(content)
     else:
         raise RouteProcessingError(f"Tipo de archivo no soportado: {input_file.file_type}")
 
-def _parse_csv(content: bytes) -> list[RawRow]:
+def parse_csv(content: bytes) -> list[RawRow]:
     text = content.decode("utf-8-sig")
     reader = csv.DictReader(io.StringIO(text))
 
@@ -106,7 +106,7 @@ def _parse_csv(content: bytes) -> list[RawRow]:
         raise RouteProcessingError("El CSV no contiene filas de datos.")
     return rows
 
-def _parse_json(content: bytes) -> list[RawRow]:
+def parse_json(content: bytes) -> list[RawRow]:
     try:
         data = json.loads(content.decode("utf-8"))
     except json.JSONDecodeError as exc:
@@ -143,7 +143,7 @@ def resolve_coordinates(rows: list[RawRow]) -> list[ResolvedRow]:
     Garantiza que todas las filas tengan lat/lng.
 
     - Si la fila ya tiene coordenadas -> se usa directamente.
-    - Si le faltan -> se llama a _geocode_address().
+    - Si le faltan -> se llama a geocode_address().
 
     Raises
     ------
@@ -159,7 +159,7 @@ def resolve_coordinates(rows: list[RawRow]) -> list[ResolvedRow]:
                 "longitude": row["longitude"],
             })
         else:
-            lat, lng = _geocode_address(row["address"])
+            lat, lng = geocode_address(row["address"])
             resolved.append({
                 "address": row["address"],
                 "latitude": lat,
@@ -167,7 +167,7 @@ def resolve_coordinates(rows: list[RawRow]) -> list[ResolvedRow]:
             })
     return resolved
 
-def _geocode_address(address: str) -> tuple[float, float]:
+def geocode_address(address: str) -> tuple[float, float]:
     """
     Convierte una dirección de texto en coordenadas (lat, lng).
 
@@ -251,7 +251,7 @@ def optimize_route(
     # 2. Duplica esa distancia (ida y vuelta)
     # 3. Devuelve la misma lista inicial, no se ocupa ordenamiento
     if len(points) == 1:
-        d = _haversine(warehouse_lat, warehouse_lng,
+        d = haversine(warehouse_lat, warehouse_lng,
                        float(points[0].latitude), float(points[0].longitude))
         return points, round(d * 2, 4)
  
@@ -263,15 +263,15 @@ def optimize_route(
  
     # Se crea una matriz [i][j] con la distancia entre cualquier par de nodos
     # Es una matriz simétrica
-    graph = _build_distance_matrix(all_coords)
+    graph = build_distance_matrix(all_coords)
  
     # Se construye un tour inicial siendo un recorrido que inicia y acaba en el almacén
-    tour = _christofides_tour(graph, n_total)
+    tour = christofides_tour(graph, n_total)
  
     # Si hay 50 paquetes o menos, aplica 2-opt
     if len(points) <= K_OPT_THRESHOLD:
         logger.debug("Aplicando 2-opt improvement (%d puntos).", len(points))
-        tour = _two_opt(tour, graph)
+        tour = two_opt(tour, graph)
     else:
         logger.debug("2-opt omitido (%d puntos > umbral %d).", len(points), K_OPT_THRESHOLD)
  
@@ -290,12 +290,12 @@ def optimize_route(
     return ordered_points, round(total_distance, 4)
 
 
-def _build_distance_matrix(coords: list[tuple[float, float]]) -> list[list[float]]:
+def build_distance_matrix(coords: list[tuple[float, float]]) -> list[list[float]]:
     """
     Matriz simétrica de distancias Haversine entre todos los nodos.
     coords[0] = warehouse, coords[1..n] = delivery points.
  
-    Punto de extensión: reemplazar _haversine() por una API de distancias
+    Punto de extensión: reemplazar haversine() por una API de distancias
     viales (OSRM, Google Distance Matrix) para rutas más realistas.
     """
     # El tamaño de la matriz será nxn, donde n es la cantidad total de puntos (considerando el almacén)
@@ -314,7 +314,7 @@ def _build_distance_matrix(coords: list[tuple[float, float]]) -> list[list[float
             # longitud del punto 1,
             # latitud del punto 2,
             # longitud del punto 2,
-            d = _haversine(coords[i][0], coords[i][1], coords[j][0], coords[j][1])
+            d = haversine(coords[i][0], coords[i][1], coords[j][0], coords[j][1])
             # Como es una matriz simétrica, se guarda en la mitad inferior
             matrix[i][j] = d
             matrix[j][i] = d
@@ -329,7 +329,7 @@ def _build_distance_matrix(coords: list[tuple[float, float]]) -> list[list[float
     
     return matrix
 
-def _christofides_tour(graph: list[list[float]], n: int) -> list[int]:
+def christofides_tour(graph: list[list[float]], n: int) -> list[int]:
     """
     Heurística de Christofides simplificada para TSP métrico.
  
@@ -348,19 +348,19 @@ def _christofides_tour(graph: list[list[float]], n: int) -> list[int]:
     # Calcula un árbol de expansión mínima
     # Un MST conecta todos los nodos con el menor costo total, sin ciclos
     # El MST no resuelve el problema, pero sirve como base para construir una ruta más corta
-    mst_adj = _prim_mst(graph, n)
+    mst_adj = prim_mst(graph, n)
 
     # Nodos de grado impar
     # En el MST algunos nodos tendrán grado impar
     # Un circuito euleriano solo existe si todos los nodos tienen grado par
     # Solo hay que "arreglar" los grados impares ('stalin sort' ahh algorithm)
-    odd_nodes = _odd_degree_nodes(mst_adj, n)
+    odd_nodes = odd_degree_nodes(mst_adj, n)
 
     # Se emparejan los nodos impares entre sí
     # Se generan aristas extra para que todos los grados se vuelvan pares
     # Es un matching greedy, no óptimo, es aproximado 
     # En teoría se pierde la garantía teórica del Christofides clásico, pero baja el tiempo de procesamiento
-    matching_edges = _greedy_matching(odd_nodes, graph)
+    matching_edges = greedy_matching(odd_nodes, graph)
  
     # Multigrafo = MST + matching
     # Se combinan las aristas del MST y las aristas del matching
@@ -375,16 +375,16 @@ def _christofides_tour(graph: list[list[float]], n: int) -> list[int]:
     # Circuito euleriano
     # Con todos los grafos pares, ya es posible encontrar un recorrido que usa cada arista
     # Aun no es la solución del TSP, pq puede repetir nodos
-    euler = _eulerian_circuit(multigraph, start=0)
+    euler = eulerian_circuit(multigraph, start=0)
 
     # Se eliminan repeticiones de nodos
     # Si el circuito euleriano pasa varias veces por el mismo nodo,
     # se conserva la primera aparición y se saltan las demás
-    tour = _shortcut(euler)
+    tour = shortcut(euler)
     return tour
  
  
-def _prim_mst(graph: list[list[float]], n: int) -> list[list[int]]:
+def prim_mst(graph: list[list[float]], n: int) -> list[list[int]]:
     """
     Este método genera el MST con algoritmo de Prim.
     Retorna lista de adyacencia (sin pesos).
@@ -419,13 +419,13 @@ def _prim_mst(graph: list[list[float]], n: int) -> list[list[int]]:
  
     return adj
 
-def _odd_degree_nodes(adj: list[list[int]], n: int) -> list[int]:
+def odd_degree_nodes(adj: list[list[int]], n: int) -> list[int]:
     """Retorna los índices de nodos con grado impar en el árbol dado."""
     # Cuenta cuantas aristas tiene cada nodo en el MST
     # Si el número es impar, ese nodo entra en la lista
     return [i for i in range(n) if len(adj[i]) % 2 != 0]
  
-def _greedy_matching(nodes: list[int], graph: list[list[float]]) -> list[tuple[int, int]]:
+def greedy_matching(nodes: list[int], graph: list[list[float]]) -> list[tuple[int, int]]:
     """
     Matching mínimo aproximado sobre un conjunto de nodos.
  
@@ -454,7 +454,7 @@ def _greedy_matching(nodes: list[int], graph: list[list[float]]) -> list[tuple[i
 
     return edges
 
-def _eulerian_circuit(adj: list[list[int]], start: int) -> list[int]:
+def eulerian_circuit(adj: list[list[int]], start: int) -> list[int]:
     """
     Circuito euleriano por el algoritmo de Hierholzer (iterativo).
     Modifica una copia de adj para no alterar el multigrafo original.
@@ -486,7 +486,7 @@ def _eulerian_circuit(adj: list[list[int]], start: int) -> list[int]:
     return circuit
  
  
-def _shortcut(euler: list[int]) -> list[int]:
+def shortcut(euler: list[int]) -> list[int]:
     """
     Convierte el circuito euleriano en tour hamiltoniano
     saltando nodos ya visitados (shortcutting).
@@ -502,7 +502,7 @@ def _shortcut(euler: list[int]) -> list[int]:
     tour.append(tour[0])  # cerrar el ciclo
     return tour
  
-def _two_opt(tour: list[int], graph: list[list[float]]) -> list[int]:
+def two_opt(tour: list[int], graph: list[list[float]]) -> list[int]:
     """
     Mejora el tour intercambiando pares de aristas (2-opt).
  
@@ -535,7 +535,7 @@ def _tour_distance(tour: list[int], graph: list[list[float]]) -> float:
     """Suma la distancia total de un tour cerrado."""
     return sum(graph[tour[i]][tour[i + 1]] for i in range(len(tour) - 1))
 
-def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Distancia entre dos puntos geográficos en kilómetros (fórmula Haversine)."""
     R = 6371.0
     dlat = math.radians(lat2 - lat1)
