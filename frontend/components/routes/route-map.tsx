@@ -1,12 +1,40 @@
 "use client";
 
+import { sendCoordinates } from "@/lib/routes-api";
 import { Maximize2, Map } from "lucide-react";
+import { useEffect, useState } from "react";
 
-interface RouteMapPlaceholderProps {
+interface RouteMapProps {
   warehouseName: string;
+  details: any;
 }
 
-export function RouteMapPlaceholder({ warehouseName }: RouteMapPlaceholderProps) {
+export function RouteMap({ warehouseName, details }: RouteMapProps) {
+  const [route, setRoute] = useState<any>(null);
+
+  console.log("api det", details)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const coords = details
+        .sort((a, b) => a.order_index - b.order_index)
+        .map((d) => [
+          Number(d.delivery_point.longitude),
+          Number(d.delivery_point.latitude),
+        ]);
+        console.log("coords:",coords)
+        const data = await sendCoordinates(coords);
+        console.log("Respuesta api: ", data)
+        setRoute(data);
+      } catch (err) {
+        console.error("Error fetching route", err);
+      }
+    }
+
+    load();
+  }, [details]);
+
   return (
     <div className="bg-surface rounded-xl border border-border overflow-hidden h-full flex flex-col">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">

@@ -34,3 +34,23 @@ export async function getRouteByIdRequest(id: string) {
     }
   );
 }
+
+export async function sendCoordinates(coords: any) {
+  
+  const res = await fetch(
+    "https://api.openrouteservice.org/v2/directions/driving-car/geojson",
+    {
+      method: "POST",
+      headers: {
+        Authorization: process.env.NEXT_PUBLIC_MAPI_BASIC_KEY!,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ coordinates: coords }),
+    }
+  );
+
+  const data = await res.json();
+
+  console.log("Response de la api", data);
+  return data;
+}
