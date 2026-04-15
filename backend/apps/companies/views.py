@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from drf_spectacular.openapi import OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from django.core.mail import BadHeaderError
 
 from .models import Company
 from .serializers import CompanySerializer
@@ -70,15 +71,24 @@ class InviteCompanyView(APIView):
         email = request.data.get('email')
         if not email:
             return Response({'detail': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Generar el token con una fecha de expiración de 24 horas
-        expiration_time = timezone.now() + timedelta(hours=24)
-        token = jwt.encode({'email': email, 'exp': expiration_time}, settings.SECRET_KEY, algorithm='HS256')
 
-        # Enviar correo con el token (la URL va al frontend donde el usuario completará el registro)
-        self.send_invitation_email(email, token)
+        try:
+            expiration_time = timezone.now() + timedelta(hours=24)
+            token = jwt.encode({'email': email, 'exp': expiration_time}, settings.SECRET_KEY, algorithm='HS256')
 
-        return Response({'detail': 'Invitation sent.'}, status=status.HTTP_200_OK)
+            self.send_invitation_email(email, token)
+
+            return Response({'detail': 'Invitation sent.'}, status=status.HTTP_200_OK)
+        except (ValueError, BadHeaderError) as exc:
+            return Response(
+                {'detail': str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        except Exception as exc:
+            return Response(
+                {'detail': 'Unable to send invitation.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     def send_invitation_email(self, email, token):
         subject = 'Invitación para completar el registro'

@@ -1,7 +1,7 @@
 "use client";
 
 import { sendCoordinates } from "@/lib/routes-api";
-import { Maximize2, Map } from "lucide-react";
+import { Loader2, Maximize2, Map } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface RouteMapProps {
@@ -11,10 +11,12 @@ interface RouteMapProps {
 
 export function RouteMap({ warehouseName, details }: RouteMapProps) {
   const [route, setRoute] = useState<any>(null);
+  const [loadingRoute, setLoadingRoute] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
+        setLoadingRoute(true);
         const coords = details
         .sort((a, b) => a.order_index - b.order_index)
         .map((d) => [
@@ -25,6 +27,8 @@ export function RouteMap({ warehouseName, details }: RouteMapProps) {
         setRoute(data);
       } catch (err) {
         console.error("Error fetching route", err);
+      } finally {
+        setLoadingRoute(false);
       }
     }
 
@@ -40,7 +44,7 @@ export function RouteMap({ warehouseName, details }: RouteMapProps) {
         </span>
       </div>
 
-      <div className="relative flex-1 min-h-[300px] lg:min-h-[400px] bg-background">
+      <div className="relative flex-1 min-h-75 lg:min-h-100 bg-background">
         <button
           onClick={() => console.log("Expand map")}
           className="absolute top-3 right-3 p-2 rounded-lg bg-surface border border-border hover:bg-border/50 transition-colors z-10"
@@ -50,15 +54,26 @@ export function RouteMap({ warehouseName, details }: RouteMapProps) {
         </button>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-border/50 flex items-center justify-center mb-4">
-            <Map className="w-8 h-8 text-text-light" />
-          </div>
-          <p className="text-text-secondary text-sm font-medium">
-            Mapa de ruta
-          </p>
-          <p className="text-text-light text-xs mt-1">
-            (próximamente)
-          </p>
+          {loadingRoute ? (
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="h-10 w-10 animate-spin text-primary-400" />
+              <p className="text-text-secondary text-sm font-medium">
+                Cargando mapa de ruta
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="w-16 h-16 rounded-full bg-border/50 flex items-center justify-center mb-4">
+                <Map className="w-8 h-8 text-text-light" />
+              </div>
+              <p className="text-text-secondary text-sm font-medium">
+                Mapa de ruta
+              </p>
+              <p className="text-text-light text-xs mt-1">
+                (próximamente)
+              </p>
+            </>
+          )}
         </div>
 
         <div
