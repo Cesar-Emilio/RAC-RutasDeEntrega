@@ -71,7 +71,7 @@ export default function CompanyRoutesPage() {
           onNewRoute={handleNewRoute}
         />
 
-        <div className="overflow-hidden rounded-2xl border border-[#1f2937] bg-[#111827]">
+        <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
           <RoutesTable data={filteredRoutes} onViewRoute={handleViewRoute} />
         </div>
       </div>

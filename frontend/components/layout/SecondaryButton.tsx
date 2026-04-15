@@ -19,7 +19,7 @@ export function SecondaryButton({
     <button
       type={type}
       disabled={isDisabled}
-      className={`inline-flex h-8 items-center justify-center rounded-lg border border-[#2a2f38] bg-transparent px-3 text-sm font-medium text-[#e5e7eb] transition hover:bg-[#111827] disabled:cursor-not-allowed disabled:opacity-70 ${className ?? ""}`}
+      className={`inline-flex h-8 items-center justify-center rounded-lg border border-[var(--color-divider)] bg-transparent px-3 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)] disabled:cursor-not-allowed disabled:opacity-70 ${className ?? ""}`}
       {...props}
     >
       {isLoading ? "Cargando..." : children}

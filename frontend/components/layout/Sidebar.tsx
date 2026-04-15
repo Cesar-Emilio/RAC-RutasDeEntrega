@@ -57,7 +57,7 @@ export function Sidebar({ role }: { role: SidebarRole }) {
     return (
       <aside
         className="fixed top-0 left-0 z-50 h-screen w-56"
-        style={{ backgroundColor: "#161A20" }}
+        style={{ backgroundColor: "var(--color-surface)" }}
       />
     );
   }
@@ -67,7 +67,7 @@ export function Sidebar({ role }: { role: SidebarRole }) {
       <button
         onClick={() => setIsOpen(true)}
         className={`fixed top-4 left-4 z-40 rounded-md p-2 lg:hidden ${isOpen ? "hidden" : "block"}`}
-        style={{ backgroundColor: "#161A20", color: "#BBBDC0" }}
+        style={{ backgroundColor: "var(--color-surface)", color: "var(--color-text-secondary)" }}
       >
         <Menu size={24} />
       </button>
@@ -83,7 +83,7 @@ export function Sidebar({ role }: { role: SidebarRole }) {
         className={`fixed top-0 left-0 z-50 flex h-screen flex-col overflow-hidden transition-all duration-300 ease-in-out ${
           isOpen ? "w-56" : "w-0 lg:w-16"
         }`}
-        style={{ backgroundColor: "#161A20" }}
+        style={{ backgroundColor: "var(--color-surface)" }}
       >
         <div className="flex h-full min-w-56 flex-col lg:min-w-0">
           <div
@@ -93,10 +93,10 @@ export function Sidebar({ role }: { role: SidebarRole }) {
           >
             {isOpen ? (
               <div>
-                <h2 className="text-base font-bold tracking-wide" style={{ color: "#BBBDC0" }}>
+                <h2 className="text-base font-bold tracking-wide" style={{ color: "var(--color-text-secondary)" }}>
                   {role === "admin" ? "Admin" : "Empresa"}
                 </h2>
-                <p className="mt-1 text-xs" style={{ color: "#6b7280" }}>
+                <p className="mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
                   {role === "admin" ? "Gestión del sistema" : "Gestión operativa"}
                 </p>
               </div>
@@ -107,8 +107,8 @@ export function Sidebar({ role }: { role: SidebarRole }) {
               className={`flex min-h-11 items-center gap-3 rounded-md px-3 py-3 transition-all duration-200 ${
                 isOpen ? "" : "justify-center"
               }`}
-              style={{ color: "#BBBDC0" }}
-              onMouseEnter={(event) => (event.currentTarget.style.backgroundColor = "#252a33")}
+              style={{ color: "var(--color-text-secondary)" }}
+              onMouseEnter={(event) => (event.currentTarget.style.backgroundColor = "var(--color-divider)")}
               onMouseLeave={(event) => (event.currentTarget.style.backgroundColor = "transparent")}
               aria-label={isOpen ? "Colapsar menú" : "Expandir menú"}
               title={isOpen ? "Colapsar menú" : "Expandir menú"}
@@ -119,7 +119,7 @@ export function Sidebar({ role }: { role: SidebarRole }) {
 
           <nav className="flex-1 px-3">
             {isOpen && (
-              <h3 className="mb-4 px-3 text-xs font-bold" style={{ color: "#E27D2A" }}>
+              <h3 className="mb-4 px-3 text-xs font-bold" style={{ color: "var(--color-primary-500)" }}>
                 MENÚ
               </h3>
             )}
@@ -136,13 +136,13 @@ export function Sidebar({ role }: { role: SidebarRole }) {
                         isOpen ? "" : "justify-center"
                       }`}
                       style={{
-                        backgroundColor: isActive ? "#4a2c18" : "transparent",
-                        borderLeft: isActive ? "3px solid #E27D2A" : "3px solid transparent",
-                        color: item.isHighlighted ? "#E27D2A" : isActive ? "#E27D2A" : "#BBBDC0",
+                        backgroundColor: isActive ? "var(--color-primary-500)" : "transparent",
+                        borderLeft: isActive ? "3px solid var(--color-primary-500)" : "3px solid transparent",
+                        color: isActive ? "var(--color-background)" : item.isHighlighted ? "var(--color-primary-500)" : "var(--color-text-secondary)",
                       }}
                       onMouseEnter={(event) => {
                         if (!isActive) {
-                          event.currentTarget.style.backgroundColor = "#252a33";
+                          event.currentTarget.style.backgroundColor = "var(--color-divider)";
                         }
                       }}
                       onMouseLeave={(event) => {
@@ -160,14 +160,14 @@ export function Sidebar({ role }: { role: SidebarRole }) {
             </div>
           </nav>
 
-          <div className="border-t p-4" style={{ borderColor: "#252a33" }}>
+          <div className="border-t p-4" style={{ borderColor: "var(--color-divider)" }}>
             <button
               onClick={handleLogout}
               className={`flex min-h-11 w-full items-center gap-3 rounded-md px-3 py-3 transition-all duration-200 ${
                 isOpen ? "" : "justify-center"
               }`}
-              style={{ color: "#BBBDC0" }}
-              onMouseEnter={(event) => (event.currentTarget.style.backgroundColor = "#252a33")}
+              style={{ color: "var(--color-text-secondary)" }}
+              onMouseEnter={(event) => (event.currentTarget.style.backgroundColor = "var(--color-divider)")}
               onMouseLeave={(event) => (event.currentTarget.style.backgroundColor = "transparent")}
               aria-label="Cerrar sesión"
               title="Cerrar sesión"

@@ -103,7 +103,7 @@ export function ModalAdd<T extends Record<string, unknown>>({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-[#f97316] bg-[#f97316] px-3 py-1 text-sm font-semibold text-[#0f1115] transition hover:opacity-90"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-primary-500)] bg-[var(--color-primary-500)] px-3 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90"
       >
         <Plus size={14} />
         {buttonLabel}
@@ -121,7 +121,7 @@ export function ModalAdd<T extends Record<string, unknown>>({
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-lg border border-[#2a2f38] px-4 py-1 text-sm font-medium text-[#e5e7eb] transition hover:bg-[#111827]"
+                className="rounded-lg border border-[var(--color-divider)] px-4 py-1 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)]"
               >
                 {cancelLabel}
               </button>
@@ -129,7 +129,7 @@ export function ModalAdd<T extends Record<string, unknown>>({
                 type="submit"
                 form="modal-add-form"
                 disabled={isSubmitting}
-                className="rounded-lg bg-[#f97316] px-4 py-1 text-sm font-semibold text-[#0f1115] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+                className="rounded-lg bg-[var(--color-primary-500)] px-4 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSubmitting ? "Guardando..." : submitLabel}
               </button>
@@ -142,10 +142,10 @@ export function ModalAdd<T extends Record<string, unknown>>({
                 const value = values[field.name];
 
                 return (
-                  <label key={field.name} className="flex flex-col gap-2 text-sm text-[#BBBDC0] md:col-span-1">
+                  <label key={field.name} className="flex flex-col gap-2 text-sm text-[var(--color-text-secondary)] md:col-span-1">
                     <span className="font-medium">
                       {field.label}
-                      {field.required ? <span className="ml-1 text-[#f87171]">*</span> : null}
+                      {field.required ? <span className="ml-1 text-[var(--color-error)]">*</span> : null}
                     </span>
 
                     {field.type === "textarea" ? (
@@ -154,14 +154,14 @@ export function ModalAdd<T extends Record<string, unknown>>({
                         placeholder={field.placeholder}
                         required={field.required}
                         onChange={(event) => handleChange(field.name, event.target.value)}
-                        className="min-h-28 rounded-lg border border-[#2a2f38] bg-[#0f1115] px-4 py-3 text-sm text-[#e5e7eb] outline-none transition focus:border-[#f97316]"
+                        className="min-h-28 rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
                       />
                     ) : field.type === "select" ? (
                       <select
                         value={String(value ?? "")}
                         required={field.required}
                         onChange={(event) => handleChange(field.name, event.target.value)}
-                        className="rounded-lg border border-[#2a2f38] bg-[#0f1115] px-4 py-3 text-sm text-[#e5e7eb] outline-none transition focus:border-[#f97316]"
+                        className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
                       >
                         <option value="">Selecciona una opcion</option>
                         {field.options?.map((option) => (
@@ -171,12 +171,12 @@ export function ModalAdd<T extends Record<string, unknown>>({
                         ))}
                       </select>
                     ) : field.type === "checkbox" ? (
-                      <label className="inline-flex items-center gap-3 rounded-lg border border-[#2a2f38] bg-[#0f1115] px-4 py-3 text-sm text-[#e5e7eb]">
+                      <label className="inline-flex items-center gap-3 rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)]">
                         <input
                           type="checkbox"
                           checked={Boolean(value)}
                           onChange={(event) => handleChange(field.name, event.target.checked)}
-                          className="h-4 w-4 accent-[#f97316]"
+                          className="h-4 w-4 accent-[var(--color-primary-500)]"
                         />
                         <span>{field.helperText || field.label}</span>
                       </label>
@@ -187,12 +187,12 @@ export function ModalAdd<T extends Record<string, unknown>>({
                         placeholder={field.placeholder}
                         required={field.required}
                         onChange={(event) => handleChange(field.name, event.target.value)}
-                        className="rounded-lg border border-[#2a2f38] bg-[#0f1115] px-4 py-3 text-sm text-[#e5e7eb] outline-none transition focus:border-[#f97316]"
+                        className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
                       />
                     )}
 
                     {field.helperText && field.type !== "checkbox" ? (
-                      <span className="text-xs text-[#6b7280]">{field.helperText}</span>
+                      <span className="text-xs text-[var(--color-text-muted)]">{field.helperText}</span>
                     ) : null}
                   </label>
                 );

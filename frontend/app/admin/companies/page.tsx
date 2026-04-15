@@ -143,7 +143,7 @@ export default function AdminCompaniesPage() {
       title="Empresas"
       breadcrumbs={["Admin", "Empresas"]}
     >
-      <div className="min-h-screen bg-[#0f1115] p-6">
+      <div className="min-h-screen bg-[var(--color-background)] p-6">
         {/* Estadísticas */}
         <CardStatistics
           title="Empresas totales"
@@ -173,7 +173,7 @@ export default function AdminCompaniesPage() {
             />
             <button
               onClick={() => setIsInviteModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-[#f97316] bg-[#f97316] px-3 py-1 text-sm font-semibold text-[#0f1115] transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-primary-500)] bg-[var(--color-primary-500)] px-3 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90"
             >
               <Mail size={16} />
               Registrar Empresa
@@ -195,11 +195,11 @@ export default function AdminCompaniesPage() {
         {/* Modal de Invitación */}
         {isInviteModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6">
-            <div className="w-full max-w-md rounded-2xl border border-[#2a2f38] bg-[#161A20] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+            <div className="w-full max-w-md rounded-2xl border border-[var(--color-divider)] bg-[var(--color-surface)] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
               {/* Header */}
-              <div className="border-b border-[#252a33] px-6 py-5">
-                <h2 className="text-lg font-semibold text-[#BBBDC0]">Registrar Empresa</h2>
-                <p className="mt-1 text-sm text-[#6b7280]">
+              <div className="border-b border-[var(--color-divider)] px-6 py-5">
+                <h2 className="text-lg font-semibold text-[var(--color-text-secondary)]">Registrar Empresa</h2>
+                <p className="mt-1 text-sm text-[var(--color-text-muted)]">
                   Envía un enlace de invitación al correo de la empresa
                 </p>
               </div>
@@ -225,11 +225,11 @@ export default function AdminCompaniesPage() {
                 )}
 
               {/* Email Input */}
-                <label className="flex flex-col gap-2 text-sm text-[#BBBDC0]">
+                <label className="flex flex-col gap-2 text-sm text-[var(--color-text-secondary)]">
                   <span className="font-medium">
                     Correo Electrónico
                     {' '}
-                    <span className="ml-1 text-[#f87171]">*</span>
+                    <span className="ml-1 text-[var(--color-error)]">*</span>
                   </span>
                   <input
                     type="email"
@@ -240,7 +240,7 @@ export default function AdminCompaniesPage() {
                     }}
                     placeholder="empresa@correo.com"
                     disabled={inviteLoading || inviteSuccess}
-                    className="rounded-lg border border-[#2a2f38] bg-[#0f1115] px-4 py-3 text-sm text-[#e5e7eb] placeholder-[#4b5563] outline-none transition focus:border-[#f97316] disabled:opacity-50"
+                    className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:border-[var(--color-primary-500)] disabled:opacity-50"
                   />
                 </label>
 
@@ -248,19 +248,19 @@ export default function AdminCompaniesPage() {
                 <button
                   type="submit"
                   disabled={inviteLoading || inviteSuccess}
-                  className="w-full rounded-lg bg-[#f97316] px-4 py-2 text-sm font-semibold text-[#0f1115] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-lg bg-[var(--color-primary-500)] px-4 py-2 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {inviteLoading ? "Enviando..." : "Enviar Invitación"}
                 </button>
 
                 {/* Info Text */}
-                <p className="text-xs text-[#6b7280]">
+                <p className="text-xs text-[var(--color-text-muted)]">
                   Se enviará un enlace al correo para que la empresa complete su registro.
                 </p>
               </form>
 
               {/* Footer */}
-              <div className="border-t border-[#252a33] px-6 py-5">
+              <div className="border-t border-[var(--color-divider)] px-6 py-5">
                 <div className="flex items-center justify-end gap-3">
                   <button
                     type="button"
@@ -271,7 +271,7 @@ export default function AdminCompaniesPage() {
                       setInviteSuccess(false);
                     }}
                     disabled={inviteLoading}
-                    className="rounded-lg border border-[#2a2f38] px-4 py-1 text-sm font-medium text-[#e5e7eb] transition hover:bg-[#111827] disabled:opacity-50"
+                    className="rounded-lg border border-[var(--color-divider)] px-4 py-1 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)] disabled:opacity-50"
                   >
                     Cerrar
                   </button>
