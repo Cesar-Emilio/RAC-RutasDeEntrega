@@ -45,10 +45,6 @@ export function DeliveryPointsList({ route }: DeliveryPointsListProps) {
     }
   })();
 
-  console.log("route:", route);
-  console.log("delivery_points:", route.delivery_points);
-  console.log("solution:", route.solution);
-
   return (
     <div className="bg-surface rounded-xl border border-border overflow-hidden h-full flex flex-col">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border">

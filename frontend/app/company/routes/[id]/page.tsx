@@ -2,7 +2,7 @@
 
 import { ContentShell } from "@/components/layout/ContentShell";
 import { DeliveryPointsList } from "@/components/routes/delivery-points-list";
-import { RouteMapPlaceholder } from "@/components/routes/route-map";
+import { RouteMap } from "@/components/routes/route-map";
 import { RouteMetrics } from "@/components/routes/route-metrics";
 import { RouteStatusAlert } from "@/components/routes/route-status-alert";
 import { getRouteByIdRequest } from "@/lib/routes-api";
@@ -80,7 +80,7 @@ export default function CreateRoutePage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <RouteMapPlaceholder warehouseName={route.warehouse_name} />
+              <RouteMap warehouseName={route.warehouse_name} details={route.solution?.details} />
             </div>
 
             <div className="lg:col-span-1">

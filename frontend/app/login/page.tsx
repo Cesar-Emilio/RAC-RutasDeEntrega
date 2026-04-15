@@ -64,75 +64,75 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="min-h-screen bg-surface text-primary">
       <div className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-[1fr_1fr]">
-          <div className="relative hidden overflow-hidden border-r border-[var(--border-soft)] bg-[var(--surface)] lg:block">
+          <div className="relative hidden overflow-hidden border-r border-border bg-surface lg:block">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,140,43,0.12),transparent_55%)]" />
             <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0f1115] to-transparent" />
           </div>
           <div className="flex items-center justify-center px-8 py-12">
-            <section className="w-full max-w-sm rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-strong)] p-8 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
-            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--foreground-subtle)]">
+            <section className="w-full max-w-sm rounded-2xl border border-border bg-[var(--surface-strong)] p-8 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">
               Login
             </span>
-            <h1 className="mt-4 text-[28px] font-semibold text-[var(--foreground)]">
+            <h1 className="mt-4 text-[28px] font-semibold text-primary">
               Bienvenido de vuelta
             </h1>
-            <p className="mt-2 text-sm text-[var(--foreground-muted)]">
+            <p className="mt-2 text-sm text-secondary">
               Ingresa tus credenciales para acceder a tu panel
             </p>
             <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-              <label className="block text-sm text-[var(--foreground-muted)]">
+              <label className="block text-sm text-secondary">
                 Correo electronico
                 <input
                   type="email"
                   value={form.email}
                   onChange={onChange("email")}
                   required
-                  className="mt-2 w-full rounded-lg border border-[var(--border-soft)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[var(--accent)]/30 transition focus:ring-2"
+                  className="mt-2 w-full rounded-lg border border-divider bg-surface px-4 py-2 text-sm text-primary outline-none ring-primary-500 transition focus:ring-2"
                   placeholder="tu@correo.com"
                 />
               </label>
-              <label className="block text-sm text-[var(--foreground-muted)]">
-                Contrasena
+              <label className="block text-sm text-secondary">
+                Contraseña
                 <input
                   type="password"
                   value={form.password}
                   onChange={onChange("password")}
                   required
-                  className="mt-2 w-full rounded-lg border border-[var(--border-soft)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--foreground)] outline-none ring-[var(--accent)]/30 transition focus:ring-2"
+                  className="mt-2 w-full rounded-lg border border-divider bg-surface px-4 py-2 text-sm text-primary outline-none ring-primary-500 transition focus:ring-2"
                   placeholder="Ingresa tu contrasena"
                 />
               </label>
-              <label className="flex items-center gap-2 text-xs text-[var(--foreground-subtle)]">
+              <label className="flex items-center gap-2 text-xs text-secondary">
                 <input
                   type="checkbox"
                   checked={form.remember}
                   onChange={onChange("remember")}
-                  className="h-3.5 w-3.5 rounded border border-[var(--border-soft)] bg-[var(--surface)]"
+                  className="h-3.5 w-3.5 rounded border border-border bg-surface"
                 />
                 Mantener la sesion iniciada
               </label>
               {error ? (
-                <div className="rounded-lg border border-[#ef4444] bg-[#2a1414] px-3 py-2 text-xs text-[#fca5a5]">
+                <div className="rounded-lg border border-error bg-[#2a1414] px-3 py-2 text-xs text-[#fca5a5]">
                   {error}
                 </div>
               ) : null}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex w-full items-center justify-center rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[#0f1115] transition hover:bg-[var(--accent-soft)] disabled:cursor-not-allowed disabled:opacity-70"
+                className="flex w-full items-center justify-center rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-[#0f1115] transition hover:bg-primary-400 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSubmitting ? "Iniciando..." : "Iniciar sesion"}
               </button>
             </form>
-            <div className="mt-5 text-center text-xs text-[var(--foreground-subtle)]">
+            <div className="mt-5 text-center text-xs text-secondary">
               O inicia sesion con
             </div>
             <button
               type="button"
               onClick={onGoogleLogin}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--border-soft)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--foreground)]"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-divider bg-border px-4 py-2 text-sm text-primary"
             >
               <svg
                 aria-hidden="true"

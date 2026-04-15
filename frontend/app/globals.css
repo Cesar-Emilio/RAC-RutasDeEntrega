@@ -38,9 +38,9 @@
   --color-border: var(--color-border);
   --color-divider: var(--color-divider);
 
-  --color-text: var(--color-text-primary);
-  --color-text-secondary: var(--color-text-secondary);
-  --color-text-muted: var(--color-text-muted);
+  --color-primary: var(--color-text-primary);
+  --color-secondary: var(--color-text-secondary);
+  --color-muted: var(--color-text-muted);
 
   --color-success: var(--color-success);
   --color-warning: var(--color-warn);
