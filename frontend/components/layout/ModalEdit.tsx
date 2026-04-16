@@ -42,7 +42,7 @@ export function ModalEdit<T extends { id: string | number }>({
   isSubmitting = false,
   onClose,
   onSubmit,
-}: ModalEditProps<T>) {
+}: Readonly<ModalEditProps<T>>) {
   const [values, setValues] = useState<Record<string, unknown>>({});
 
   const initialValues = useMemo(() => {
@@ -126,6 +126,64 @@ export function ModalEdit<T extends { id: string | number }>({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {fields.map((field) => {
               const value = values[field.name];
+              const fieldInputType = field.type || "text";
+
+              let fieldInputNode: React.ReactNode;
+              if (field.type === "textarea") {
+                fieldInputNode = (
+                  <textarea
+                    value={String(value ?? "")}
+                    placeholder={field.placeholder}
+                    required={field.required}
+                    onChange={(event) => handleChange(field.name, event.target.value)}
+                    className="min-h-28 rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
+                  />
+                );
+              } else if (field.type === "select") {
+                fieldInputNode = (
+                  <select
+                    value={String(value ?? "")}
+                    required={field.required}
+                    onChange={(event) => handleChange(field.name, event.target.value)}
+                    className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
+                  >
+                    <option value="">Selecciona una opcion</option>
+                    {field.options?.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                );
+              } else if (field.type === "checkbox") {
+                fieldInputNode = (
+                  <label className="inline-flex items-center gap-3 rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)]">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(value)}
+                      onChange={(event) => handleChange(field.name, event.target.checked)}
+                      className="h-4 w-4 accent-[var(--color-primary-500)]"
+                    />
+                    <span>{field.helperText || field.label}</span>
+                  </label>
+                );
+              } else {
+                fieldInputNode = (
+                  <input
+                    type={fieldInputType}
+                    value={String(value ?? "")}
+                    placeholder={field.placeholder}
+                    required={field.required}
+                    onChange={(event) => handleChange(field.name, event.target.value)}
+                    className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
+                  />
+                );
+              }
+
+              const helperTextNode =
+                field.helperText && field.type !== "checkbox" ? (
+                  <span className="text-xs text-[var(--color-text-muted)]">{field.helperText}</span>
+                ) : null;
 
               return (
                 <label key={field.name} className="flex flex-col gap-2 text-sm text-[var(--color-text-secondary)] md:col-span-1">
@@ -134,52 +192,8 @@ export function ModalEdit<T extends { id: string | number }>({
                     {field.required ? <span className="ml-1 text-[var(--color-error)]">*</span> : null}
                   </span>
 
-                  {field.type === "textarea" ? (
-                    <textarea
-                      value={String(value ?? "")}
-                      placeholder={field.placeholder}
-                      required={field.required}
-                      onChange={(event) => handleChange(field.name, event.target.value)}
-                      className="min-h-28 rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
-                    />
-                  ) : field.type === "select" ? (
-                    <select
-                      value={String(value ?? "")}
-                      required={field.required}
-                      onChange={(event) => handleChange(field.name, event.target.value)}
-                      className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
-                    >
-                      <option value="">Selecciona una opcion</option>
-                      {field.options?.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  ) : field.type === "checkbox" ? (
-                    <label className="inline-flex items-center gap-3 rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)]">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(value)}
-                        onChange={(event) => handleChange(field.name, event.target.checked)}
-                        className="h-4 w-4 accent-[var(--color-primary-500)]"
-                      />
-                      <span>{field.helperText || field.label}</span>
-                    </label>
-                  ) : (
-                    <input
-                      type={field.type || "text"}
-                      value={String(value ?? "")}
-                      placeholder={field.placeholder}
-                      required={field.required}
-                      onChange={(event) => handleChange(field.name, event.target.value)}
-                      className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
-                    />
-                  )}
-
-                  {field.helperText && field.type !== "checkbox" ? (
-                    <span className="text-xs text-[var(--color-text-muted)]">{field.helperText}</span>
-                  ) : null}
+                  {fieldInputNode}
+                  {helperTextNode}
                 </label>
               );
             })}

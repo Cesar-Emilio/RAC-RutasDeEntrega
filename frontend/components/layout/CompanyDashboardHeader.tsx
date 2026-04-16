@@ -8,7 +8,7 @@ type CompanyDashboardHeaderProps = {
 export function CompanyDashboardHeader({
   title = "Dashboard",
   description = "Panel de administracion de la empresa",
-}: CompanyDashboardHeaderProps) {
+}: Readonly<CompanyDashboardHeaderProps>) {
   return (
     <div className="shrink-0 px-4 py-4 md:px-6 md:py-5" style={{ backgroundColor: "var(--color-surface)" }}>
       <div className="flex items-center justify-between">

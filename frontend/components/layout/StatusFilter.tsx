@@ -23,7 +23,7 @@ export function StatusFilter({
   value,
   onChange,
   options = defaultOptions,
-}: StatusFilterProps) {
+}: Readonly<StatusFilterProps>) {
   return (
     <label className="relative inline-flex h-8 items-center">
       <select

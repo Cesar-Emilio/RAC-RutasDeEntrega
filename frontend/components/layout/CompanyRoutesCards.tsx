@@ -29,7 +29,7 @@ export function CompanyRoutesCards({
   scrollProgress,
   linkHref,
   linkLabel,
-}: CompanyRoutesCardsProps) {
+}: Readonly<CompanyRoutesCardsProps>) {
   return (
     <section className="mb-10 min-w-0">
       <div className="mb-4 flex items-center justify-between">

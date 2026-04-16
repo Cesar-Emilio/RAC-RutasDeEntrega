@@ -14,7 +14,7 @@ export function SearchBar({
   onChange,
   placeholder = "Buscar...",
   minChars = 18,
-}: SearchBarProps) {
+}: Readonly<SearchBarProps>) {
   const inputSize = Math.max(minChars, placeholder.length);
 
   return (
