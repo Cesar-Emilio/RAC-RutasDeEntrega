@@ -52,16 +52,19 @@ INSTALLED_APPS = [
     'apps.deliveries',
     'apps.warehouses',
     'apps.users',
+    'apps.audit',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'config.middleware.RequestLoggingMiddleware',
+    'apps.audit.middleware.CaptureRequestDataMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    "audit.middleware.AuditMiddleware",
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
