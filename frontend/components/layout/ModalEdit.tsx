@@ -2,18 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ModalFrame } from "./ModalFrame";
+import { ModalFieldRenderer } from "./ModalFieldRenderer";
+import type { ModalField, ModalFieldOption } from "./ModalFieldRenderer";
 
-type ModalEditOption = {
-  label: string;
-  value: string;
-};
-
+// Re-export with the original name for backward compatibility
 export type ModalEditField<T extends { id: string | number }> = {
   name: keyof T & string;
   label: string;
   type?: "text" | "email" | "number" | "textarea" | "select" | "checkbox";
   placeholder?: string;
-  options?: ModalEditOption[];
+  options?: ModalFieldOption[];
   required?: boolean;
   helperText?: string;
 };
@@ -123,81 +121,11 @@ export function ModalEdit<T extends { id: string | number }>({
     >
       <form id="modal-edit-form" className="space-y-6" onSubmit={handleSubmit}>
         {fields.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {fields.map((field) => {
-              const value = values[field.name];
-              const fieldInputType = field.type || "text";
-
-              let fieldInputNode: React.ReactNode;
-              if (field.type === "textarea") {
-                fieldInputNode = (
-                  <textarea
-                    value={String(value ?? "")}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    onChange={(event) => handleChange(field.name, event.target.value)}
-                    className="min-h-28 rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
-                  />
-                );
-              } else if (field.type === "select") {
-                fieldInputNode = (
-                  <select
-                    value={String(value ?? "")}
-                    required={field.required}
-                    onChange={(event) => handleChange(field.name, event.target.value)}
-                    className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
-                  >
-                    <option value="">Selecciona una opcion</option>
-                    {field.options?.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                );
-              } else if (field.type === "checkbox") {
-                fieldInputNode = (
-                  <label className="inline-flex items-center gap-3 rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)]">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(value)}
-                      onChange={(event) => handleChange(field.name, event.target.checked)}
-                      className="h-4 w-4 accent-[var(--color-primary-500)]"
-                    />
-                    <span>{field.helperText || field.label}</span>
-                  </label>
-                );
-              } else {
-                fieldInputNode = (
-                  <input
-                    type={fieldInputType}
-                    value={String(value ?? "")}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    onChange={(event) => handleChange(field.name, event.target.value)}
-                    className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] outline-none transition focus:border-[var(--color-primary-500)]"
-                  />
-                );
-              }
-
-              const helperTextNode =
-                field.helperText && field.type !== "checkbox" ? (
-                  <span className="text-xs text-[var(--color-text-muted)]">{field.helperText}</span>
-                ) : null;
-
-              return (
-                <label key={field.name} className="flex flex-col gap-2 text-sm text-[var(--color-text-secondary)] md:col-span-1">
-                  <span className="font-medium">
-                    {field.label}
-                    {field.required ? <span className="ml-1 text-[var(--color-error)]">*</span> : null}
-                  </span>
-
-                  {fieldInputNode}
-                  {helperTextNode}
-                </label>
-              );
-            })}
-          </div>
+          <ModalFieldRenderer
+            fields={fields as unknown as ModalField<Record<string, unknown>>[]}
+            values={values}
+            onChange={handleChange}
+          />
         ) : (
           <p className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-muted)]">
             No hay campos configurados para editar este registro.
