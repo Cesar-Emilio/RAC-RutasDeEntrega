@@ -9,11 +9,14 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from .models import User
 from apps.companies.models import Company
+# CAMBIO: se importa ApiResponse para unificar el formato de respuesta
+from utils.response_helper import ApiResponse
+# CAMBIO: se importa IntegrityError para manejar UNIQUE constraint de BD
+from django.db import IntegrityError
 
 User = get_user_model()
 
@@ -34,31 +37,59 @@ class CompleteRegisterView(APIView):
 
     def get(self, request, token):
         try:
-            # Decodificar el token
+            # CAMBIO: se usa ApiResponse para formato estándar
             decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             email = decoded.get('email')
             if decoded['exp'] < timezone.now().timestamp():
-                return Response({'detail': 'El enlace de invitación ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
+                return ApiResponse.error(
+                    message="El enlace de invitación ha expirado.",
+                    errors={"detail": "El enlace de invitación ha expirado."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         except jwt.ExpiredSignatureError:
-            return Response({'detail': 'El enlace ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse.error(
+                message="El enlace ha expirado.",
+                errors={"detail": "El enlace ha expirado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except jwt.InvalidTokenError:
-            return Response({'detail': 'Token inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse.error(
+                message="Token inválido.",
+                errors={"detail": "Token inválido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        return Response({'email': email}, status=status.HTTP_200_OK)
+        return ApiResponse.success(
+            message="Token válido.",
+            data={"email": email},
+            status=status.HTTP_200_OK,
+        )
 
     def post(self, request, token):
         try:
-            # Decodificar el token
+            # CAMBIO: se usa ApiResponse para formato estándar
             decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             email = decoded.get('email')
             if decoded['exp'] < timezone.now().timestamp():
-                return Response({'detail': 'El enlace de invitación ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
+                return ApiResponse.error(
+                    message="El enlace de invitación ha expirado.",
+                    errors={"detail": "El enlace de invitación ha expirado."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         except jwt.ExpiredSignatureError:
-            return Response({'detail': 'El enlace ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse.error(
+                message="El enlace ha expirado.",
+                errors={"detail": "El enlace ha expirado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except jwt.InvalidTokenError:
-            return Response({'detail': 'Token inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse.error(
+                message="Token inválido.",
+                errors={"detail": "Token inválido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Extraer datos del cuerpo de la solicitud
         name = request.data.get('name')
@@ -67,11 +98,12 @@ class CompleteRegisterView(APIView):
         company_name = request.data.get('company_name')
         rfc = request.data.get('rfc')
 
-        # Validar que todos los campos requeridos estén presentes
+        # CAMBIO: validación con mensajes de error claros en formato estándar
         if not all([name, password, company_name, rfc]):
-            return Response(
-                {'detail': 'Faltan campos requeridos: name, password, company_name, rfc.'},
-                status=status.HTTP_400_BAD_REQUEST
+            return ApiResponse.error(
+                message="Faltan campos requeridos.",
+                errors={"detail": "Se requieren los campos: name, password, company_name, rfc."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -97,12 +129,27 @@ class CompleteRegisterView(APIView):
                 is_active=True
             )
 
-            return Response(
-                {'detail': 'Usuario registrado correctamente.', 'user': {'id': user.id, 'email': user.email, 'name': user.name}},
-                status=status.HTTP_201_CREATED
+            return ApiResponse.created(
+                message="Usuario registrado correctamente.",
+                data={"user": {"id": user.id, "email": user.email, "name": user.name}},
+            )
+        # CAMBIO: se captura IntegrityError para manejar UNIQUE constraint (email duplicado)
+        except IntegrityError as e:
+            error_str = str(e).lower()
+            if "email" in error_str:
+                detail = "Ya existe un usuario registrado con ese correo electrónico."
+            elif "rfc" in error_str:
+                detail = "Ya existe una empresa registrada con ese RFC."
+            else:
+                detail = "Conflicto en la base de datos. Verifica los datos enviados."
+            return ApiResponse.error(
+                message="Error de registro.",
+                errors={"detail": detail},
+                status=status.HTTP_409_CONFLICT,
             )
         except Exception as e:
-            return Response(
-                {'detail': f'Error al registrar usuario: {str(e)}'},
-                status=status.HTTP_400_BAD_REQUEST
+            return ApiResponse.error(
+                message="Error al registrar usuario.",
+                errors={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
             )

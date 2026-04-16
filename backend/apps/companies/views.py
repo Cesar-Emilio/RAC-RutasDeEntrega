@@ -14,9 +14,10 @@ from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser
+# CAMBIO: se reemplaza Response por ApiResponse para formato de respuesta uniforme
 from rest_framework import status
+# CAMBIO: import ApiResponse en lugar de Response directo
+from utils.response_helper import ApiResponse
 
 @extend_schema_view(
     list=extend_schema(
@@ -64,12 +65,18 @@ class CompanyViewSet(viewsets.ModelViewSet):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class InviteCompanyView(APIView):
-    permission_classes = []
+    # CAMBIO: se restringe a solo admins (antes era lista vacía = acceso público)
+    permission_classes = [IsAdminRole]
 
     def post(self, request):
         email = request.data.get('email')
         if not email:
-            return Response({'detail': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            # CAMBIO: usar ApiResponse.error en lugar de Response() directo
+            return ApiResponse.error(
+                message="El campo email es requerido.",
+                errors={"detail": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         
         # Generar el token con una fecha de expiración de 24 horas
         expiration_time = timezone.now() + timedelta(hours=24)
@@ -78,7 +85,12 @@ class InviteCompanyView(APIView):
         # Enviar correo con el token (la URL va al frontend donde el usuario completará el registro)
         self.send_invitation_email(email, token)
 
-        return Response({'detail': 'Invitation sent.'}, status=status.HTTP_200_OK)
+        # CAMBIO: usar ApiResponse.success en lugar de Response() directo
+        return ApiResponse.success(
+            message="Invitación enviada correctamente.",
+            data={"email": email},
+            status=status.HTTP_200_OK,
+        )
 
     def send_invitation_email(self, email, token):
         subject = 'Invitación para completar el registro'

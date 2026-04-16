@@ -1,4 +1,4 @@
-import type { AuthResponse, AuthTokens, AuthUser } from "./auth-types";
+import type { AuthTokens, AuthUser } from "./auth-types";
 import { API_BASE_URL, requestJson } from "./http";
 
 export async function loginRequest(email: string, password: string) {
@@ -20,24 +20,22 @@ export async function refreshRequest(refresh: string) {
   );
 }
 
-export async function meRequest(access: string) {
+// CAMBIO: se elimina el parámetro 'access' — el interceptor de Axios en http.ts
+// ya inyecta el header Authorization automáticamente desde authStorage
+export async function meRequest() {
   return requestJson<{ user: AuthUser }>(
     `${API_BASE_URL}/api/auth/me/`,
     {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${access}`,
-      },
     },
   );
 }
 
-export async function logoutRequest(access: string, refresh: string) {
+// CAMBIO: se elimina el parámetro 'access' — el interceptor de Axios en http.ts
+// ya inyecta el header Authorization automáticamente desde authStorage
+export async function logoutRequest(refresh: string) {
   return requestJson<null>(`${API_BASE_URL}/api/auth/logout/`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${access}`,
-    },
     body: JSON.stringify({ refresh }),
   });
 }

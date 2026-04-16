@@ -45,7 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       try {
         const persist = authStorage.isPersistent();
-        const me = await meRequest(storedTokens.access);
+        // CAMBIO: meRequest ya no recibe 'access' — el interceptor lo inyecta desde authStorage
+        const me = await meRequest();
 
         authStorage.setUser(me.user, persist);
         setUser(me.user);
@@ -63,8 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           authStorage.setTokens(nextTokens, persist);
           setTokens(nextTokens);
-          
-          const me = await meRequest(nextTokens.access);
+          // CAMBIO: meRequest ya no recibe 'access' — el interceptor lo inyecta desde authStorage
+          const me = await meRequest();
           authStorage.setUser(me.user, persist);
           setUser(me.user);
           setStatus("authenticated");
@@ -98,9 +99,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    if (tokens?.access && tokens?.refresh) {
+    if (tokens?.refresh) {
       try {
-        await logoutRequest(tokens.access, tokens.refresh);
+        // CAMBIO: logoutRequest ya no recibe 'access' — solo necesita el refresh token
+        await logoutRequest(tokens.refresh);
       } catch {
         // Ignore logout errors since tokens are removed locally.
       }

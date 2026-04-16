@@ -22,18 +22,14 @@ export function DeliveryPointsList({ route }: DeliveryPointsListProps) {
         (a, b) => a.order_index - b.order_index
       );
 
-      return sortedDetails.map((detail) => {
-        const point = route.delivery_points.find(
-          (p) => p.id === detail.delivery_point
-        );
-        return {
-          id: point?.id ?? detail.delivery_point,
-          address: point?.address ?? "Dirección no disponible",
-          latitude: point?.latitude ?? 0,
-          longitude: point?.longitude ?? 0,
-          orderIndex: detail.order_index,
-        };
-      });
+      // CAMBIO: delivery_point ya es un objeto completo (no un ID) — se usa directamente
+      return sortedDetails.map((detail) => ({
+        id: detail.delivery_point.id,
+        address: detail.delivery_point.address,
+        latitude: Number(detail.delivery_point.latitude),
+        longitude: Number(detail.delivery_point.longitude),
+        orderIndex: detail.order_index,
+      }));
     } else {
       return route.delivery_points.map((point, index) => ({
         id: point.id,
@@ -69,7 +65,8 @@ export function DeliveryPointsList({ route }: DeliveryPointsListProps) {
 
               <div className="min-w-0 flex-1 pt-0.5">
                 <p className="text-sm font-medium text-text-primary">
-                  El sebas
+                  {/* CAMBIO: se reemplaza el texto hardcodeado de prueba "El sebas" */}
+                  Parada {point.orderIndex}
                 </p>
                 <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
                   {point.address}
