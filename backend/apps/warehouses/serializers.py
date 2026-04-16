@@ -27,6 +27,10 @@ class WarehouseSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
+    # 🔥 CLAVE: si es PATCH, no validar ubicación
+        if self.partial:
+            return data
+
         has_address = all([
             data.get('address'),
             data.get('city'),

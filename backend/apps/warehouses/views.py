@@ -17,7 +17,7 @@ class WarehouseViewSet(viewsets.ModelViewSet):
     serializer_class = WarehouseSerializer
 
     @extend_schema(
-        description="Obtiene la lista de almacenes activos del usuario autenticado.",
+        description="Obtiene la lista de almacenes activos activos del usuario autenticado.",
         responses={200: WarehouseSerializer(many=True)},
     )
     def list(self, request, *args, **kwargs):
