@@ -128,9 +128,17 @@ export default function AdminCompaniesPage() {
         setInviteSuccess(false);
       }, 1500);
     } catch (err) {
-      const error = err as { detail?: string; [key: string]: unknown };
+      const error = err as {
+        detail?: string;
+        message?: string;
+        errors?: { detail?: string };
+        [key: string]: unknown;
+      };
       setInviteError(
-        error?.detail || "Error al enviar la invitación. Por favor intenta de nuevo."
+        error?.detail ||
+          error?.errors?.detail ||
+          error?.message ||
+          "Error al enviar la invitación. Por favor intenta de nuevo."
       );
     } finally {
       setInviteLoading(false);

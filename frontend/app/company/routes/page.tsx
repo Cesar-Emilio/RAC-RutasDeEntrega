@@ -26,8 +26,9 @@ export default function CompanyRoutesPage() {
 
         const data = await getDeliveriesRequest();
         setRoutes(data);
-      } catch (err:any) {
-        setError(err?.message || "Error al cargar las rutas")
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Error al cargar las rutas";
+        setError(message)
       } finally {
         setLoading(false);
       }
@@ -71,8 +72,14 @@ export default function CompanyRoutesPage() {
           onNewRoute={handleNewRoute}
         />
 
-        <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-          <RoutesTable data={filteredRoutes} onViewRoute={handleViewRoute} />
+        {error ? (
+          <div className="rounded-2xl border border-error/40 bg-error/10 px-4 py-3 text-sm text-secondary">
+            {error}
+          </div>
+        ) : null}
+
+        <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+          <RoutesTable data={filteredRoutes} onViewRoute={handleViewRoute} isLoading={loading} />
         </div>
       </div>
     </ContentShell>

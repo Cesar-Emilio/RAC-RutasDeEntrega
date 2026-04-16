@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from drf_spectacular.openapi import OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from django.core.mail import BadHeaderError
 
 from .models import Company
 from .serializers import CompanySerializer
