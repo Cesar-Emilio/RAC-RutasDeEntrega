@@ -164,25 +164,54 @@ class InviteCompanyView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Generar el token con una fecha de expiración de 24 horas
-        # El token no se loga para evitar exponer el enlace de invitación
-        expiration_time = timezone.now() + timedelta(hours=24)
-        token = jwt.encode({'email': email, 'exp': expiration_time}, settings.SECRET_KEY, algorithm='HS256')
+        try:
+            # Generar el token con una fecha de expiración de 24 horas
+            # El token no se loga para evitar exponer el enlace de invitación
+            expiration_time = timezone.now() + timedelta(hours=24)
+            token = jwt.encode({'email': email, 'exp': expiration_time}, settings.SECRET_KEY, algorithm='HS256')
 
-        self.send_invitation_email(email, token, actor_id=actor_id, ip=ip)
+            self.send_invitation_email(email, token, actor_id=actor_id, ip=ip)
 
-        logger.info(
-            "invite | action=send_invitation | result=success | email={email} "
-            "| actor_user_id={actor_id} | ip={ip} | status_code=200",
-            email=email,
-            actor_id=actor_id,
-            ip=ip,
-        )
-        return ApiResponse.success(
-            message="Invitación enviada correctamente.",
-            data={"email": email},
-            status=status.HTTP_200_OK,
-        )
+            logger.info(
+                "invite | action=send_invitation | result=success | email={email} "
+                "| actor_user_id={actor_id} | ip={ip} | status_code=200",
+                email=email,
+                actor_id=actor_id,
+                ip=ip,
+            )
+            return ApiResponse.success(
+                message="Invitación enviada correctamente.",
+                data={"email": email},
+                status=status.HTTP_200_OK,
+            )
+        except (ValueError, BadHeaderError) as exc:
+            logger.error(
+                "invite | action=send_invitation | result=failure_controlled | email={email} "
+                "| actor_user_id={actor_id} | ip={ip} | error={error}",
+                email=email,
+                actor_id=actor_id,
+                ip=ip,
+                error=str(exc),
+            )
+            return ApiResponse.error(
+                message="Error al enviar la invitación.",
+                errors={"detail": str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        except Exception as exc:
+            logger.opt(exception=True).error(
+                "invite | action=send_invitation | result=failure_unexpected | email={email} "
+                "| actor_user_id={actor_id} | ip={ip} | error={error}",
+                email=email,
+                actor_id=actor_id,
+                ip=ip,
+                error=str(exc),
+            )
+            return ApiResponse.error(
+                message="No se pudo enviar la invitación.",
+                errors={"detail": "Unable to send invitation."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     def send_invitation_email(self, email, token, actor_id=None, ip=None):
         subject = 'Invitación para completar el registro'

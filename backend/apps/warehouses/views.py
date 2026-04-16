@@ -1,7 +1,6 @@
 import time
 
 from rest_framework import viewsets, status
-from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
