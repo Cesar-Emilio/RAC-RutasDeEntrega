@@ -1,3 +1,4 @@
+import logging
 from rest_framework import generics
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
@@ -17,6 +18,7 @@ from apps.companies.models import Company
 
 User = get_user_model()
 
+logger = logging.getLogger(__name__)
 
 @extend_schema(
     description="Registra un nuevo usuario con rol y empresa asociados.",
@@ -28,6 +30,16 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = (IsAdminRole,)
     serializer_class = RegisterSerializer
 
+    def perform_create(self, serializer):
+        try:
+            # Registro exitoso del usuario
+            user = serializer.save()
+            logger.info(f"Usuario registrado con éxito | email={user.email} | role={user.role} | company={user.company.name if user.company else 'N/A'}")
+        except Exception as e:
+            logger.error(f"Error al registrar usuario | error={str(e)}")
+            raise e
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class CompleteRegisterView(APIView):
     permission_classes = [AllowAny]
@@ -38,13 +50,17 @@ class CompleteRegisterView(APIView):
             decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             email = decoded.get('email')
             if decoded['exp'] < timezone.now().timestamp():
+                logger.warning(f"Enlace de invitación expirado | email={email} | token_expiration={decoded['exp']}")
                 return Response({'detail': 'El enlace de invitación ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
 
         except jwt.ExpiredSignatureError:
+            logger.error(f"Token expirado | token={token}")
             return Response({'detail': 'El enlace ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
         except jwt.InvalidTokenError:
+            logger.error(f"Token inválido | token={token}")
             return Response({'detail': 'Token inválido.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        logger.debug(f"Token decodificado correctamente | email={email}")
         return Response({'email': email}, status=status.HTTP_200_OK)
 
     def post(self, request, token):
@@ -53,11 +69,14 @@ class CompleteRegisterView(APIView):
             decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             email = decoded.get('email')
             if decoded['exp'] < timezone.now().timestamp():
+                logger.warning(f"Enlace de invitación expirado | email={email} | token_expiration={decoded['exp']}")
                 return Response({'detail': 'El enlace de invitación ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
 
         except jwt.ExpiredSignatureError:
+            logger.error(f"Token expirado | token={token}")
             return Response({'detail': 'El enlace ha expirado.'}, status=status.HTTP_400_BAD_REQUEST)
         except jwt.InvalidTokenError:
+            logger.error(f"Token inválido | token={token}")
             return Response({'detail': 'Token inválido.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Extraer datos del cuerpo de la solicitud
@@ -67,27 +86,25 @@ class CompleteRegisterView(APIView):
         company_name = request.data.get('company_name')
         rfc = request.data.get('rfc')
 
-        # Validar que todos los campos requeridos estén presentes
         if not all([name, password, company_name, rfc]):
+            logger.warning(f"Campos requeridos faltantes | email={email} | missing_fields={'name, password, company_name, rfc' if not name or not password or not company_name or not rfc else ''}")
             return Response(
                 {'detail': 'Faltan campos requeridos: name, password, company_name, rfc.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
-            # Crear o obtener la Company
             company, created = Company.objects.get_or_create(
                 rfc=rfc.upper(),
                 defaults={'name': company_name, 'email': email}
             )
 
-            # Si la empresa ya existe pero con diferente email o nombre, actualizar
-            if not created:
-                company.name = company_name
-                company.email = email
-                company.save()
+            if created:
+                logger.info(f"Compañía creada | rfc={rfc.upper()} | company_name={company_name} | email={email}")
+            else:
+                logger.info(f"Compañía actualizada | rfc={rfc.upper()} | company_name={company_name} | email={email}")
 
-            # Crear el usuario
+
             user = User.objects.create_user(
                 email=email,
                 name=name,
@@ -97,11 +114,15 @@ class CompleteRegisterView(APIView):
                 is_active=True
             )
 
+            logger.info(f"Usuario registrado correctamente | email={email} | user_id={user.id} | role={role} | company_name={company_name}")
+
             return Response(
                 {'detail': 'Usuario registrado correctamente.', 'user': {'id': user.id, 'email': user.email, 'name': user.name}},
                 status=status.HTTP_201_CREATED
             )
+
         except Exception as e:
+            logger.error(f"Error al registrar usuario | email={email} | error={str(e)}")
             return Response(
                 {'detail': f'Error al registrar usuario: {str(e)}'},
                 status=status.HTTP_400_BAD_REQUEST
