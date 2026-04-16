@@ -5,9 +5,9 @@ import { RouteTableItem } from "@/types/routes-types";
 import { MapPin } from "lucide-react";
 
 interface RoutesTableProps {
-  data: RouteTableItem[];
-  onViewRoute: (route: RouteTableItem) => void;
-  isLoading?: boolean;
+  readonly data: RouteTableItem[];
+  readonly onViewRoute: (route: RouteTableItem) => void;
+  readonly isLoading?: boolean;
 }
 
 export function RoutesTable({ data, onViewRoute, isLoading = false }: RoutesTableProps) {

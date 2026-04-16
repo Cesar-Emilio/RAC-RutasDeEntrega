@@ -235,9 +235,16 @@ export function NewRouteForm() {
         </div>
 
         <div
+          role="button"
+          tabIndex={0}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+            }
+          }}
           className={`
             relative flex flex-col items-center justify-center
             py-12 px-6 rounded-xl

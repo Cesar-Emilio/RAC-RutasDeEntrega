@@ -6,13 +6,13 @@ import { Package, Warehouse, FileText, ChevronUp, ChevronDown } from "lucide-rea
 import { RouteDetail } from "@/types/routes-types";
 
 interface RouteMetricsProps {
-  route: RouteDetail;
+  readonly route: RouteDetail;
 }
 
 interface MetricCardProps {
-  icon: React.ElementType;
-  value: string | number;
-  label: string;
+  readonly icon: React.ElementType;
+  readonly value: string | number;
+  readonly label: string;
 }
 
 function MetricCard({ icon: Icon, value, label }: MetricCardProps) {
@@ -32,12 +32,14 @@ function MetricCard({ icon: Icon, value, label }: MetricCardProps) {
 export function RouteMetrics({ route }: RouteMetricsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  const stopsCount = route.delivery_points.length;
-  const truncatedFileName = route.file_name
-    ? route.file_name.length > 12
-      ? route.file_name.slice(0, 12) + "..."
-      : route.file_name
-    : "Sin archivo";
+  // TODO const stopsCount = route.delivery_points.length;
+  let truncatedFileName: string | undefined;
+  const fileName = route.file_name;
+
+  if (fileName) {
+    truncatedFileName =
+      fileName.length > 12 ? fileName.slice(0, 12) + "..." : fileName;
+  }
 
   return (
     <div className="bg-surface rounded-xl border border-border overflow-hidden">

@@ -5,12 +5,12 @@ import { Loader2, Maximize2, Map } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface RouteMapProps {
-  warehouseName: string;
-  details: any;
+  readonly warehouseName: string;
+  readonly details: any;
 }
 
 export function RouteMap({ warehouseName, details }: RouteMapProps) {
-  const [route, setRoute] = useState<any>(null);
+  const [_route, setRoute] = useState<any>(null);
   const [loadingRoute, setLoadingRoute] = useState(true);
 
   useEffect(() => {
