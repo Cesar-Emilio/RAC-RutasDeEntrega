@@ -1,4 +1,3 @@
-import logging
 from rest_framework import generics
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
@@ -14,14 +13,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 from .models import User
 from apps.companies.models import Company
-# CAMBIO: se importa ApiResponse para unificar el formato de respuesta
 from utils.response_helper import ApiResponse
-# CAMBIO: se importa IntegrityError para manejar UNIQUE constraint de BD
 from django.db import IntegrityError
+from config.logging_utils import get_logger, get_client_ip
 
 User = get_user_model()
+logger = get_logger(__name__)
 
-logger = logging.getLogger(__name__)
 
 @extend_schema(
     description="Registra un nuevo usuario con rol y empresa asociados.",
@@ -34,26 +32,44 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
     def perform_create(self, serializer):
+        actor_id = getattr(self.request.user, "id", None)
         try:
-            # Registro exitoso del usuario
             user = serializer.save()
-            logger.info(f"Usuario registrado con éxito | email={user.email} | role={user.role} | company={user.company.name if user.company else 'N/A'}")
+            company_id = getattr(user.company, "id", None) if user.company else None
+            logger.info(
+                "register | action=create_user | result=success | user_id={user_id} "
+                "| email={email} | role={role} | company_id={company_id} | actor_user_id={actor_id}",
+                user_id=user.id,
+                email=user.email,
+                role=user.role,
+                company_id=company_id,
+                actor_id=actor_id,
+            )
         except Exception as e:
-            logger.error(f"Error al registrar usuario | error={str(e)}")
+            logger.error(
+                "register | action=create_user | result=failure | actor_user_id={actor_id} | error={error}",
+                actor_id=actor_id,
+                error=str(e),
+            )
             raise e
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CompleteRegisterView(APIView):
-    permission_classes = [AllowAny]  # Accesible para cualquier usuario
+    permission_classes = [AllowAny]
 
     def get(self, request, token):
+        ip = get_client_ip(request)
         try:
-            # CAMBIO: se usa ApiResponse para formato estándar
             decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             email = decoded.get('email')
             if decoded['exp'] < timezone.now().timestamp():
-                logger.warning(f"Enlace de invitación expirado | email={email} | token_expiration={decoded['exp']}")
+                logger.warning(
+                    "complete_register | action=validate_token | result=expired "
+                    "| email={email} | ip={ip}",
+                    email=email,
+                    ip=ip,
+                )
                 return ApiResponse.error(
                     message="El enlace de invitación ha expirado.",
                     errors={"detail": "El enlace de invitación ha expirado."},
@@ -61,21 +77,32 @@ class CompleteRegisterView(APIView):
                 )
 
         except jwt.ExpiredSignatureError:
-            logger.error(f"Token expirado | token={token}")
+            logger.warning(
+                "complete_register | action=validate_token | result=expired_signature | ip={ip}",
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="El enlace ha expirado.",
                 errors={"detail": "El enlace ha expirado."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except jwt.InvalidTokenError:
-            logger.error(f"Token inválido | token={token}")
+            logger.error(
+                "complete_register | action=validate_token | result=invalid_token | ip={ip}",
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Token inválido.",
                 errors={"detail": "Token inválido."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        logger.debug(f"Token decodificado correctamente | email={email}")
+        email = decoded.get('email')
+        logger.debug(
+            "complete_register | action=validate_token | result=valid | email={email} | ip={ip}",
+            email=email,
+            ip=ip,
+        )
         return ApiResponse.success(
             message="Token válido.",
             data={"email": email},
@@ -83,12 +110,17 @@ class CompleteRegisterView(APIView):
         )
 
     def post(self, request, token):
+        ip = get_client_ip(request)
         try:
-            # CAMBIO: se usa ApiResponse para formato estándar
             decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             email = decoded.get('email')
             if decoded['exp'] < timezone.now().timestamp():
-                logger.warning(f"Enlace de invitación expirado | email={email} | token_expiration={decoded['exp']}")
+                logger.warning(
+                    "complete_register | action=validate_token | result=expired "
+                    "| email={email} | ip={ip}",
+                    email=email,
+                    ip=ip,
+                )
                 return ApiResponse.error(
                     message="El enlace de invitación ha expirado.",
                     errors={"detail": "El enlace de invitación ha expirado."},
@@ -96,14 +128,20 @@ class CompleteRegisterView(APIView):
                 )
 
         except jwt.ExpiredSignatureError:
-            logger.error(f"Token expirado | token={token}")
+            logger.warning(
+                "complete_register | action=validate_token | result=expired_signature | ip={ip}",
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="El enlace ha expirado.",
                 errors={"detail": "El enlace ha expirado."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except jwt.InvalidTokenError:
-            logger.error(f"Token inválido | token={token}")
+            logger.error(
+                "complete_register | action=validate_token | result=invalid_token | ip={ip}",
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Token inválido.",
                 errors={"detail": "Token inválido."},
@@ -111,15 +149,22 @@ class CompleteRegisterView(APIView):
             )
 
         # Extraer datos del cuerpo de la solicitud
+        email = decoded.get('email')
         name = request.data.get('name')
         password = request.data.get('password')
         role = request.data.get('role', 'company')
         company_name = request.data.get('company_name')
         rfc = request.data.get('rfc')
 
-        # CAMBIO: validación con mensajes de error claros en formato estándar
         if not all([name, password, company_name, rfc]):
-            logger.warning(f"Campos requeridos faltantes | email={email} | missing_fields={'name, password, company_name, rfc' if not name or not password or not company_name or not rfc else ''}")
+            missing = [f for f, v in {'name': name, 'password': password, 'company_name': company_name, 'rfc': rfc}.items() if not v]
+            logger.warning(
+                "complete_register | action=validate_fields | result=missing_fields "
+                "| email={email} | missing_fields={missing} | ip={ip}",
+                email=email,
+                missing=missing,
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Faltan campos requeridos.",
                 errors={"detail": "Se requieren los campos: name, password, company_name, rfc."},
@@ -133,9 +178,21 @@ class CompleteRegisterView(APIView):
             )
 
             if created:
-                logger.info(f"Compañía creada | rfc={rfc.upper()} | company_name={company_name} | email={email}")
+                logger.info(
+                    "complete_register | action=create_company | result=created "
+                    "| rfc={rfc} | company_name={company_name} | email={email}",
+                    rfc=rfc.upper(),
+                    company_name=company_name,
+                    email=email,
+                )
             else:
-                logger.info(f"Compañía actualizada | rfc={rfc.upper()} | company_name={company_name} | email={email}")
+                logger.info(
+                    "complete_register | action=create_company | result=existing "
+                    "| rfc={rfc} | company_name={company_name} | email={email}",
+                    rfc=rfc.upper(),
+                    company_name=company_name,
+                    email=email,
+                )
 
             user = User.objects.create_user(
                 email=email,
@@ -146,13 +203,20 @@ class CompleteRegisterView(APIView):
                 is_active=True
             )
 
-            logger.info(f"Usuario registrado correctamente | email={email} | user_id={user.id} | role={role} | company_name={company_name}")
+            logger.info(
+                "complete_register | action=create_user | result=success | user_id={user_id} "
+                "| email={email} | role={role} | company_id={company_id} | ip={ip} | status_code=201",
+                user_id=user.id,
+                email=email,
+                role=role,
+                company_id=company.id,
+                ip=ip,
+            )
 
             return ApiResponse.created(
                 message="Usuario registrado correctamente.",
                 data={"user": {"id": user.id, "email": user.email, "name": user.name}},
             )
-        # CAMBIO: se captura IntegrityError para manejar UNIQUE constraint (email duplicado)
         except IntegrityError as e:
             error_str = str(e).lower()
             if "email" in error_str:
@@ -161,6 +225,13 @@ class CompleteRegisterView(APIView):
                 detail = "Ya existe una empresa registrada con ese RFC."
             else:
                 detail = "Conflicto en la base de datos. Verifica los datos enviados."
+            logger.warning(
+                "complete_register | action=create_user | result=integrity_error "
+                "| email={email} | detail={detail} | ip={ip}",
+                email=email,
+                detail=detail,
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Error de registro.",
                 errors={"detail": detail},
@@ -168,7 +239,13 @@ class CompleteRegisterView(APIView):
             )
 
         except Exception as e:
-            logger.error(f"Error al registrar usuario | email={email} | error={str(e)}")
+            logger.error(
+                "complete_register | action=create_user | result=unexpected_error "
+                "| email={email} | error={error} | ip={ip}",
+                email=email,
+                error=str(e),
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Error al registrar usuario.",
                 errors={"detail": str(e)},
