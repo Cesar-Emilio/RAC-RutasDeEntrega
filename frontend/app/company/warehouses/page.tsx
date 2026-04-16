@@ -9,7 +9,7 @@ import { WarehouseTable } from "@/components/warehouses/warehousetable";
 
 import {
   getWarehousesRequest,
-  patchWarehouseRequest,
+  toggleWarehouseRequest,
 } from "@/lib/warehouses-api";
 
 import type { Warehouse } from "@/types/warehouses-types";
@@ -63,12 +63,8 @@ export default function CompanyWarehousesPage() {
   }, [searchValue, filterValue, warehouses]);
 
   const handleToggleStatus = async (warehouse: WarehouseData) => {
-    const newStatus = !warehouse.active;
-
     try {
-      const updated = await patchWarehouseRequest(warehouse.id, {
-        active: newStatus,
-      });
+      const updated = await toggleWarehouseRequest(warehouse.id);
 
       setWarehouses((prev) =>
         prev.map((w) =>
