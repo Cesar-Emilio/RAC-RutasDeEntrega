@@ -10,7 +10,7 @@ interface RouteMapProps {
 }
 
 export function RouteMap({ warehouseName, details }: RouteMapProps) {
-  const [_route, setRoute] = useState<any>(null);
+  const [route, setRoute] = useState<any>(null);
   const [loadingRoute, setLoadingRoute] = useState(true);
 
   useEffect(() => {
