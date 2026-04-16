@@ -6,7 +6,7 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema
 
 from .models import Company
 from .serializers import CompanySerializer
-from apps.authorization.permissions import IsAdminRole
+from .permissions import IsAdminUser
 import jwt
 from datetime import timedelta
 from django.utils import timezone
@@ -62,7 +62,7 @@ logger = logging.getLogger(__name__)
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.filter(active=True)
     serializer_class = CompanySerializer
-    permission_classes = [IsAdminRole]
+    permission_classes = [IsAdminUser]
 
     def create(self, request, *args, **kwargs):
         try:
@@ -94,7 +94,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class InviteCompanyView(APIView):
-    permission_classes = []
+    permission_classes = [IsAdminUser]
 
     def post(self, request):
         email = request.data.get('email')

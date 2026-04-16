@@ -2,7 +2,7 @@ import logging
 from rest_framework import generics
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
-from apps.authorization.permissions import IsAdminRole
+from .permissions import IsAdminUser
 from .serializers import RegisterSerializer
 import jwt
 from django.conf import settings
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 )
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
-    permission_classes = (IsAdminRole,)
+    permission_classes = [IsAdminUser]  # Solo los administradores pueden registrar usuarios
     serializer_class = RegisterSerializer
 
     def perform_create(self, serializer):
@@ -42,7 +42,7 @@ class RegisterView(generics.CreateAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CompleteRegisterView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny]  # Accesible para cualquier usuario
 
     def get(self, request, token):
         try:
@@ -103,7 +103,6 @@ class CompleteRegisterView(APIView):
                 logger.info(f"Compañía creada | rfc={rfc.upper()} | company_name={company_name} | email={email}")
             else:
                 logger.info(f"Compañía actualizada | rfc={rfc.upper()} | company_name={company_name} | email={email}")
-
 
             user = User.objects.create_user(
                 email=email,
