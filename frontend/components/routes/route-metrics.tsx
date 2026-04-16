@@ -1,7 +1,8 @@
 "use client";
 
+// CAMBIO: se elimina MapPin de los imports — no se usa en este componente
 import { useState } from "react";
-import { Package, MapPin, Warehouse, FileText, ChevronUp, ChevronDown } from "lucide-react";
+import { Package, Warehouse, FileText, ChevronUp, ChevronDown } from "lucide-react";
 import { RouteDetail } from "@/types/routes-types";
 
 interface RouteMetricsProps {

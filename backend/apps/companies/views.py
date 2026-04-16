@@ -15,9 +15,10 @@ from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser
+# CAMBIO: se reemplaza Response por ApiResponse para formato de respuesta uniforme
 from rest_framework import status
+# CAMBIO: import ApiResponse en lugar de Response directo
+from utils.response_helper import ApiResponse
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
             return response
         except Exception as e:
             logger.error(f"Error al crear la Empresa | user={request.user.username} | error={str(e)}")
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         try:
@@ -80,7 +81,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
             return response
         except Exception as e:
             logger.error(f"Error al actualizar la Empresa | user={request.user.username} | company_id={kwargs['pk']} | error={str(e)}")
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
         try:
@@ -89,7 +90,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
             return response
         except Exception as e:
             logger.error(f"Error al eliminar la Empresa | user={request.user.username} | company_id={kwargs['pk']} | error={str(e)}")
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -99,8 +100,13 @@ class InviteCompanyView(APIView):
     def post(self, request):
         email = request.data.get('email')
         if not email:
+            # CAMBIO: usar ApiResponse.error en lugar de Response() directo
             logger.warning(f"Intento fallido de invitación | missing_email | ip={request.META['REMOTE_ADDR']}")
-            return Response({'detail': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            return ApiResponse.error(
+                message="El campo email es requerido.",
+                errors={"detail": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         
         # Generar el token con una fecha de expiración de 24 horas
         expiration_time = timezone.now() + timedelta(hours=24)
@@ -109,8 +115,13 @@ class InviteCompanyView(APIView):
         # Enviar correo con el token
         self.send_invitation_email(email, token)
 
+        # CAMBIO: usar ApiResponse.success en lugar de Response() directo
         logger.info(f"Invitación enviada correctamente | email={email}")
-        return Response({'detail': 'Invitation sent.'}, status=status.HTTP_200_OK)
+        return ApiResponse.success(
+            message="Invitación enviada correctamente.",
+            data={"email": email},
+            status=status.HTTP_200_OK,
+        )
 
     def send_invitation_email(self, email, token):
         subject = 'Invitación para completar el registro'
