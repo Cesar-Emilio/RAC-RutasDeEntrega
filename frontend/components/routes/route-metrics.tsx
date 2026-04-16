@@ -32,7 +32,7 @@ function MetricCard({ icon: Icon, value, label }: MetricCardProps) {
 export function RouteMetrics({ route }: RouteMetricsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  // TODO const stopsCount = route.delivery_points.length;
+  // IMPLEMENTAR const stopsCount = route.delivery_points.length;
   let truncatedFileName: string | number;
   const fileName = route.file_name;
 

@@ -35,7 +35,7 @@ function encodePayload(data: unknown): string {
   if (typeof globalThis !== "undefined" && typeof globalThis.btoa === "function") {
     const bytes = new TextEncoder().encode(json);
     let binary = "";
-    bytes.forEach((b) => (binary += String.fromCharCode(b)));
+    bytes.forEach((b) => (binary += String.fromCodePoint(b)));
     return globalThis.btoa(binary);
   }
 

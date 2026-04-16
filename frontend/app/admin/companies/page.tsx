@@ -104,7 +104,7 @@ export default function AdminCompaniesPage() {
     }
 
     // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
     if (!emailRegex.test(inviteEmail)) {
       setInviteError("Correo electrónico inválido");
       return;

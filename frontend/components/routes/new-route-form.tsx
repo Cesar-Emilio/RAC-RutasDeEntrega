@@ -58,17 +58,17 @@ export function NewRouteForm() {
     setIsDropdownOpen(false);
   };
 
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: DragEvent<HTMLElement>) => {
     e.preventDefault();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = (e: DragEvent<HTMLElement>) => {
     e.preventDefault();
     setIsDragging(false);
   };
 
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+  const handleDrop = (e: DragEvent<HTMLElement>) => {
     e.preventDefault();
     setIsDragging(false);
     const droppedFile = e.dataTransfer.files[0];
@@ -234,17 +234,11 @@ export function NewRouteForm() {
           </div>
         </div>
 
-        <div
-          role="button"
-          tabIndex={0}
+        <button 
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-            }
-          }}
+          onClick={() => fileInputRef.current?.click()}
           className={`
             relative flex flex-col items-center justify-center
             py-12 px-6 rounded-xl
@@ -269,14 +263,7 @@ export function NewRouteForm() {
             <>
               <p className="text-text-primary mb-1">Arrastra tu archivo aquí</p>
               <p className="text-sm text-text-secondary">
-                o{" "}
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-primary-400 hover:text-primary-300 underline"
-                >
-                  selecciona un archivo
-                </button>{" "}
-                de tu computadora
+                o <span className="text-primary-400 underline">selecciona un archivo</span> de tu computadora
               </p>
             </>
           )}
@@ -297,7 +284,7 @@ export function NewRouteForm() {
             onChange={handleFileSelect}
             className="hidden"
           />
-        </div>
+        </button>
       </div>
 
       <div className="mb-10">

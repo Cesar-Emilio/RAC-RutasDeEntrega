@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { API_BASE_URL, requestJson } from "@/lib/http";
@@ -192,15 +191,15 @@ export default function RegisterPage() {
                 <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[var(--foreground-muted)]">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-bold text-[var(--background)]">
                     1
-                  </span>
+                  </span>{" "}
                   Datos Personales
                 </h2>
 
                 <div className="space-y-4">
                   {/* Full Name */}
                   <div>
-                    <label className="block text-sm font-medium text-[var(--foreground-muted)]">
-                      Nombre Completo
+                    <label htmlFor="name" className="block text-sm font-medium text-[var(--foreground-muted)]">
+                      Nombre Completo{" "}
                       <span className="ml-1 text-red-500">*</span>
                     </label>
                     <input
@@ -215,8 +214,8 @@ export default function RegisterPage() {
 
                   {/* Password */}
                   <div>
-                    <label className="block text-sm font-medium text-[var(--foreground-muted)]">
-                      Contraseña
+                    <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground-muted)]">
+                      Contraseña{" "}
                       <span className="ml-1 text-red-500">*</span>
                     </label>
                     <div className="relative mt-2">
@@ -249,8 +248,8 @@ export default function RegisterPage() {
 
                   {/* Confirm Password */}
                   <div>
-                    <label className="block text-sm font-medium text-[var(--foreground-muted)]">
-                      Confirmar Contraseña
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-[var(--foreground-muted)]">
+                      Confirmar Contraseña{" "}
                       <span className="ml-1 text-red-500">*</span>
                     </label>
                     <div className="relative mt-2">
@@ -294,15 +293,15 @@ export default function RegisterPage() {
                 <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[var(--foreground-muted)]">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-bold text-[var(--background)]">
                     2
-                  </span>
+                  </span>{" "}
                   Datos de la Empresa
                 </h2>
 
                 <div className="space-y-4">
                   {/* Company Name */}
                   <div>
-                    <label className="block text-sm font-medium text-[var(--foreground-muted)]">
-                      Nombre de la Empresa
+                    <label htmlFor="companyName" className="block text-sm font-medium text-[var(--foreground-muted)]">
+                      Nombre de la Empresa{" "}
                       <span className="ml-1 text-red-500">*</span>
                     </label>
                     <input
@@ -317,8 +316,8 @@ export default function RegisterPage() {
 
                   {/* RFC */}
                   <div>
-                    <label className="block text-sm font-medium text-[var(--foreground-muted)]">
-                      RFC
+                    <label htmlFor="rfc" className="block text-sm font-medium text-[var(--foreground-muted)]">
+                      RFC{" "}
                       <span className="ml-1 text-red-500">*</span>
                     </label>
                     <input
