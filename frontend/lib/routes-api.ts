@@ -36,21 +36,20 @@ export async function getRouteByIdRequest(id: string) {
   );
 }
 
-export async function sendCoordinates(coords: any) {
-  if (coords.length < 2) return null;
-
+export async function sendCoordinates(coords: [number, number][]) {
+  
   const res = await fetch(
     "https://api.openrouteservice.org/v2/directions/driving-car/geojson",
     {
       method: "POST",
       headers: {
-        Authorization: process.env.NEXT_PUBLIC_ORS_API_KEY!,
+        Authorization: process.env.NEXT_PUBLIC_MAPI_BASIC_KEY!,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ coordinates: coords }),
     }
   );
 
-  if (!res.ok) throw new Error(`ORS error: ${res.status}`);
-  return res.json();
+  const data = await res.json();
+  return data;
 }
