@@ -1,3 +1,5 @@
+import time
+
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -7,8 +9,9 @@ from apps.authorization.permissions import IsActiveUser
 from apps.companies.models import Company
 from apps.warehouses.models import Warehouse
 from utils.response_helper import ApiResponse
+from config.logging_utils import get_logger, build_request_context
 
-
+logger = get_logger(__name__)
 User = get_user_model()
 
 
@@ -18,7 +21,7 @@ def _relative_time(value):
 
 	delta = timezone.now() - value
 	if delta.days > 0:
-		return f"Hace {delta.days} d\u00edas"
+		return f"Hace {delta.days} días"
 
 	hours = delta.seconds // 3600
 	if hours > 0:
@@ -43,7 +46,15 @@ class DashboardSummaryView(APIView):
 	permission_classes = [IsAuthenticated, IsActiveUser]
 
 	def get(self, request):
+		ctx = build_request_context(request)
 		role = getattr(request.user, "role", None)
+		start = time.perf_counter()
+
+		logger.debug(
+			"dashboard | action=get_summary | role={role} | request_id={request_id} | user_id={user_id}",
+			role=role,
+			**ctx,
+		)
 
 		if role == "admin":
 			companies_qs = Company.objects.filter(active=True).order_by("-created_at")
@@ -114,6 +125,19 @@ class DashboardSummaryView(APIView):
 			for item in recent_activity:
 				item.pop("sort_key", None)
 
+			elapsed_ms = int((time.perf_counter() - start) * 1000)
+			logger.info(
+				"dashboard | action=get_summary | result=success | role=admin "
+				"| companies={companies} | warehouses={warehouses_count} | users={users} "
+				"| execution_time_ms={elapsed_ms} | request_id={request_id} | user_id={user_id} "
+				"| status_code=200",
+				companies=stats[0]["value"],
+				warehouses_count=stats[1]["value"],
+				users=stats[2]["value"],
+				elapsed_ms=elapsed_ms,
+				**ctx,
+			)
+
 			return ApiResponse.success(
 				message="Dashboard summary retrieved.",
 				data={
@@ -159,6 +183,18 @@ class DashboardSummaryView(APIView):
 			for item in recent_activity:
 				item.pop("sort_key", None)
 
+			elapsed_ms = int((time.perf_counter() - start) * 1000)
+			logger.info(
+				"dashboard | action=get_summary | result=success | role=company "
+				"| company_id={company_id} | warehouses={warehouses_count} "
+				"| execution_time_ms={elapsed_ms} | request_id={request_id} | user_id={user_id} "
+				"| status_code=200",
+				company_id=getattr(company, "id", None),
+				warehouses_count=stats[0]["value"],
+				elapsed_ms=elapsed_ms,
+				**ctx,
+			)
+
 			return ApiResponse.success(
 				message="Dashboard summary retrieved.",
 				data={
@@ -168,6 +204,12 @@ class DashboardSummaryView(APIView):
 				},
 			)
 
+		logger.warning(
+			"dashboard | action=get_summary | result=unsupported_role | role={role} "
+			"| request_id={request_id} | user_id={user_id}",
+			role=role,
+			**ctx,
+		)
 		return ApiResponse.error(
 			message="Unsupported role.",
 			errors={"detail": "User role not supported for dashboard summary."},

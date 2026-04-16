@@ -1,3 +1,5 @@
+import time
+
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -10,6 +12,10 @@ from .serializers import RouteListSerializer, RouteCreateSerializer, RouteDetail
 from .tasks import enqueue_process_route
 from .permissions import IsAdminOrCompanyUser, IsCompanyUser
 from utils.response_helper import ApiResponse
+from config.logging_utils import get_logger, build_request_context, sanitize_params
+
+logger = get_logger(__name__)
+
 
 class CompanyScopedMixin:
     """
@@ -23,15 +29,29 @@ class CompanyScopedMixin:
  
     def get_company_filtered_queryset(self, queryset):
         user = self.request.user
+        ctx = build_request_context(self.request)
  
         if user.is_superuser:
             company_id = self.request.query_params.get("company")
             if company_id:
                 queryset = queryset.filter(company_id=company_id)
+                logger.debug(
+                    "company_scope | action=filter_by_company | company_id={company_id} "
+                    "| request_id={request_id} | user_id={user_id}",
+                    company_id=company_id,
+                    **ctx,
+                )
         else:
             queryset = queryset.filter(company_id=user.company_id)
+            logger.debug(
+                "company_scope | action=restrict_to_own_company | company_id={company_id} "
+                "| request_id={request_id} | user_id={user_id}",
+                company_id=user.company_id,
+                **ctx,
+            )
  
         return queryset
+
 
 @extend_schema(
     description=(
@@ -59,12 +79,35 @@ class RouteListView(CompanyScopedMixin, generics.ListAPIView):
     permission_classes = [IsAdminOrCompanyUser]
  
     def get_queryset(self):
+        ctx = build_request_context(self.request)
+        logger.debug(
+            "route_list | action=get_queryset | params={params} "
+            "| request_id={request_id} | user_id={user_id}",
+            params=sanitize_params(dict(self.request.query_params)),
+            **ctx,
+        )
         queryset = (
             Route.objects
             .select_related("warehouse", "company", "input_file")
             .order_by("-created_at")
         )
         return self.get_company_filtered_queryset(queryset)
+
+    def list(self, request, *args, **kwargs):
+        ctx = build_request_context(request)
+        start = time.perf_counter()
+        response = super().list(request, *args, **kwargs)
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+        count = len(response.data) if hasattr(response, "data") and isinstance(response.data, list) else "?"
+        logger.info(
+            "route_list | action=list_routes | result=success | count={count} "
+            "| execution_time_ms={elapsed_ms} | request_id={request_id} | user_id={user_id} "
+            "| endpoint={endpoint} | method={method} | status_code=200",
+            count=count,
+            elapsed_ms=elapsed_ms,
+            **ctx,
+        )
+        return response
 
 
 @extend_schema(
@@ -130,21 +173,64 @@ class RouteCreateView(generics.CreateAPIView):
             return 0
  
     def create(self, request, *args, **kwargs):
-    
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        self.perform_create(serializer)
-        route = serializer.instance
- 
-        task_id = enqueue_process_route(route.id)
- 
-        headers = self.get_success_headers(serializer.data)
-        return ApiResponse.success(
-            data={"id": route.id, "status": route.status, "task_id": task_id},
-            status=status.HTTP_202_ACCEPTED,
-            headers=headers,
+        ctx = build_request_context(request)
+        start = time.perf_counter()
+
+        logger.info(
+            "route_create | action=create_route_start | file_type={file_type} "
+            "| company_id={company_id} | request_id={request_id} | user_id={user_id} "
+            "| endpoint={endpoint} | method={method}",
+            file_type=request.data.get("file_type"),
+            company_id=getattr(request.user.company, "id", None),
+            **ctx,
         )
+        logger.debug(
+            "route_create | action=request_params | params={params} "
+            "| request_id={request_id} | user_id={user_id}",
+            params=sanitize_params({k: v for k, v in request.data.items() if k != "file"}),
+            **ctx,
+        )
+
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            
+            self.perform_create(serializer)
+            route = serializer.instance
+     
+            task_id = enqueue_process_route(route.id)
+            elapsed_ms = int((time.perf_counter() - start) * 1000)
+     
+            logger.info(
+                "route_create | action=create_route_end | result=success | route_id={route_id} "
+                "| task_id={task_id} | delivery_count={delivery_count} "
+                "| execution_time_ms={elapsed_ms} | request_id={request_id} | user_id={user_id} "
+                "| endpoint={endpoint} | method={method} | status_code=202",
+                route_id=route.id,
+                task_id=task_id,
+                delivery_count=route.delivery_count,
+                elapsed_ms=elapsed_ms,
+                **ctx,
+            )
+     
+            headers = self.get_success_headers(serializer.data)
+            return ApiResponse.success(
+                data={"id": route.id, "status": route.status, "task_id": task_id},
+                status=status.HTTP_202_ACCEPTED,
+                headers=headers,
+            )
+
+        except Exception as exc:
+            elapsed_ms = int((time.perf_counter() - start) * 1000)
+            logger.error(
+                "route_create | action=create_route_end | result=failure | error={error} "
+                "| execution_time_ms={elapsed_ms} | request_id={request_id} | user_id={user_id} "
+                "| endpoint={endpoint} | method={method}",
+                error=str(exc),
+                elapsed_ms=elapsed_ms,
+                **ctx,
+            )
+            raise
 
 
 @extend_schema(
@@ -181,6 +267,14 @@ class RouteDetailView(CompanyScopedMixin, generics.RetrieveAPIView):
     permission_classes = [IsAdminOrCompanyUser]
 
     def get_queryset(self):
+        ctx = build_request_context(self.request)
+        route_id = self.kwargs.get("pk")
+        logger.debug(
+            "route_detail | action=get_queryset | route_id={route_id} "
+            "| request_id={request_id} | user_id={user_id}",
+            route_id=route_id,
+            **ctx,
+        )
         queryset = (
             Route.objects
             .select_related("warehouse", "company", "input_file")
@@ -190,3 +284,19 @@ class RouteDetailView(CompanyScopedMixin, generics.RetrieveAPIView):
             )
         )
         return self.get_company_filtered_queryset(queryset)
+
+    def retrieve(self, request, *args, **kwargs):
+        ctx = build_request_context(request)
+        start = time.perf_counter()
+        response = super().retrieve(request, *args, **kwargs)
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+        route_id = kwargs.get("pk")
+        logger.info(
+            "route_detail | action=retrieve_route | result=success | route_id={route_id} "
+            "| execution_time_ms={elapsed_ms} | request_id={request_id} | user_id={user_id} "
+            "| endpoint={endpoint} | method={method} | status_code=200",
+            route_id=route_id,
+            elapsed_ms=elapsed_ms,
+            **ctx,
+        )
+        return response

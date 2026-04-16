@@ -3,7 +3,8 @@ from rest_framework import status as http_status
 
 class ApiResponse:
     @staticmethod
-    def success(data=None, message="Success", status=http_status.HTTP_200_OK, headers = ""):
+    # CAMBIO: headers="" → headers=None (tipo correcto para parámetro de headers HTTP)
+    def success(data=None, message="Success", status=http_status.HTTP_200_OK, headers=None):
         return Response({"success": True, "message": message, "data": data}, status=status, headers=headers)
 
     @staticmethod
