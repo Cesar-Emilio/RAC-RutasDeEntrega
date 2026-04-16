@@ -1,4 +1,3 @@
-import logging
 from rest_framework import viewsets
 from drf_spectacular.openapi import OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
@@ -15,12 +14,12 @@ from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
-# CAMBIO: se reemplaza Response por ApiResponse para formato de respuesta uniforme
 from rest_framework import status
-# CAMBIO: import ApiResponse en lugar de Response directo
 from utils.response_helper import ApiResponse
+from config.logging_utils import get_logger, get_client_ip
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -66,31 +65,80 @@ class CompanyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminUser]
 
     def create(self, request, *args, **kwargs):
+        actor_id = getattr(request.user, "id", None)
         try:
             response = super().create(request, *args, **kwargs)
-            logger.info(f"Empresa creada con éxito | user={request.user.username} | company_id={response.data['id']}")
+            company_id = response.data.get("id") if hasattr(response, "data") else None
+            logger.info(
+                "company | action=create | result=success | company_id={company_id} "
+                "| actor_user_id={actor_id} | status_code=201",
+                company_id=company_id,
+                actor_id=actor_id,
+            )
             return response
         except Exception as e:
-            logger.error(f"Error al crear la Empresa | user={request.user.username} | error={str(e)}")
-            return ApiResponse({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error(
+                "company | action=create | result=failure | actor_user_id={actor_id} | error={error}",
+                actor_id=actor_id,
+                error=str(e),
+            )
+            return ApiResponse.error(
+                message="Error al crear la empresa.",
+                errors={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def update(self, request, *args, **kwargs):
+        actor_id = getattr(request.user, "id", None)
+        company_id = kwargs.get("pk")
         try:
             response = super().update(request, *args, **kwargs)
-            logger.info(f"Empresa actualizada con éxito | user={request.user.username} | company_id={kwargs['pk']}")
+            logger.info(
+                "company | action=update | result=success | company_id={company_id} "
+                "| actor_user_id={actor_id} | status_code=200",
+                company_id=company_id,
+                actor_id=actor_id,
+            )
             return response
         except Exception as e:
-            logger.error(f"Error al actualizar la Empresa | user={request.user.username} | company_id={kwargs['pk']} | error={str(e)}")
-            return ApiResponse({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error(
+                "company | action=update | result=failure | company_id={company_id} "
+                "| actor_user_id={actor_id} | error={error}",
+                company_id=company_id,
+                actor_id=actor_id,
+                error=str(e),
+            )
+            return ApiResponse.error(
+                message="Error al actualizar la empresa.",
+                errors={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def destroy(self, request, *args, **kwargs):
+        actor_id = getattr(request.user, "id", None)
+        company_id = kwargs.get("pk")
         try:
             response = super().destroy(request, *args, **kwargs)
-            logger.info(f"Empresa eliminada con éxito | user={request.user.username} | company_id={kwargs['pk']}")
+            logger.info(
+                "company | action=destroy | result=success | company_id={company_id} "
+                "| actor_user_id={actor_id} | status_code=204",
+                company_id=company_id,
+                actor_id=actor_id,
+            )
             return response
         except Exception as e:
-            logger.error(f"Error al eliminar la Empresa | user={request.user.username} | company_id={kwargs['pk']} | error={str(e)}")
-            return ApiResponse({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error(
+                "company | action=destroy | result=failure | company_id={company_id} "
+                "| actor_user_id={actor_id} | error={error}",
+                company_id=company_id,
+                actor_id=actor_id,
+                error=str(e),
+            )
+            return ApiResponse.error(
+                message="Error al eliminar la empresa.",
+                errors={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -98,32 +146,55 @@ class InviteCompanyView(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request):
+        actor_id = getattr(request.user, "id", None)
+        ip = get_client_ip(request)
         email = request.data.get('email')
+
         if not email:
-            # CAMBIO: usar ApiResponse.error en lugar de Response() directo
-            logger.warning(f"Intento fallido de invitación | missing_email | ip={request.META['REMOTE_ADDR']}")
+            logger.warning(
+                "invite | action=send_invitation | result=missing_email "
+                "| actor_user_id={actor_id} | ip={ip}",
+                actor_id=actor_id,
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="El campo email es requerido.",
                 errors={"detail": "Email is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         # Generar el token con una fecha de expiración de 24 horas
+        # El token no se loga para evitar exponer el enlace de invitación
         expiration_time = timezone.now() + timedelta(hours=24)
         token = jwt.encode({'email': email, 'exp': expiration_time}, settings.SECRET_KEY, algorithm='HS256')
 
-        # Enviar correo con el token
-        self.send_invitation_email(email, token)
+        self.send_invitation_email(email, token, actor_id=actor_id, ip=ip)
 
-        # CAMBIO: usar ApiResponse.success en lugar de Response() directo
-        logger.info(f"Invitación enviada correctamente | email={email}")
+        logger.info(
+            "invite | action=send_invitation | result=success | email={email} "
+            "| actor_user_id={actor_id} | ip={ip} | status_code=200",
+            email=email,
+            actor_id=actor_id,
+            ip=ip,
+        )
         return ApiResponse.success(
             message="Invitación enviada correctamente.",
             data={"email": email},
             status=status.HTTP_200_OK,
         )
 
-    def send_invitation_email(self, email, token):
+    def send_invitation_email(self, email, token, actor_id=None, ip=None):
         subject = 'Invitación para completar el registro'
         message = f'Por favor complete su registro en el siguiente enlace: {settings.FRONTEND_URL}/auth/complete-registration/{token}'
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+        try:
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+        except Exception as exc:
+            logger.opt(exception=True).error(
+                "invite | action=send_email | result=failure | email={email} "
+                "| actor_user_id={actor_id} | ip={ip} | error={error}",
+                email=email,
+                actor_id=actor_id,
+                ip=ip,
+                error=str(exc),
+            )
+            raise
