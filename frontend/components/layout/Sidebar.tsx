@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -42,9 +42,6 @@ export function Sidebar({ role }: { role: SidebarRole }) {
   const { logout } = useAuth();
   const links = role === "admin" ? adminLinks : companyLinks;
   const [isOpen, setIsOpen] = useState(true);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   const handleLogout = async () => {
     await logout();
@@ -52,15 +49,6 @@ export function Sidebar({ role }: { role: SidebarRole }) {
   };
 
   const isItemActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
-
-  if (!mounted) {
-    return (
-      <aside
-        className="fixed top-0 left-0 z-50 h-screen w-56"
-        style={{ backgroundColor: "var(--color-surface)" }}
-      />
-    );
-  }
 
   return (
     <>

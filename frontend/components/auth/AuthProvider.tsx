@@ -84,6 +84,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void bootstrap();
   }, []);
 
+  useEffect(() => {
+    const onSessionExpired = () => {
+      setTokens(null);
+      setUser(null);
+      setStatus("unauthenticated");
+    };
+
+    window.addEventListener("auth:session-expired", onSessionExpired);
+    return () => {
+      window.removeEventListener("auth:session-expired", onSessionExpired);
+    };
+  }, []);
+
   const login = useCallback(async (email: string, password: string, remember: boolean) => {
     const response = await loginRequest(email, password);
 

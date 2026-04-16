@@ -1,6 +1,7 @@
 import { ApiResponse } from "@/types/api-types";
 import axios, {
   AxiosHeaders,
+  type AxiosError,
   type AxiosRequestConfig,
   type Method,
 } from "axios";
@@ -40,6 +41,58 @@ function encodePayload(data: unknown): string {
 }
 
 const httpClient = axios.create();
+let refreshPromise: Promise<string | null> | null = null;
+
+type RetryableAxiosConfig = AxiosRequestConfig & { _retry?: boolean };
+
+function shouldSkipAuthRefresh(config?: AxiosRequestConfig): boolean {
+  const url = config?.url ?? "";
+  return url.includes("/api/auth/login/") || url.includes("/api/auth/refresh/");
+}
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    const storedTokens = authStorage.getTokens();
+    if (!storedTokens?.refresh) {
+      return null;
+    }
+
+    try {
+      const refreshUrl = `${API_BASE_URL}/api/auth/refresh/`;
+      const response = await axios.post<ApiResponse<{ access: string }>>(
+        refreshUrl,
+        { refresh: storedTokens.refresh },
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      const payload = response.data;
+      if (!payload.success || !payload.data?.access) {
+        return null;
+      }
+
+      const persist = authStorage.isPersistent();
+      const nextTokens = {
+        access: payload.data.access,
+        refresh: storedTokens.refresh,
+      };
+
+      authStorage.setTokens(nextTokens, persist);
+      return nextTokens.access;
+    } catch {
+      return null;
+    }
+  })().finally(() => {
+    refreshPromise = null;
+  });
+
+  return refreshPromise;
+}
 
 httpClient.interceptors.request.use((config) => {
   const method = config.method?.toUpperCase();
@@ -81,6 +134,51 @@ httpClient.interceptors.request.use((config) => {
 
   return config;
 });
+
+httpClient.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const config = error.config as RetryableAxiosConfig | undefined;
+
+    if (
+      error.response?.status !== 401 ||
+      !config ||
+      config._retry ||
+      shouldSkipAuthRefresh(config)
+    ) {
+      return Promise.reject(error);
+    }
+
+    config._retry = true;
+    const newAccessToken = await refreshAccessToken();
+
+    if (!newAccessToken) {
+      authStorage.clearAll();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("auth:session-expired"));
+      }
+      return Promise.reject(error);
+    }
+
+    const headers =
+      config.headers instanceof AxiosHeaders
+        ? config.headers
+        : new AxiosHeaders();
+
+    if (config.headers && !(config.headers instanceof AxiosHeaders)) {
+      const rawHeaders = config.headers as Record<string, unknown>;
+      for (const [key, value] of Object.entries(rawHeaders)) {
+        if (value !== undefined && value !== null) {
+          headers.set(key, String(value));
+        }
+      }
+    }
+    headers.set("Authorization", `Bearer ${newAccessToken}`);
+    config.headers = headers;
+
+    return httpClient.request(config);
+  },
+);
 
 export async function requestJson<T>(
   input: string,

@@ -36,7 +36,7 @@ export async function getRouteByIdRequest(id: string) {
   );
 }
 
-export async function sendCoordinates(coords: any) {
+export async function sendCoordinates(coords: [number, number][]) {
   
   const res = await fetch(
     "https://api.openrouteservice.org/v2/directions/driving-car/geojson",

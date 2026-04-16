@@ -120,8 +120,8 @@ export function NewRouteForm() {
         setSubmittingRoute(true);
         const data = await createRouteRequest(payload);
         router.push(`/company/routes/${data.id}`)
-    } catch (err: any) {
-        console.log(err)
+    } catch (err: unknown) {
+      console.error("Error creating route", err);
     } finally {
         setSubmittingRoute(false);
     }

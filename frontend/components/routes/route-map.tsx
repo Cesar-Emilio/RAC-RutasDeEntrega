@@ -4,27 +4,38 @@ import { sendCoordinates } from "@/lib/routes-api";
 import { Loader2, Maximize2, Map } from "lucide-react";
 import { useEffect, useState } from "react";
 
+type RouteSolutionDetail = {
+  order_index: number;
+  delivery_point: {
+    longitude: number;
+    latitude: number;
+  };
+};
+
 interface RouteMapProps {
   warehouseName: string;
-  details: any;
+  details?: RouteSolutionDetail[] | null;
 }
 
 export function RouteMap({ warehouseName, details }: RouteMapProps) {
-  const [route, setRoute] = useState<any>(null);
   const [loadingRoute, setLoadingRoute] = useState(true);
 
   useEffect(() => {
     async function load() {
+      if (!details?.length) {
+        setLoadingRoute(false);
+        return;
+      }
+
       try {
         setLoadingRoute(true);
         const coords = details
-        .sort((a, b) => a.order_index - b.order_index)
-        .map((d) => [
-          Number(d.delivery_point.longitude),
-          Number(d.delivery_point.latitude),
-        ]);
-        const data = await sendCoordinates(coords);
-        setRoute(data);
+          .sort((a, b) => a.order_index - b.order_index)
+          .map((d): [number, number] => [
+            Number(d.delivery_point.longitude),
+            Number(d.delivery_point.latitude),
+          ]);
+        await sendCoordinates(coords);
       } catch (err) {
         console.error("Error fetching route", err);
       } finally {
