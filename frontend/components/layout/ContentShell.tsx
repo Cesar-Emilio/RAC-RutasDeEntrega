@@ -23,7 +23,7 @@ export function ContentShell({
   isLoading = false,
   loadingTitle = "Cargando contenido...",
   loadingMessage = "Espera un momento mientras terminamos de cargar la informacion.",
-}: ContentShellProps) {
+}: Readonly<ContentShellProps>) {
   return (
     <div className="min-h-screen bg-[var(--color-background)] text-white">
       <div className="flex min-h-screen w-full">

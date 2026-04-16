@@ -30,7 +30,7 @@ export function TableHistory({
   description,
   items,
   isLoading = false,
-}: TableHistoryProps) {
+}: Readonly<TableHistoryProps>) {
   return (
     <section className="min-w-0">
       <h2 className="mb-1 text-base font-semibold md:text-lg" style={{ color: "var(--color-text-secondary)" }}>

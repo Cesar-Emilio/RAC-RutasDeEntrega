@@ -16,7 +16,7 @@ export function CardStatistics({
   description,
   items,
   isLoading = false,
-}: CardStatisticsProps) {
+}: Readonly<CardStatisticsProps>) {
   return (
     <section className="mb-8">
       <div className="mb-4">
@@ -45,9 +45,9 @@ export function CardStatistics({
             </div>
           ))
         ) : (
-          Array.from({ length: 4 }).map((_, index) => (
+          Array.from({ length: 4 }, (_, placeholderNumber) => placeholderNumber + 1).map((placeholderNumber) => (
             <div
-              key={index}
+              key={`placeholder-${placeholderNumber}`}
               className="rounded-xl border p-4"
               style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-divider)" }}
             >

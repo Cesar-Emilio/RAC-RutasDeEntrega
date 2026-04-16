@@ -63,7 +63,7 @@ export function CrudTable<T extends { id: string | number }>({
   editModalDescription = "Actualiza la informacion del registro seleccionado.",
   editSubmitLabel = "Guardar cambios",
   editCancelLabel = "Cancelar",
-}: CrudTableProps<T>) {
+}: Readonly<CrudTableProps<T>>) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
@@ -117,7 +117,7 @@ export function CrudTable<T extends { id: string | number }>({
 
     setIsSubmittingStatus(true);
     try {
-      await onToggleStatus(statusTargetItem);
+      await Promise.resolve(onToggleStatus(statusTargetItem));
       closeStatusConfirmModal();
     } finally {
       setIsSubmittingStatus(false);
@@ -139,6 +139,81 @@ export function CrudTable<T extends { id: string | number }>({
     } finally {
       setIsSavingEdit(false);
     }
+  };
+
+  const getItemIsActive = (item: T) => {
+    const itemStatus = statusKey ? item[statusKey] : undefined;
+    if (typeof itemStatus === "boolean") {
+      return itemStatus;
+    }
+
+    return Boolean(itemStatus);
+  };
+
+  const getStatusBadgeMeta = (isActive: boolean) => {
+    if (isActive) {
+      return {
+        label: "Activo",
+        borderColor: "rgba(34,197,94,0.35)",
+        backgroundColor: "rgba(34,197,94,0.12)",
+        color: "var(--color-success)",
+      };
+    }
+
+    return {
+      label: "Inactivo",
+      borderColor: "rgba(239,68,68,0.35)",
+      backgroundColor: "rgba(239,68,68,0.12)",
+      color: "var(--color-error)",
+    };
+  };
+
+  const getStatusActionMeta = (isActive: boolean) => {
+    if (isActive) {
+      return {
+        label: "Desactivar",
+        borderColor: "rgba(239,68,68,0.35)",
+        color: "var(--color-error)",
+      };
+    }
+
+    return {
+      label: "Activar",
+      borderColor: "rgba(34,197,94,0.35)",
+      color: "var(--color-success)",
+    };
+  };
+
+  const renderCellContent = (item: T, column: CrudColumn<T>, isActive: boolean) => {
+    const rawValue = item[column.key as keyof T];
+    const isStatusColumn = Boolean(statusKey && column.key === statusKey);
+
+    if (isStatusColumn) {
+      const statusBadge = getStatusBadgeMeta(isActive);
+
+      return (
+        <span
+          className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em]"
+          style={{
+            borderColor: statusBadge.borderColor,
+            backgroundColor: statusBadge.backgroundColor,
+            color: statusBadge.color,
+          }}
+        >
+          {statusBadge.label}
+        </span>
+      );
+    }
+
+    if (column.render) {
+      return column.render(item);
+    }
+
+    return (
+      <span className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
+        {String(rawValue ?? "-")}
+      </span>
+    );
   };
 
   return (
@@ -167,22 +242,22 @@ export function CrudTable<T extends { id: string | number }>({
                     {column.label}
                   </th>
                 ))}
-                {hasActions ? (
+                {hasActions && (
                   <th
                     className="px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wide"
                     style={{ color: "var(--color-text-muted)" }}
                   >
                     Acciones
                   </th>
-                ) : null}
+                )}
               </tr>
             </thead>
             <tbody>
               {items.length > 0 ? (
                 items.map((item) => {
-                  const itemStatus = statusKey ? item[statusKey] : undefined;
-                  const isActive = typeof itemStatus === "boolean" ? itemStatus : Boolean(itemStatus);
+                  const isActive = getItemIsActive(item);
                   const actionDisabled = actionLoadingId === item.id;
+                  const statusAction = getStatusActionMeta(isActive);
 
                   return (
                     <tr
@@ -191,40 +266,22 @@ export function CrudTable<T extends { id: string | number }>({
                       style={{ borderColor: "var(--color-divider)" }}
                     >
                       {columns.map((column) => {
-                        const rawValue = item[column.key as keyof T];
-                        const isStatusColumn = statusKey && column.key === statusKey;
+                        const cellContent = renderCellContent(item, column, isActive);
 
                         return (
                           <td
                             key={String(column.key)}
                             className={`px-3 py-2.5 align-middle ${getAlignmentClass(column.align)}`}
                           >
-                            {isStatusColumn ? (
-                              <span
-                                className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em]"
-                                style={{
-                                  borderColor: isActive ? "rgba(34,197,94,0.35)" : "rgba(239,68,68,0.35)",
-                                  backgroundColor: isActive ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
-                                  color: isActive ? "var(--color-success)" : "var(--color-error)",
-                                }}
-                              >
-                                {isActive ? "Activo" : "Inactivo"}
-                              </span>
-                            ) : column.render ? (
-                              column.render(item)
-                            ) : (
-                              <span className="text-xs" style={{ color: "var(--color-text-secondary)" }}>
-                                {String(rawValue ?? "-")}
-                              </span>
-                            )}
+                            {cellContent}
                           </td>
                         );
                       })}
 
-                      {hasActions ? (
+                      {hasActions && (
                         <td className="px-3 py-2.5 align-middle text-center">
                           <div className="flex flex-wrap items-center justify-center gap-1.5">
-                            {canEdit ? (
+                            {canEdit && (
                               <button
                                 type="button"
                                 onClick={() => openEditModal(item)}
@@ -235,27 +292,27 @@ export function CrudTable<T extends { id: string | number }>({
                               >
                                 <PencilLine size={13} />
                               </button>
-                            ) : null}
+                            )}
 
-                            {onToggleStatus ? (
+                            {onToggleStatus && (
                               <button
                                 type="button"
                                 onClick={() => openStatusConfirmModal(item)}
                                 disabled={actionDisabled}
                                 className="inline-flex h-7 w-7 items-center justify-center rounded-md border transition disabled:cursor-not-allowed disabled:opacity-60"
                                 style={{
-                                  borderColor: isActive ? "rgba(239,68,68,0.35)" : "rgba(34,197,94,0.35)",
-                                  color: isActive ? "var(--color-error)" : "var(--color-success)",
+                                  borderColor: statusAction.borderColor,
+                                  color: statusAction.color,
                                 }}
-                                aria-label={isActive ? "Desactivar" : "Activar"}
-                                title={isActive ? "Desactivar" : "Activar"}
+                                aria-label={statusAction.label}
+                                title={statusAction.label}
                               >
                                 <Power size={13} />
                               </button>
-                            ) : null}
+                            )}
                           </div>
                         </td>
-                      ) : null}
+                      )}
                     </tr>
                   );
                 })

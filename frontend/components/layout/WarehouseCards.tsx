@@ -22,7 +22,7 @@ export function WarehouseCards({
   scrollProgress,
   linkHref,
   linkLabel,
-}: WarehouseCardsProps) {
+}: Readonly<WarehouseCardsProps>) {
   return (
     <section className="mb-10 min-w-0">
       <div className="mb-4 flex items-center justify-between">
