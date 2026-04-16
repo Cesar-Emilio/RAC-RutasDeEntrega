@@ -33,12 +33,14 @@ export function RouteMetrics({ route }: RouteMetricsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   // TODO const stopsCount = route.delivery_points.length;
-  let truncatedFileName: string | undefined;
+  let truncatedFileName: string | number;
   const fileName = route.file_name;
 
   if (fileName) {
     truncatedFileName =
       fileName.length > 12 ? fileName.slice(0, 12) + "..." : fileName;
+  } else {
+    truncatedFileName = "Error en el archivo"
   }
 
   return (

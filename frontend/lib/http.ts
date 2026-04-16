@@ -32,8 +32,11 @@ function normalizeHeaders(headers?: HeadersInit): Record<string, string> {
 
 function encodePayload(data: unknown): string {
   const json = JSON.stringify(data);
-  if (typeof window !== "undefined" && typeof window.btoa === "function") {
-    return window.btoa(unescape(encodeURIComponent(json)));
+  if (typeof globalThis !== "undefined" && typeof globalThis.btoa === "function") {
+    const bytes = new TextEncoder().encode(json);
+    let binary = "";
+    bytes.forEach((b) => (binary += String.fromCharCode(b)));
+    return globalThis.btoa(binary);
   }
 
   return Buffer.from(json, "utf-8").toString("base64");
