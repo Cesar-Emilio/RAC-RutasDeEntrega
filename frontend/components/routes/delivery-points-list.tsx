@@ -4,7 +4,7 @@ import { RouteDetail } from "@/types/routes-types";
 import { Navigation } from "lucide-react";
 
 interface DeliveryPointsListProps {
-  route: RouteDetail;
+  readonly route: RouteDetail;
 }
 
 interface OrderedDeliveryPoint {

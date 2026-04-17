@@ -60,7 +60,7 @@ export default function LoginPage() {
   };
 
   const onGoogleLogin = () => {
-    window.location.href = `${API_BASE_URL}/api/auth/google/login/`;
+    globalThis.location.href = `${API_BASE_URL}/api/auth/google/login/`;
   };
 
   return (
@@ -83,7 +83,7 @@ export default function LoginPage() {
             </p>
             <form className="mt-6 space-y-4" onSubmit={onSubmit}>
               <label className="block text-sm text-secondary">
-                Correo electronico
+                <span>Correo electronico</span>
                 <input
                   type="email"
                   value={form.email}
@@ -94,7 +94,7 @@ export default function LoginPage() {
                 />
               </label>
               <label className="block text-sm text-secondary">
-                Contraseña
+                <span>Contraseña</span>
                 <input
                   type="password"
                   value={form.password}
@@ -111,7 +111,7 @@ export default function LoginPage() {
                   onChange={onChange("remember")}
                   className="h-3.5 w-3.5 rounded border border-border bg-surface"
                 />
-                Mantener la sesion iniciada
+                <span>Mantener la sesion iniciada</span>
               </label>
               {error ? (
                 <div className="rounded-lg border border-error bg-[var(--color-surface)] px-3 py-2 text-xs text-[var(--color-error)]">

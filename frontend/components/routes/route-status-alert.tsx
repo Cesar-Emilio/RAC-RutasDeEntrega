@@ -1,11 +1,11 @@
 "use client";
 
-import { AlertCircle, Clock, Loader2, CheckCircle } from "lucide-react";
+import { AlertCircle, Clock, Loader2 } from "lucide-react";
 
 type RouteStatus = "pending" | "processing" | "completed" | "error";
 
 interface RouteStatusAlertProps {
-  status: RouteStatus;
+  readonly status: RouteStatus;
 }
 
 const statusConfig: Record<

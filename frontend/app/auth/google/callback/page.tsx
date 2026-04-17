@@ -5,7 +5,7 @@ import { authStorage } from "@/lib/auth-storage";
 
 export default function GoogleCallbackPage() {
   useEffect(() => {
-    const params = new URLSearchParams(window.location.hash.slice(1));
+    const params = new URLSearchParams(globalThis.location.hash.slice(1));
     const access = params.get("access");
     const refresh = params.get("refresh");
 
@@ -13,7 +13,7 @@ export default function GoogleCallbackPage() {
       authStorage.setTokens({ access, refresh }, true);
     }
 
-    window.location.replace("/");
+    globalThis.location.replace("/");
   }, []);
 
   return (

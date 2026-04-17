@@ -4,19 +4,19 @@ const TOKEN_KEY = "rac_tokens";
 const USER_KEY = "rac_user";
 
 const getStorage = (persist: boolean) =>
-  persist ? window.localStorage : window.sessionStorage;
+  persist ? globalThis.localStorage : globalThis.sessionStorage;
 
 const getAnyStorageItem = (key: string) => {
-  if (typeof window === "undefined") return null;
-  const sessionValue = window.sessionStorage.getItem(key);
+  if (typeof globalThis === "undefined") return null;
+  const sessionValue = globalThis.sessionStorage.getItem(key);
   if (sessionValue) return sessionValue;
-  return window.localStorage.getItem(key);
+  return globalThis.localStorage.getItem(key);
 };
 
 export const authStorage = {
   isPersistent(): boolean {
-    if (typeof window === "undefined") return false;
-    return Boolean(window.localStorage.getItem(TOKEN_KEY));
+    if (typeof globalThis === "undefined") return false;
+    return Boolean(globalThis.localStorage.getItem(TOKEN_KEY));
   },
   getTokens(): AuthTokens | null {
     const raw = getAnyStorageItem(TOKEN_KEY);
@@ -28,16 +28,16 @@ export const authStorage = {
     }
   },
   setTokens(tokens: AuthTokens, persist: boolean) {
-    if (typeof window === "undefined") return;
+    if (typeof globalThis === "undefined") return;
     const storage = getStorage(persist);
     storage.setItem(TOKEN_KEY, JSON.stringify(tokens));
-    const other = persist ? window.sessionStorage : window.localStorage;
+    const other = persist ? globalThis.sessionStorage : globalThis.localStorage;
     other.removeItem(TOKEN_KEY);
   },
   clearTokens() {
-    if (typeof window === "undefined") return;
-    window.localStorage.removeItem(TOKEN_KEY);
-    window.sessionStorage.removeItem(TOKEN_KEY);
+    if (typeof globalThis === "undefined") return;
+    globalThis.localStorage.removeItem(TOKEN_KEY);
+    globalThis.sessionStorage.removeItem(TOKEN_KEY);
   },
   getUser(): AuthUser | null {
     const raw = getAnyStorageItem(USER_KEY);
@@ -49,22 +49,22 @@ export const authStorage = {
     }
   },
   setUser(user: AuthUser, persist: boolean) {
-    if (typeof window === "undefined") return;
+    if (typeof globalThis === "undefined") return;
     const storage = getStorage(persist);
     storage.setItem(USER_KEY, JSON.stringify(user));
-    const other = persist ? window.sessionStorage : window.localStorage;
+    const other = persist ? globalThis.sessionStorage : globalThis.localStorage;
     other.removeItem(USER_KEY);
   },
   clearUser() {
-    if (typeof window === "undefined") return;
-    window.localStorage.removeItem(USER_KEY);
-    window.sessionStorage.removeItem(USER_KEY);
+    if (typeof globalThis === "undefined") return;
+    globalThis.localStorage.removeItem(USER_KEY);
+    globalThis.sessionStorage.removeItem(USER_KEY);
   },
   clearAll() {
-    if (typeof window === "undefined") return;
-    window.localStorage.removeItem(TOKEN_KEY);
-    window.localStorage.removeItem(USER_KEY);
-    window.sessionStorage.removeItem(TOKEN_KEY);
-    window.sessionStorage.removeItem(USER_KEY);
+    if (typeof globalThis === "undefined") return;
+    globalThis.localStorage.removeItem(TOKEN_KEY);
+    globalThis.localStorage.removeItem(USER_KEY);
+    globalThis.sessionStorage.removeItem(TOKEN_KEY);
+    globalThis.sessionStorage.removeItem(USER_KEY);
   },
 };

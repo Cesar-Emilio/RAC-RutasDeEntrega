@@ -20,7 +20,7 @@ export function ModalFrame({
   bodyClassName,
   children,
   footer,
-}: ModalFrameProps) {
+}: Readonly<ModalFrameProps>) {
   if (!isOpen) {
     return null;
   }

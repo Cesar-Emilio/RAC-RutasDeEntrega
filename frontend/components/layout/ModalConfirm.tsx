@@ -22,7 +22,7 @@ export function ModalConfirm({
   isSubmitting = false,
   onConfirm,
   onCancel,
-}: ModalConfirmProps) {
+}: Readonly<ModalConfirmProps>) {
   if (!isOpen) {
     return null;
   }

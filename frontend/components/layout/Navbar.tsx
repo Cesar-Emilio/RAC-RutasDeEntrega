@@ -1,15 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 export function Navbar({
   title,
   breadcrumbs,
-}: {
+}: Readonly<{
   title: string;
   breadcrumbs: string[];
-}) {
+}>) {
   const { user } = useAuth();
   const name = user?.name || user?.email || "Usuario";
   return (

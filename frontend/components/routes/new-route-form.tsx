@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, type DragEvent, type ChangeEvent, useEffect } from "react";
-import { ChevronDown, Upload } from "lucide-react";
+import { ChevronDown, Loader2, Upload } from "lucide-react";
 import { Warehouse } from "@/types/warehouses-types";
 import { getWarehousesRequest } from "@/lib/warehouses-api";
 import { createRouteRequest } from "@/lib/routes-api";
@@ -29,6 +29,7 @@ export function NewRouteForm() {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loadingWarehouses, setLoadingWarehouses] = useState(true);
   const [errorWarehouses, setErrorWarehouses] = useState<string | null>(null);
+  const [submittingRoute, setSubmittingRoute] = useState(false);
 
   useEffect(() => {
     async function fetchWarehouses() {
@@ -38,8 +39,9 @@ export function NewRouteForm() {
 
         const data = await getWarehousesRequest();
         setWarehouses(data);
-      } catch (err: any) {
-        setErrorWarehouses(err || "Error al cargar almacenes");
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Error al cargar almacenes";
+        setErrorWarehouses(message);
       } finally {
         setLoadingWarehouses(false);
       }
@@ -56,17 +58,17 @@ export function NewRouteForm() {
     setIsDropdownOpen(false);
   };
 
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: DragEvent<HTMLElement>) => {
     e.preventDefault();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = (e: DragEvent<HTMLElement>) => {
     e.preventDefault();
     setIsDragging(false);
   };
 
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+  const handleDrop = (e: DragEvent<HTMLElement>) => {
     e.preventDefault();
     setIsDragging(false);
     const droppedFile = e.dataTransfer.files[0];
@@ -115,10 +117,13 @@ export function NewRouteForm() {
     };
 
     try {
+        setSubmittingRoute(true);
         const data = await createRouteRequest(payload);
         router.push(`/company/routes/${data.id}`)
     } catch (err: any) {
         console.log(err)
+    } finally {
+        setSubmittingRoute(false);
     }
   };
 
@@ -156,6 +161,7 @@ export function NewRouteForm() {
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            disabled={loadingWarehouses || !!errorWarehouses}
             className="
               w-full flex items-center justify-between
               px-4 py-3 rounded-lg
@@ -163,23 +169,37 @@ export function NewRouteForm() {
               text-left
               hover:border-divisor
               transition-colors duration-200
+              disabled:cursor-not-allowed disabled:opacity-70
             "
           >
-            <span
-              className={
-                warehouse ? "text-text-primary" : "text-text-secondary"
-              }
-            >
-              {warehouse
-                ? warehouse.name
-                : "Seleccionar almacén..."}
-            </span>
+            {loadingWarehouses ? (
+              <span className="flex items-center gap-2 text-text-secondary">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Cargando almacenes...
+              </span>
+            ) : (
+              <span
+                className={
+                  warehouse ? "text-text-primary" : "text-text-secondary"
+                }
+              >
+                {warehouse
+                  ? warehouse.name
+                  : "Seleccionar almacén..."}
+              </span>
+            )}
             <ChevronDown
               className={`w-5 h-5 text-text-secondary transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
             />
           </button>
 
-          {isDropdownOpen && (
+          {errorWarehouses ? (
+            <p className="mt-2 text-sm text-[var(--color-error)]">
+              {errorWarehouses}
+            </p>
+          ) : null}
+
+          {isDropdownOpen && !loadingWarehouses && (
             <div className="absolute z-10 w-full mt-2 py-1 bg-surface border border-border rounded-lg shadow-lg">
               {warehouses.map((warehouse) => (
                 <button
@@ -214,10 +234,11 @@ export function NewRouteForm() {
           </div>
         </div>
 
-        <div
+        <button 
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
           className={`
             relative flex flex-col items-center justify-center
             py-12 px-6 rounded-xl
@@ -242,14 +263,7 @@ export function NewRouteForm() {
             <>
               <p className="text-text-primary mb-1">Arrastra tu archivo aquí</p>
               <p className="text-sm text-text-secondary">
-                o{" "}
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-primary-400 hover:text-primary-300 underline"
-                >
-                  selecciona un archivo
-                </button>{" "}
-                de tu computadora
+                o <span className="text-primary-400 underline">selecciona un archivo</span> de tu computadora
               </p>
             </>
           )}
@@ -270,7 +284,7 @@ export function NewRouteForm() {
             onChange={handleFileSelect}
             className="hidden"
           />
-        </div>
+        </button>
       </div>
 
       <div className="mb-10">
@@ -324,14 +338,16 @@ export function NewRouteForm() {
 
       <button
         onClick={handleSubmit}
+        disabled={submittingRoute}
         className="
           w-full py-3.5 rounded-lg
           bg-primary-500 hover:bg-primary-400
           text-white font-medium
           transition-colors duration-200
+          disabled:cursor-not-allowed disabled:opacity-70
         "
       >
-        Calcular ruta óptima
+        {submittingRoute ? "Calculando ruta..." : "Calcular ruta óptima"}
       </button>
     </div>
   );
