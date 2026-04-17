@@ -91,8 +91,6 @@ class Warehouse(models.Model):
     latitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
-        null=True,
-        blank=True,
         validators=[
             MinValueValidator(14.500000, message='Latitud fuera del territorio mexicano'),
             MaxValueValidator(32.700000, message='Latitud fuera del territorio mexicano')
@@ -101,8 +99,6 @@ class Warehouse(models.Model):
     longitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
-        null=True,
-        blank=True,
         validators=[
             MinValueValidator(-118.400000, message='Longitud fuera del territorio mexicano'),
             MaxValueValidator(-86.700000, message='Longitud fuera del territorio mexicano')
@@ -120,16 +116,6 @@ class Warehouse(models.Model):
 
         has_address = all([self.address, self.city, self.state, self.postal_code])
         has_coords = self.latitude is not None and self.longitude is not None
-
-        if not has_address and not has_coords:
-            raise ValidationError(
-                'Debes proporcionar al menos una ubicación: dirección completa o coordenadas (latitud y longitud).'
-            )
-
-        if (self.latitude is None) != (self.longitude is None):
-            raise ValidationError(
-                'Latitud y longitud deben proporcionarse juntas.'
-            )
 
     class Meta:
         constraints = [

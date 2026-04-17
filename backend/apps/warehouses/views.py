@@ -1,6 +1,9 @@
 import time
 
 from rest_framework import viewsets, status
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
@@ -21,7 +24,16 @@ class WarehouseViewSet(viewsets.ModelViewSet):
     serializer_class = WarehouseSerializer
 
     @extend_schema(
-        description="Obtiene la lista de almacenes activos del usuario autenticado.",
+        description="Obtiene la lista de almacenes de la empresa del usuario autenticado. Acepta el parámetro ?active=true|false para filtrar por estado.",
+        parameters=[
+            OpenApiParameter(
+                name='active',
+                location=OpenApiParameter.QUERY,
+                required=False,
+                type=OpenApiTypes.BOOL,
+                description='Filtra por estado: true = activos, false = inactivos. Sin parámetro devuelve todos.'
+            )
+        ],
         responses={200: WarehouseSerializer(many=True)},
     )
     def list(self, request, *args, **kwargs):
@@ -167,11 +179,40 @@ class WarehouseViewSet(viewsets.ModelViewSet):
             message="Almacén desactivado correctamente."
         )
 
+    @extend_schema(
+        description="Alterna el estado activo/inactivo de un almacén.",
+        request=None,
+        responses={200: WarehouseSerializer},
+    )
+    @action(detail=True, methods=['patch'], url_path='toggle')
+    def toggle(self, request, pk=None):
+        warehouse = self.get_object()
+        warehouse.active = not warehouse.active
+        warehouse.save()
+        serializer = self.get_serializer(warehouse)
+        estado = "activado" if warehouse.active else "desactivado"
+        return ApiResponse.success(
+            data=serializer.data,
+            message=f"Almacén {estado} correctamente."
+        )
+
     def get_queryset(self):
-        return Warehouse.objects.filter(
-            active=True,
+        """
+        Devuelve todos los almacenes de la empresa del usuario autenticado.
+        Opcionalmente filtra por estado usando ?active=true|false.
+        """
+        queryset = Warehouse.objects.filter(
             company=self.request.user.company
         )
+
+        active_param = self.request.query_params.get('active', None)
+        if active_param is not None:
+            if active_param.lower() == 'true':
+                queryset = queryset.filter(active=True)
+            elif active_param.lower() == 'false':
+                queryset = queryset.filter(active=False)
+
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(company=self.request.user.company)

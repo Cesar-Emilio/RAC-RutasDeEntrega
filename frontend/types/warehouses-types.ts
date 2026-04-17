@@ -8,8 +8,8 @@ export interface Warehouse {
   country: string;
   postal_code: string;
 
-  latitude?: number | null;
-  longitude?: number | null;
+  latitude: number;
+  longitude: number;
 
   active: boolean;
 
