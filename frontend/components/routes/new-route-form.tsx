@@ -77,7 +77,7 @@ export function NewRouteForm() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="text-center mb-10">
         <h2 className="text-2xl font-semibold text-text-primary mb-3">
           Nuevo cálculo de ruta
