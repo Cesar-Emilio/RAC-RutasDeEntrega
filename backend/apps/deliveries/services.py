@@ -16,6 +16,7 @@ import io
 import math
 import time
 import requests
+import openpyxl
 from django.conf import settings
 from typing import TypedDict
 
@@ -83,12 +84,18 @@ def parse_input_file(route: Route) -> list[RawRow]:
     file_obj = input_file.file
     file_obj.seek(0)
     content = file_obj.read()
+    
+    logger.warning("tipo de archivo: {file_type}", file_type=input_file.file_type)
+    logger.critical("tipo de archivo: {file_type}", file_type=input_file.file_type)
+    logger.error("tipo de archivo: {file_type}", file_type=input_file.file_type)
 
     # Obtiene solo el archivo y lo procesa según su tipo
     if input_file.file_type == FileType.CSV:
         rows = parse_csv(content)
     elif input_file.file_type == FileType.JSON:
         rows = parse_json(content)
+    elif input_file.file_type == FileType.XLSX:
+        rows = parse_xlsx(content)
     else:
         raise RouteProcessingError(f"Tipo de archivo no soportado: {input_file.file_type}")
 
@@ -146,6 +153,69 @@ def parse_json(content: bytes) -> list[RawRow]:
             "latitude": _to_float(item.get("latitude")),
             "longitude": _to_float(item.get("longitude")),
         })
+    return rows
+
+def parse_xlsx(content: bytes) -> list[RawRow]:
+    """
+    Parsea un archivo Excel siguiendo la plantilla oficial.
+
+    Estructura esperada
+    -------------------
+    Hoja: "Entregas" (se ignora la de instrucciones)
+    Columna: address
+    Columna: latitude
+    Columna: longitude
+
+    Raises
+    ------
+    RouteProcessingError
+        Si falta la hoja "Entregas", la columna address, o alguna fila la tiene vacía.
+    """
+    try:
+        wb = openpyxl.load_workbook(io.BytesIO(content), read_only=True, data_only=True)
+    except Exception as exc:
+        raise RouteProcessingError(f"El archivo Excel no es válido: {exc}")
+
+    if "Entregas" not in wb.sheetnames:
+        raise RouteProcessingError(
+            "El archivo Excel debe contener una hoja llamada 'Entregas'."
+        )
+
+    ws = wb["Entregas"]
+    rows_iter = ws.iter_rows(values_only=True)
+
+    try:
+        headers = [str(h).strip().lower() if h is not None else "" for h in next(rows_iter)]
+    except StopIteration:
+        raise RouteProcessingError("La hoja 'Entregas' está vacía.")
+
+    if "address" not in headers:
+        raise RouteProcessingError(
+            "La hoja 'Entregas' debe contener la columna 'address'."
+        )
+
+    idx_address   = headers.index("address")
+    idx_latitude  = headers.index("latitude")  if "latitude"  in headers else None
+    idx_longitude = headers.index("longitude") if "longitude" in headers else None
+
+    rows: list[RawRow] = []
+    for row_num, row in enumerate(rows_iter, start=2):
+        if all(cell is None for cell in row):
+            continue
+    
+        address = str(row[idx_address]).strip() if row[idx_address] is not None else ""
+        if not address:
+            raise RouteProcessingError(f"Fila {row_num}: la columna 'address' está vacía.")
+
+        rows.append({
+            "address": address,
+            "latitude":  _to_float(row[idx_latitude])  if idx_latitude  is not None else None,
+            "longitude": _to_float(row[idx_longitude]) if idx_longitude is not None else None,
+        })
+
+    if not rows:
+        raise RouteProcessingError("La hoja 'Entregas' no contiene filas de datos.")
+
     return rows
 
 def _to_float(value) -> float | None:

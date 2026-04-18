@@ -6,7 +6,7 @@ class FileType(models.TextChoices):
     """    
     JSON = "json", "JSON"
     CSV = "csv", "CSV"
-    XSLX = "xslx", "XSLX"
+    XLSX = "xlsx", "XLSX"
 
 class Status(models.TextChoices):
     """

@@ -21,7 +21,7 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
   const isValidFile = (uploadedFile: File) =>
     uploadedFile.name.endsWith(".csv") ||
     uploadedFile.name.endsWith(".json") ||
-    uploadedFile.name.endsWith(".xslx");
+    uploadedFile.name.endsWith(".xlsx");
 
   const handleDragOver = (e: DragEvent<HTMLElement>) => {
     e.preventDefault();
@@ -66,7 +66,7 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
 
   return (
     <div className="mb-8">
-        <SectionHeader step={2} title="Archivo de paquetes" description="Sube un archivo .csv, .json o xslx con las ubicaciones de entrega" />
+        <SectionHeader step={2} title="Archivo de paquetes" description="Sube un archivo .csv, .json o xlsx con las ubicaciones de entrega" />
 
         <div className="flex items-center justify-between mb-4">
           <div className="relative group">
@@ -156,12 +156,15 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
             <span className="px-3 py-1 text-xs font-medium text-text-secondary bg-surface border border-border rounded">
               .json
             </span>
+            <span className="px-3 py-1 text-xs font-medium text-text-secondary bg-surface border border-border rounded">
+              .xlsx
+            </span>
           </div>
 
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv,.json"
+            accept=".csv,.json,.xlsx"
             onChange={handleFileSelect}
             className="hidden"
           />
