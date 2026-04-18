@@ -70,13 +70,16 @@ httpClient.interceptors.request.use((config) => {
     method !== "OPTIONS" &&
     config.data !== undefined;
 
+    console.log(shouldEncrypt ? "Payload encryption enabled for this request" : "Payload encryption not needed for this request");
+
   if (!shouldEncrypt) {
     return config;
   }
-
+  console.log("Encrypting payload");
   config.data = {
     payload: encodePayload(config.data),
   };
+  console.log("Payload encrypted");
 
   const headers = AxiosHeaders.from(config.headers);
   headers.set("X-Payload-Encrypted", "true");

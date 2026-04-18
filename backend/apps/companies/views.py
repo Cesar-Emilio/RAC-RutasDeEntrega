@@ -3,7 +3,7 @@ from drf_spectacular.openapi import OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from django.core.mail import BadHeaderError
-
+from django.db.models import Q
 from .models import Company
 from .serializers import CompanySerializer
 from .permissions import IsAdminUser
@@ -61,9 +61,26 @@ logger = get_logger(__name__)
     ),
 )
 class CompanyViewSet(viewsets.ModelViewSet):
-    queryset = Company.objects.filter(active=True)
+    queryset = Company.objects.all()
     serializer_class = CompanySerializer
     permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        queryset = Company.objects.all().order_by("-created_at")
+        search = self.request.query_params.get("search", "").strip()
+        active = self.request.query_params.get("active")
+
+        if active in ["true", "false"]:
+            queryset = queryset.filter(active=(active == "true"))
+
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search)
+                | Q(email__icontains=search)
+                | Q(rfc__icontains=search)
+            )
+
+        return queryset
 
     def create(self, request, *args, **kwargs):
         actor_id = getattr(request.user, "id", None)
