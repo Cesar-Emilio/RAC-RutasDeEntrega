@@ -55,6 +55,15 @@ export async function patchWarehouseRequest(
   );
 }
 
+export async function toggleWarehouseRequest(id: number | string) {
+  return requestJson<Warehouse>(
+    `${API_BASE_URL}/api/warehouses/${id}/toggle/`,
+    {
+      method: "PATCH",
+    }
+  );
+}
+
 export async function deleteWarehouseRequest(id: number | string) {
   return requestJson<null>(
     `${API_BASE_URL}/api/warehouses/${id}/`,
