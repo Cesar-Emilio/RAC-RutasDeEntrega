@@ -84,10 +84,6 @@ def parse_input_file(route: Route) -> list[RawRow]:
     file_obj = input_file.file
     file_obj.seek(0)
     content = file_obj.read()
-    
-    logger.warning("tipo de archivo: {file_type}", file_type=input_file.file_type)
-    logger.critical("tipo de archivo: {file_type}", file_type=input_file.file_type)
-    logger.error("tipo de archivo: {file_type}", file_type=input_file.file_type)
 
     # Obtiene solo el archivo y lo procesa según su tipo
     if input_file.file_type == FileType.CSV:
@@ -115,7 +111,7 @@ def parse_csv(content: bytes) -> list[RawRow]:
         raise RouteProcessingError("El CSV debe contener la columna 'address'.")
 
     rows: list[RawRow] = []
-    for i, raw in enumerate(reader, start=2):  # start=2 porque la fila 1 es el header (adress,lat,lng)
+    for i, raw in enumerate(reader, start=2):
         address = raw.get("address", "").strip()
         if not address:
             raise RouteProcessingError(f"Fila {i}: la columna 'address' está vacía.")

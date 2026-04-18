@@ -8,6 +8,8 @@ const templateData = [
     address: "Av Reforma 123, Ciudad de México",
     latitude: 19.432608,
     longitude: -99.133209,
+    receiver_name: "Juan Pérez",
+    package_quantity: 3,
   },
 ];
 
@@ -29,6 +31,8 @@ export async function downloadExcelTemplate() {
     { header: "address", key: "address", width: 45 },
     { header: "latitude", key: "latitude", width: 18 },
     { header: "longitude", key: "longitude", width: 18 },
+    { header: "receiver_name", key: "receiver_name", width: 28 },
+    { header: "package_quantity", key: "package_quantity", width: 20 },
   ];
 
   sheet.getRow(1).height = 22;
@@ -61,6 +65,7 @@ export async function downloadExcelTemplate() {
   sheet.addRow(templateData[0]);
 
   for (let i = 3; i <= 52; i++) {
+    // Latitud
     sheet.getCell(`B${i}`).dataValidation = {
       type: "decimal",
       operator: "between",
@@ -71,6 +76,7 @@ export async function downloadExcelTemplate() {
       error: "Debe estar entre -90 y 90",
     };
 
+    //Longitud
     sheet.getCell(`C${i}`).dataValidation = {
       type: "decimal",
       operator: "between",
@@ -79,6 +85,17 @@ export async function downloadExcelTemplate() {
       showErrorMessage: true,
       errorTitle: "Longitud inválida",
       error: "Debe estar entre -180 y 180",
+    };
+
+    // Cantidad de paquetes
+    sheet.getCell(`E${i}`).dataValidation = {
+      type: "whole",
+      operator: "greaterThanOrEqual",
+      allowBlank: true,
+      formulae: [1],
+      showErrorMessage: true,
+      errorTitle: "Cantidad inválida",
+      error: "Debe ser un número entero mayor o igual a 1",
     };
   }
 
@@ -97,6 +114,10 @@ export async function downloadExcelTemplate() {
     "3. Latitude debe estar entre -90 y 90.";
   help.getCell("A6").value =
     "4. Longitude debe estar entre -180 y 180.";
+  help.getCell("A7").value =
+    "5. receiver_name es el nombre de quien recibe.";
+  help.getCell("A8").value =
+    "6. package_quantity debe ser entero mayor o igual a 1.";
 
   const buffer = await workbook.xlsx.writeBuffer();
 
@@ -123,6 +144,8 @@ export function downloadCsvTemplate() {
     escapeCsv(item.address),
     item.latitude,
     item.longitude,
+    escapeCsv(item.receiver_name),
+    item.package_quantity,
   ]);
 
   const csvContent = [
