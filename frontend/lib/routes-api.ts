@@ -28,7 +28,8 @@ export async function createRouteRequest(
 
 export async function getRouteByIdRequest(id: string) {
   return requestJson<RouteDetail>(
-    `${API_BASE_URL}/api/deliveries/${id}`,
+    // CAMBIO: se agrega trailing slash para coincidir con el patrón <int:pk>/ del backend
+    `${API_BASE_URL}/api/deliveries/${id}/`,
     {
       method: "GET",
     }

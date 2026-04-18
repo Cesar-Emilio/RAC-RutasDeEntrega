@@ -19,7 +19,7 @@ export function PrimaryButton({
     <button
       type={type}
       disabled={isDisabled}
-      className={`inline-flex h-8 items-center justify-center rounded-lg border border-[#f97316] bg-[#f97316] px-3 text-sm font-semibold text-[#0f1115] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 ${className ?? ""}`}
+      className={`inline-flex h-8 items-center justify-center rounded-lg border border-[var(--color-primary-500)] bg-[var(--color-primary-500)] px-3 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 ${className ?? ""}`}
       {...props}
     >
       {isLoading ? "Cargando..." : children}

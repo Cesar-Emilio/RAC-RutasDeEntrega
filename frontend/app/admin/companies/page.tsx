@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo, type SyntheticEvent } from "react";
 import { Mail, AlertCircle, Check } from "lucide-react";
 import { ContentShell } from "@/components/layout/ContentShell";
 import { CardStatistics } from "@/components/layout/CardStatistics";
@@ -11,17 +11,17 @@ import { API_BASE_URL, requestJson } from "@/lib/http";
 
 type Company = {
   id: string;
-  nombre: string;
+  name: string;
   email: string;
   rfc: string;
-  estado: "Activo" | "Inactivo";
+  active: boolean;
 };
 
 const companiesData: Company[] = [];
 
 const columns: CrudColumn<Company>[] = [
   {
-    key: "nombre",
+    key: "name",
     label: "Nombre",
     align: "left",
   },
@@ -36,19 +36,9 @@ const columns: CrudColumn<Company>[] = [
     align: "left",
   },
   {
-    key: "estado",
+    key: "active",
     label: "Estado",
-    render: (company) => (
-      <span
-        className={`px-3 py-1 rounded-full text-xs font-medium ${
-          company.estado === "Activo"
-            ? "bg-green-900/30 text-green-400"
-            : "bg-gray-600/30 text-gray-400"
-        }`}
-      >
-        {company.estado}
-      </span>
-    ),
+    align: "left",
   },
 ];
 
@@ -56,6 +46,10 @@ export default function AdminCompaniesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [companies, setCompanies] = useState<Company[]>(companiesData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState("");
+  const [statusSuccessMessage, setStatusSuccessMessage] = useState("");
+  const [actionLoadingId, setActionLoadingId] = useState<string | number | null>(null);
   
   // Modal States
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -64,36 +58,102 @@ export default function AdminCompaniesPage() {
   const [inviteError, setInviteError] = useState("");
   const [inviteSuccess, setInviteSuccess] = useState(false);
 
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      setIsLoading(true);
+      setFetchError("");
+
+      try {
+        const data = await requestJson<Company[]>(`${API_BASE_URL}/api/companies/`, {
+          method: "GET",
+        });
+
+        setCompanies(data);
+      } catch (error: unknown) {
+        console.error("Error fetching companies:", error);
+        setFetchError("Error al cargar las empresas. Intenta de nuevo más tarde.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
+
   const filteredCompanies = useMemo(() => {
     return companies.filter((company) => {
+      const normalizedSearch = searchTerm.toLowerCase().trim();
       const matchesSearch =
-        company.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        company.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        company.rfc.toLowerCase().includes(searchTerm.toLowerCase());
+        company.name.toLowerCase().includes(normalizedSearch) ||
+        company.email.toLowerCase().includes(normalizedSearch) ||
+        company.rfc.toLowerCase().includes(normalizedSearch);
 
       const matchesStatus =
         statusFilter === "all" ||
-        (statusFilter === "active" && company.estado === "Activo") ||
-        (statusFilter === "inactive" && company.estado === "Inactivo");
+        (statusFilter === "active" && company.active) ||
+        (statusFilter === "inactive" && !company.active);
 
       return matchesSearch && matchesStatus;
     });
   }, [searchTerm, statusFilter, companies]);
 
   const handleToggleStatus = async (company: Company) => {
-    // Simular llamada a API
-    await new Promise(resolve => setTimeout(resolve, 500));
+    setActionLoadingId(company.id);
+    setStatusSuccessMessage("");
 
-    setCompanies(prevCompanies =>
-      prevCompanies.map(c =>
-        c.id === company.id
-          ? { ...c, estado: c.estado === "Activo" ? "Inactivo" : "Activo" }
-          : c
-      )
-    );
+    try {
+      const updatedCompany = await requestJson<Company>(
+        `${API_BASE_URL}/api/companies/${company.id}/`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ active: !company.active }),
+        }
+      );
+
+      setCompanies((prevCompanies) =>
+        prevCompanies.map((item) =>
+          item.id === updatedCompany.id ? updatedCompany : item
+        )
+      );
+
+      setStatusSuccessMessage(
+        `Empresa ${company.active ? "desactivada" : "activada"} correctamente.`
+      );
+      setTimeout(() => setStatusSuccessMessage(""), 4000);
+    } catch (error: unknown) {
+      console.error("Error toggling company status:", error);
+    } finally {
+      setActionLoadingId(null);
+    }
   };
 
-  const handleInviteSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEditSubmit = async (updatedCompany: Company, originalCompany: Company) => {
+    const payload: Partial<Company> = {
+      name: updatedCompany.name,
+      rfc: updatedCompany.rfc,
+    };
+
+    try {
+      const savedCompany = await requestJson<Company>(
+        `${API_BASE_URL}/api/companies/${originalCompany.id}/`,
+        {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        }
+      );
+
+      setCompanies((prevCompanies) =>
+        prevCompanies.map((item) =>
+          item.id === savedCompany.id ? savedCompany : item
+        )
+      );
+    } catch (error: unknown) {
+      console.error("Error editing company:", error);
+      throw error;
+    }
+  };
+
+  const handleInviteSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setInviteError("");
     setInviteSuccess(false);
@@ -104,7 +164,7 @@ export default function AdminCompaniesPage() {
     }
 
     // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
     if (!emailRegex.test(inviteEmail)) {
       setInviteError("Correo electrónico inválido");
       return;
@@ -128,9 +188,17 @@ export default function AdminCompaniesPage() {
         setInviteSuccess(false);
       }, 1500);
     } catch (err) {
-      const error = err as { detail?: string; [key: string]: unknown };
+      const error = err as {
+        detail?: string;
+        message?: string;
+        errors?: { detail?: string };
+        [key: string]: unknown;
+      };
       setInviteError(
-        error?.detail || "Error al enviar la invitación. Por favor intenta de nuevo."
+        error?.detail ||
+          error?.errors?.detail ||
+          error?.message ||
+          "Error al enviar la invitación. Por favor intenta de nuevo."
       );
     } finally {
       setInviteLoading(false);
@@ -143,14 +211,14 @@ export default function AdminCompaniesPage() {
       title="Empresas"
       breadcrumbs={["Admin", "Empresas"]}
     >
-      <div className="min-h-screen bg-[#0f1115] p-6">
+      <div className="min-h-screen bg-[var(--color-background)] p-6">
         {/* Estadísticas */}
         <CardStatistics
           title="Empresas totales"
           description="Administra las empresas del sistema"
           items={[
             { id: 1, label: "Empresas totales", value: companies.length },
-            { id: 2, label: "Activas", value: companies.filter(c => c.estado === "Activo").length },
+            { id: 2, label: "Activas", value: companies.filter((c) => c.active).length },
           ]}
         />
 
@@ -173,7 +241,7 @@ export default function AdminCompaniesPage() {
             />
             <button
               onClick={() => setIsInviteModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-[#f97316] bg-[#f97316] px-3 py-1 text-sm font-semibold text-[#0f1115] transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-primary-500)] bg-[var(--color-primary-500)] px-3 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90"
             >
               <Mail size={16} />
               Registrar Empresa
@@ -182,24 +250,44 @@ export default function AdminCompaniesPage() {
         </div>
 
         {/* Tabla de Empresas */}
+        {fetchError ? (
+          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-950/20 p-4 text-sm text-red-100">
+            {fetchError}
+          </div>
+        ) : null}
+        {statusSuccessMessage ? (
+          <div className="mb-4 rounded-lg border border-green-500/30 bg-green-950/20 p-4 text-sm text-green-100">
+            <div className="flex items-center gap-2">
+              <Check size={18} className="text-green-400" />
+              <span>{statusSuccessMessage}</span>
+            </div>
+          </div>
+        ) : null}
         <CrudTable
           title="Empresas registradas"
-          description="Gestiona las empresas del sistema"
+          description={isLoading ? "Cargando empresas..." : "Gestiona las empresas del sistema"}
           items={filteredCompanies}
           columns={columns}
-          statusKey="estado"
+          statusKey="active"
+          editFields={[
+            { name: "name", label: "Nombre", type: "text", required: true },
+            { name: "rfc", label: "RFC", type: "text", required: true },
+          ]}
+          onEditSubmit={handleEditSubmit}
           onToggleStatus={handleToggleStatus}
+          actionLoadingId={actionLoadingId}
+          isLoading={isLoading}
           emptyMessage="No hay empresas que coincidan con los filtros."
         />
 
         {/* Modal de Invitación */}
         {isInviteModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6">
-            <div className="w-full max-w-md rounded-2xl border border-[#2a2f38] bg-[#161A20] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+            <div className="w-full max-w-md rounded-2xl border border-[var(--color-divider)] bg-[var(--color-surface)] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
               {/* Header */}
-              <div className="border-b border-[#252a33] px-6 py-5">
-                <h2 className="text-lg font-semibold text-[#BBBDC0]">Registrar Empresa</h2>
-                <p className="mt-1 text-sm text-[#6b7280]">
+              <div className="border-b border-[var(--color-divider)] px-6 py-5">
+                <h2 className="text-lg font-semibold text-[var(--color-text-secondary)]">Registrar Empresa</h2>
+                <p className="mt-1 text-sm text-[var(--color-text-muted)]">
                   Envía un enlace de invitación al correo de la empresa
                 </p>
               </div>
@@ -225,11 +313,11 @@ export default function AdminCompaniesPage() {
                 )}
 
               {/* Email Input */}
-                <label className="flex flex-col gap-2 text-sm text-[#BBBDC0]">
+                <label className="flex flex-col gap-2 text-sm text-[var(--color-text-secondary)]">
                   <span className="font-medium">
                     Correo Electrónico
                     {' '}
-                    <span className="ml-1 text-[#f87171]">*</span>
+                    <span className="ml-1 text-[var(--color-error)]">*</span>
                   </span>
                   <input
                     type="email"
@@ -240,7 +328,7 @@ export default function AdminCompaniesPage() {
                     }}
                     placeholder="empresa@correo.com"
                     disabled={inviteLoading || inviteSuccess}
-                    className="rounded-lg border border-[#2a2f38] bg-[#0f1115] px-4 py-3 text-sm text-[#e5e7eb] placeholder-[#4b5563] outline-none transition focus:border-[#f97316] disabled:opacity-50"
+                    className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:border-[var(--color-primary-500)] disabled:opacity-50"
                   />
                 </label>
 
@@ -248,19 +336,19 @@ export default function AdminCompaniesPage() {
                 <button
                   type="submit"
                   disabled={inviteLoading || inviteSuccess}
-                  className="w-full rounded-lg bg-[#f97316] px-4 py-2 text-sm font-semibold text-[#0f1115] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-lg bg-[var(--color-primary-500)] px-4 py-2 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {inviteLoading ? "Enviando..." : "Enviar Invitación"}
                 </button>
 
                 {/* Info Text */}
-                <p className="text-xs text-[#6b7280]">
+                <p className="text-xs text-[var(--color-text-muted)]">
                   Se enviará un enlace al correo para que la empresa complete su registro.
                 </p>
               </form>
 
               {/* Footer */}
-              <div className="border-t border-[#252a33] px-6 py-5">
+              <div className="border-t border-[var(--color-divider)] px-6 py-5">
                 <div className="flex items-center justify-end gap-3">
                   <button
                     type="button"
@@ -271,7 +359,7 @@ export default function AdminCompaniesPage() {
                       setInviteSuccess(false);
                     }}
                     disabled={inviteLoading}
-                    className="rounded-lg border border-[#2a2f38] px-4 py-1 text-sm font-medium text-[#e5e7eb] transition hover:bg-[#111827] disabled:opacity-50"
+                    className="rounded-lg border border-[var(--color-divider)] px-4 py-1 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)] disabled:opacity-50"
                   >
                     Cerrar
                   </button>

@@ -3,11 +3,11 @@
 import { Search, Filter, Plus, ChevronDown } from "lucide-react";
 
 interface FiltersProps {
-  searchValue: string;
-  onSearchChange: (value: string) => void;
-  statusFilter: string;
-  onStatusFilterChange: (value: string) => void;
-  onNewRoute: () => void;
+  readonly searchValue: string;
+  readonly onSearchChange: (value: string) => void;
+  readonly statusFilter: string;
+  readonly onStatusFilterChange: (value: string) => void;
+  readonly onNewRoute: () => void;
 }
 
 const statusOptions = [

@@ -20,7 +20,7 @@ export function ModalFrame({
   bodyClassName,
   children,
   footer,
-}: ModalFrameProps) {
+}: Readonly<ModalFrameProps>) {
   if (!isOpen) {
     return null;
   }
@@ -28,16 +28,16 @@ export function ModalFrame({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6">
       <div
-        className={`w-full ${maxWidthClass} overflow-hidden rounded-2xl border border-[#2a2f38] bg-[#161A20] shadow-[0_24px_60px_rgba(0,0,0,0.45)]`}
+        className={`w-full ${maxWidthClass} overflow-hidden rounded-2xl border border-[var(--color-divider)] bg-[var(--color-surface)] shadow-[0_24px_60px_rgba(0,0,0,0.45)]`}
       >
-        <div className="border-b border-[#252a33] px-6 py-5">
-          <h2 className="text-lg font-semibold text-[#BBBDC0]">{title}</h2>
-          {description ? <p className="mt-1 text-sm text-[#6b7280]">{description}</p> : null}
+        <div className="border-b border-[var(--color-divider)] px-6 py-5">
+          <h2 className="text-lg font-semibold text-[var(--color-text-secondary)]">{title}</h2>
+          {description ? <p className="mt-1 text-sm text-[var(--color-text-muted)]">{description}</p> : null}
         </div>
 
         <div className={bodyClassName}>{children}</div>
 
-        {footer ? <div className="border-t border-[#252a33] px-6 py-5">{footer}</div> : null}
+        {footer ? <div className="border-t border-[var(--color-divider)] px-6 py-5">{footer}</div> : null}
       </div>
     </div>
   );

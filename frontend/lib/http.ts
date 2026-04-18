@@ -32,8 +32,11 @@ function normalizeHeaders(headers?: HeadersInit): Record<string, string> {
 
 function encodePayload(data: unknown): string {
   const json = JSON.stringify(data);
-  if (typeof window !== "undefined" && typeof window.btoa === "function") {
-    return window.btoa(unescape(encodeURIComponent(json)));
+  if (typeof globalThis !== "undefined" && typeof globalThis.btoa === "function") {
+    const bytes = new TextEncoder().encode(json);
+    let binary = "";
+    bytes.forEach((b) => (binary += String.fromCodePoint(b)));
+    return globalThis.btoa(binary);
   }
 
   return Buffer.from(json, "utf-8").toString("base64");
@@ -67,13 +70,16 @@ httpClient.interceptors.request.use((config) => {
     method !== "OPTIONS" &&
     config.data !== undefined;
 
+    console.log(shouldEncrypt ? "Payload encryption enabled for this request" : "Payload encryption not needed for this request");
+
   if (!shouldEncrypt) {
     return config;
   }
-
+  console.log("Encrypting payload");
   config.data = {
     payload: encodePayload(config.data),
   };
+  console.log("Payload encrypted");
 
   const headers = AxiosHeaders.from(config.headers);
   headers.set("X-Payload-Encrypted", "true");

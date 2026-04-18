@@ -18,7 +18,7 @@ export default function DashboardAdminPage() {
     >
       <div
         className="flex min-h-screen flex-col text-[14px] md:text-[15px]"
-        style={{ backgroundColor: "#0f1115" }}
+        style={{ backgroundColor: "var(--color-background)" }}
       >
         <div className="flex-1 overflow-x-hidden px-4 py-4 md:px-6 md:py-5">
           <CardStatistics

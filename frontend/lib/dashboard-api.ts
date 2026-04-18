@@ -1,4 +1,4 @@
-import type { AuthResponse } from "./auth-types";
+// CAMBIO: se elimina la importación de AuthResponse — ya no se usa en este archivo
 import { API_BASE_URL, requestJson } from "./http";
 
 export type DashboardStat = {
@@ -28,14 +28,15 @@ export type DashboardSummary = {
   recentActivity: DashboardActivity[];
 };
 
-export async function getDashboardSummary(access: string) {
-  return requestJson<AuthResponse<DashboardSummary>>(
+// CAMBIO: se elimina el parámetro 'access' — el interceptor de Axios en http.ts
+// ya inyecta el header Authorization automáticamente desde authStorage.
+// CAMBIO: se corrige el tipo genérico de AuthResponse<DashboardSummary> a DashboardSummary
+// porque requestJson<T> ya desenvuelve el campo 'data' de la respuesta API.
+export async function getDashboardSummary() {
+  return requestJson<DashboardSummary>(
     `${API_BASE_URL}/api/dashboard/summary/`,
     {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${access}`,
-      },
     },
   );
 }

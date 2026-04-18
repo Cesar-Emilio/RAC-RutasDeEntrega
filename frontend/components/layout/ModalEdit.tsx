@@ -2,18 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ModalFrame } from "./ModalFrame";
+import { ModalFieldRenderer } from "./ModalFieldRenderer";
+import type { ModalField, ModalFieldOption } from "./ModalFieldRenderer";
 
-type ModalEditOption = {
-  label: string;
-  value: string;
-};
-
+// Re-export with the original name for backward compatibility
 export type ModalEditField<T extends { id: string | number }> = {
   name: keyof T & string;
   label: string;
   type?: "text" | "email" | "number" | "textarea" | "select" | "checkbox";
   placeholder?: string;
-  options?: ModalEditOption[];
+  options?: ModalFieldOption[];
   required?: boolean;
   helperText?: string;
 };
@@ -42,7 +40,7 @@ export function ModalEdit<T extends { id: string | number }>({
   isSubmitting = false,
   onClose,
   onSubmit,
-}: ModalEditProps<T>) {
+}: Readonly<ModalEditProps<T>>) {
   const [values, setValues] = useState<Record<string, unknown>>({});
 
   const initialValues = useMemo(() => {
@@ -106,7 +104,7 @@ export function ModalEdit<T extends { id: string | number }>({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-[#2a2f38] px-4 py-1 text-sm font-medium text-[#e5e7eb] transition hover:bg-[#111827]"
+            className="rounded-lg border border-[var(--color-divider)] px-4 py-1 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)]"
           >
             {cancelLabel}
           </button>
@@ -114,7 +112,7 @@ export function ModalEdit<T extends { id: string | number }>({
             type="submit"
             form="modal-edit-form"
             disabled={isSubmitting}
-            className="rounded-lg bg-[#f97316] px-4 py-1 text-sm font-semibold text-[#0f1115] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+            className="rounded-lg bg-[var(--color-primary-500)] px-4 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSubmitting ? "Guardando..." : submitLabel}
           </button>
@@ -123,69 +121,13 @@ export function ModalEdit<T extends { id: string | number }>({
     >
       <form id="modal-edit-form" className="space-y-6" onSubmit={handleSubmit}>
         {fields.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {fields.map((field) => {
-              const value = values[field.name];
-
-              return (
-                <label key={field.name} className="flex flex-col gap-2 text-sm text-[#BBBDC0] md:col-span-1">
-                  <span className="font-medium">
-                    {field.label}
-                    {field.required ? <span className="ml-1 text-[#f87171]">*</span> : null}
-                  </span>
-
-                  {field.type === "textarea" ? (
-                    <textarea
-                      value={String(value ?? "")}
-                      placeholder={field.placeholder}
-                      required={field.required}
-                      onChange={(event) => handleChange(field.name, event.target.value)}
-                      className="min-h-28 rounded-lg border border-[#2a2f38] bg-[#0f1115] px-4 py-3 text-sm text-[#e5e7eb] outline-none transition focus:border-[#f97316]"
-                    />
-                  ) : field.type === "select" ? (
-                    <select
-                      value={String(value ?? "")}
-                      required={field.required}
-                      onChange={(event) => handleChange(field.name, event.target.value)}
-                      className="rounded-lg border border-[#2a2f38] bg-[#0f1115] px-4 py-3 text-sm text-[#e5e7eb] outline-none transition focus:border-[#f97316]"
-                    >
-                      <option value="">Selecciona una opcion</option>
-                      {field.options?.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  ) : field.type === "checkbox" ? (
-                    <label className="inline-flex items-center gap-3 rounded-lg border border-[#2a2f38] bg-[#0f1115] px-4 py-3 text-sm text-[#e5e7eb]">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(value)}
-                        onChange={(event) => handleChange(field.name, event.target.checked)}
-                        className="h-4 w-4 accent-[#f97316]"
-                      />
-                      <span>{field.helperText || field.label}</span>
-                    </label>
-                  ) : (
-                    <input
-                      type={field.type || "text"}
-                      value={String(value ?? "")}
-                      placeholder={field.placeholder}
-                      required={field.required}
-                      onChange={(event) => handleChange(field.name, event.target.value)}
-                      className="rounded-lg border border-[#2a2f38] bg-[#0f1115] px-4 py-3 text-sm text-[#e5e7eb] outline-none transition focus:border-[#f97316]"
-                    />
-                  )}
-
-                  {field.helperText && field.type !== "checkbox" ? (
-                    <span className="text-xs text-[#6b7280]">{field.helperText}</span>
-                  ) : null}
-                </label>
-              );
-            })}
-          </div>
+          <ModalFieldRenderer
+            fields={fields as unknown as ModalField<Record<string, unknown>>[]}
+            values={values}
+            onChange={handleChange}
+          />
         ) : (
-          <p className="rounded-lg border border-[#2a2f38] bg-[#0f1115] px-4 py-3 text-sm text-[#9ca3af]">
+          <p className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-muted)]">
             No hay campos configurados para editar este registro.
           </p>
         )}

@@ -16,14 +16,14 @@ export function CardStatistics({
   description,
   items,
   isLoading = false,
-}: CardStatisticsProps) {
+}: Readonly<CardStatisticsProps>) {
   return (
     <section className="mb-8">
       <div className="mb-4">
-        <h2 className="text-base font-semibold md:text-lg" style={{ color: "#BBBDC0" }}>
+        <h2 className="text-base font-semibold md:text-lg" style={{ color: "var(--color-text-secondary)" }}>
           {title}
         </h2>
-        <p className="text-sm" style={{ color: "#6b7280" }}>
+        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
           {description}
         </p>
       </div>
@@ -34,27 +34,27 @@ export function CardStatistics({
             <div
               key={item.id}
               className="rounded-xl border p-4"
-              style={{ backgroundColor: "#161A20", borderColor: "#2a2f38" }}
+              style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-divider)" }}
             >
-              <p className="text-xs uppercase tracking-wide" style={{ color: "#6b7280" }}>
+              <p className="text-xs uppercase tracking-wide" style={{ color: "var(--color-text-muted)" }}>
                 {item.label}
               </p>
-              <p className="mt-2 text-2xl font-semibold" style={{ color: "#BBBDC0" }}>
+              <p className="mt-2 text-2xl font-semibold" style={{ color: "var(--color-text-secondary)" }}>
                 {item.value}
               </p>
             </div>
           ))
         ) : (
-          Array.from({ length: 4 }).map((_, index) => (
+          Array.from({ length: 4 }, (_, placeholderNumber) => placeholderNumber + 1).map((placeholderNumber) => (
             <div
-              key={index}
+              key={`placeholder-${placeholderNumber}`}
               className="rounded-xl border p-4"
-              style={{ backgroundColor: "#161A20", borderColor: "#2a2f38" }}
+              style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-divider)" }}
             >
               <div className="h-3 w-24 animate-pulse rounded-full bg-white/10" />
               <div className="mt-3 h-8 w-16 animate-pulse rounded-full bg-white/10" />
               {isLoading ? null : (
-                <p className="mt-2 text-xs text-[#6b7280]">Sin datos disponibles</p>
+                <p className="mt-2 text-xs text-[var(--color-text-muted)]">Sin datos disponibles</p>
               )}
             </div>
           ))

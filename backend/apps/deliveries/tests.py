@@ -5,7 +5,6 @@ Cubre:
   - Utilidades de distancia (Haversine, matriz)
   - Algoritmo de Christofides simplificado (MST Prim, nodos impares,
     greedy matching, circuito euleriano, shortcutting)
-  - Mejora 2-opt y umbral K_OPT_THRESHOLD
   - optimize_route (casos borde + propiedades del tour)
   - Parseo de archivos CSV / JSON
   - Resolución de coordenadas (geocoding mock)
@@ -33,21 +32,20 @@ from apps.deliveries.models import (
     Status,
 )
 from apps.deliveries.services import (
-    K_OPT_THRESHOLD,
     RouteProcessingError,
-    _build_distance_matrix,
-    _christofides_tour,
-    _eulerian_circuit,
-    _greedy_matching,
-    _haversine,
-    _odd_degree_nodes,
-    _parse_csv,
-    _parse_json,
-    _prim_mst,
-    _shortcut,
+    build_distance_matrix,
+    christofides_tour,
+    eulerian_circuit,
+    greedy_matching,
+    haversine,
+    odd_degree_nodes,
+    parse_csv,
+    parse_json,
+    prim_mst,
+    shortcut,
     _to_float,
     _tour_distance,
-    _two_opt,
+    two_opt,
     optimize_route,
     parse_input_file,
     process_route,
@@ -106,20 +104,20 @@ class HaversineTests(TestCase):
     """Pruebas de la fórmula Haversine."""
 
     def test_misma_coordenada_es_cero(self):
-        self.assertAlmostEqual(_haversine(19.4326, -99.1332, 19.4326, -99.1332), 0.0)
+        self.assertAlmostEqual(haversine(19.4326, -99.1332, 19.4326, -99.1332), 0.0)
 
     def test_distancia_conocida_cdmx_gdl(self):
         """CDMX → Guadalajara ≈ 460 km en línea recta."""
-        d = _haversine(19.4326, -99.1332, 20.6597, -103.3496)
+        d = haversine(19.4326, -99.1332, 20.6597, -103.3496)
         self.assertAlmostEqual(d, 460, delta=30)  # tolerancia de 30 km
 
     def test_simetria(self):
-        d1 = _haversine(19.4326, -99.1332, 20.6597, -103.3496)
-        d2 = _haversine(20.6597, -103.3496, 19.4326, -99.1332)
+        d1 = haversine(19.4326, -99.1332, 20.6597, -103.3496)
+        d2 = haversine(20.6597, -103.3496, 19.4326, -99.1332)
         self.assertAlmostEqual(d1, d2, places=6)
 
     def test_distancia_siempre_positiva(self):
-        d = _haversine(0.0, 0.0, 1.0, 1.0)
+        d = haversine(0.0, 0.0, 1.0, 1.0)
         self.assertGreater(d, 0)
 
 
@@ -147,17 +145,17 @@ class ToFloatTests(TestCase):
 # ──────────────────────────────────────────────
 
 class DistanceMatrixTests(TestCase):
-    """Pruebas para _build_distance_matrix."""
+    """Pruebas para build_distance_matrix."""
 
     def test_diagonal_es_cero(self):
         coords = [(0, 0), (1, 1), (2, 2)]
-        m = _build_distance_matrix(coords)
+        m = build_distance_matrix(coords)
         for i in range(len(coords)):
             self.assertEqual(m[i][i], 0.0)
 
     def test_simetria_de_la_matriz(self):
         coords = [(19.43, -99.13), (20.66, -103.35), (25.67, -100.31)]
-        m = _build_distance_matrix(coords)
+        m = build_distance_matrix(coords)
         n = len(coords)
         for i in range(n):
             for j in range(n):
@@ -165,17 +163,17 @@ class DistanceMatrixTests(TestCase):
 
     def test_tamano_correcto(self):
         coords = [(0, 0), (1, 1)]
-        m = _build_distance_matrix(coords)
+        m = build_distance_matrix(coords)
         self.assertEqual(len(m), 2)
         self.assertEqual(len(m[0]), 2)
 
     def test_valores_positivos_fuera_diagonal(self):
         coords = [(0, 0), (10, 10)]
-        m = _build_distance_matrix(coords)
+        m = build_distance_matrix(coords)
         self.assertGreater(m[0][1], 0)
 
     def test_un_solo_punto(self):
-        m = _build_distance_matrix([(0, 0)])
+        m = build_distance_matrix([(0, 0)])
         self.assertEqual(m, [[0.0]])
 
 
@@ -184,27 +182,27 @@ class DistanceMatrixTests(TestCase):
 # ──────────────────────────────────────────────
 
 class PrimMSTTests(TestCase):
-    """Pruebas para _prim_mst."""
+    """Pruebas para prim_mst."""
 
     def test_todos_los_nodos_conectados(self):
         """El MST debe tener exactamente n-1 aristas y conectar todos los nodos."""
         coords = [(0, 0), (1, 0), (0, 1), (1, 1)]
-        graph = _build_distance_matrix(coords)
-        adj = _prim_mst(graph, 4)
+        graph = build_distance_matrix(coords)
+        adj = prim_mst(graph, 4)
         total_edges = sum(len(neighbors) for neighbors in adj) // 2
         self.assertEqual(total_edges, 3)  # n-1
 
     def test_tres_nodos(self):
         coords = [(0, 0), (1, 0), (2, 0)]
-        graph = _build_distance_matrix(coords)
-        adj = _prim_mst(graph, 3)
+        graph = build_distance_matrix(coords)
+        adj = prim_mst(graph, 3)
         total_edges = sum(len(neighbors) for neighbors in adj) // 2
         self.assertEqual(total_edges, 2)
 
     def test_dos_nodos(self):
         coords = [(0, 0), (5, 5)]
-        graph = _build_distance_matrix(coords)
-        adj = _prim_mst(graph, 2)
+        graph = build_distance_matrix(coords)
+        adj = prim_mst(graph, 2)
         self.assertIn(1, adj[0])
         self.assertIn(0, adj[1])
 
@@ -217,15 +215,15 @@ class OddDegreeNodesTests(TestCase):
     def test_cantidad_par_de_nodos_impares(self):
         """Siempre debe haber una cantidad par de nodos de grado impar."""
         coords = [(0, 0), (1, 0), (0, 1), (1, 1), (0.5, 0.5)]
-        graph = _build_distance_matrix(coords)
-        adj = _prim_mst(graph, 5)
-        odd = _odd_degree_nodes(adj, 5)
+        graph = build_distance_matrix(coords)
+        adj = prim_mst(graph, 5)
+        odd = odd_degree_nodes(adj, 5)
         self.assertEqual(len(odd) % 2, 0)
 
     def test_cadena_lineal(self):
         """Una cadena A—B—C tiene nodos extremos impares (grado 1)."""
         adj = [[1], [0, 2], [1]]  # A-B-C
-        odd = _odd_degree_nodes(adj, 3)
+        odd = odd_degree_nodes(adj, 3)
         self.assertIn(0, odd)
         self.assertIn(2, odd)
         self.assertNotIn(1, odd)
@@ -238,9 +236,9 @@ class OddDegreeNodesTests(TestCase):
 class GreedyMatchingTests(TestCase):
     def test_empareja_todos_los_nodos(self):
         coords = [(0, 0), (1, 0), (0, 1), (1, 1)]
-        graph = _build_distance_matrix(coords)
+        graph = build_distance_matrix(coords)
         nodes = [0, 1, 2, 3]
-        edges = _greedy_matching(nodes, graph)
+        edges = greedy_matching(nodes, graph)
         matched = set()
         for u, v in edges:
             matched.add(u)
@@ -249,12 +247,12 @@ class GreedyMatchingTests(TestCase):
 
     def test_dos_nodos(self):
         graph = [[0, 5], [5, 0]]
-        edges = _greedy_matching([0, 1], graph)
+        edges = greedy_matching([0, 1], graph)
         self.assertEqual(len(edges), 1)
         self.assertEqual(set(edges[0]), {0, 1})
 
     def test_lista_vacia(self):
-        edges = _greedy_matching([], [[]])
+        edges = greedy_matching([], [[]])
         self.assertEqual(edges, [])
 
 
@@ -266,7 +264,7 @@ class EulerianCircuitTests(TestCase):
     def test_triangulo(self):
         """Grafo triángulo: 0-1, 1-2, 2-0."""
         adj = [[1, 2], [0, 2], [1, 0]]
-        circuit = _eulerian_circuit(adj, start=0)
+        circuit = eulerian_circuit(adj, start=0)
         self.assertEqual(circuit[0], 0)
         self.assertEqual(circuit[-1], 0)
         # Usa cada arista exactamente una vez → 3 aristas + cierre = 4 nodos
@@ -275,7 +273,7 @@ class EulerianCircuitTests(TestCase):
     def test_cuadrado_con_aristas_dobles(self):
         """Multigrafo: cada arista duplicada → todos grado par."""
         adj = [[1, 1], [0, 0]]
-        circuit = _eulerian_circuit(adj, start=0)
+        circuit = eulerian_circuit(adj, start=0)
         self.assertEqual(circuit[0], 0)
         self.assertEqual(circuit[-1], 0)
 
@@ -287,7 +285,7 @@ class EulerianCircuitTests(TestCase):
 class ShortcutTests(TestCase):
     def test_elimina_repetidos(self):
         euler = [0, 1, 2, 1, 3, 0]
-        tour = _shortcut(euler)
+        tour = shortcut(euler)
         # Debe contener cada nodo una vez (excepto el cierre) + cierre
         self.assertEqual(tour[0], tour[-1])
         interior = tour[:-1]
@@ -295,12 +293,12 @@ class ShortcutTests(TestCase):
 
     def test_sin_repetidos(self):
         euler = [0, 1, 2, 3, 0]
-        tour = _shortcut(euler)
+        tour = shortcut(euler)
         self.assertEqual(tour, [0, 1, 2, 3, 0])
 
     def test_cierre_del_tour(self):
         euler = [0, 1, 2]
-        tour = _shortcut(euler)
+        tour = shortcut(euler)
         self.assertEqual(tour[-1], tour[0])
 
 
@@ -312,8 +310,8 @@ class ChristofidesTests(TestCase):
     def test_tour_hamiltoniano_valido(self):
         """El tour debe visitar cada nodo exactamente una vez y cerrar en 0."""
         coords = [(0, 0), (1, 0), (0, 1), (1, 1)]
-        graph = _build_distance_matrix(coords)
-        tour = _christofides_tour(graph, 4)
+        graph = build_distance_matrix(coords)
+        tour = christofides_tour(graph, 4)
 
         self.assertEqual(tour[0], 0)
         self.assertEqual(tour[-1], 0)
@@ -322,16 +320,16 @@ class ChristofidesTests(TestCase):
 
     def test_dos_nodos(self):
         coords = [(0, 0), (1, 0)]
-        graph = _build_distance_matrix(coords)
-        tour = _christofides_tour(graph, 2)
+        graph = build_distance_matrix(coords)
+        tour = christofides_tour(graph, 2)
         self.assertEqual(tour[0], 0)
         self.assertEqual(tour[-1], 0)
         self.assertIn(1, tour)
 
     def test_cinco_nodos(self):
         coords = [(0, 0), (1, 0), (2, 0), (1, 1), (0, 1)]
-        graph = _build_distance_matrix(coords)
-        tour = _christofides_tour(graph, 5)
+        graph = build_distance_matrix(coords)
+        tour = christofides_tour(graph, 5)
         self.assertEqual(tour[0], 0)
         self.assertEqual(tour[-1], 0)
         self.assertEqual(sorted(tour[1:-1]), [1, 2, 3, 4])
@@ -345,9 +343,9 @@ class TwoOptTests(TestCase):
     def test_no_empeora(self):
         """2-opt nunca debe producir un tour peor."""
         coords = [(0, 0), (3, 0), (1, 1), (2, 1)]
-        graph = _build_distance_matrix(coords)
+        graph = build_distance_matrix(coords)
         initial = [0, 1, 2, 3, 0]
-        improved = _two_opt(initial, graph)
+        improved = two_opt(initial, graph)
         self.assertLessEqual(
             _tour_distance(improved, graph),
             _tour_distance(initial, graph) + 1e-9,
@@ -355,18 +353,18 @@ class TwoOptTests(TestCase):
 
     def test_mantiene_almacen_fijo(self):
         coords = [(0, 0), (1, 0), (0, 1), (1, 1)]
-        graph = _build_distance_matrix(coords)
+        graph = build_distance_matrix(coords)
         tour = [0, 1, 2, 3, 0]
-        improved = _two_opt(tour, graph)
+        improved = two_opt(tour, graph)
         self.assertEqual(improved[0], 0)
         self.assertEqual(improved[-1], 0)
 
     def test_tour_optimo_no_cambia(self):
         """Un tour que ya es óptimo no debería sufrir cambios."""
         coords = [(0, 0), (1, 0), (1, 1), (0, 1)]  # cuadrado
-        graph = _build_distance_matrix(coords)
+        graph = build_distance_matrix(coords)
         tour = [0, 1, 2, 3, 0]
-        improved = _two_opt(tour, graph)
+        improved = two_opt(tour, graph)
         # La distancia debe ser igual
         self.assertAlmostEqual(
             _tour_distance(improved, graph),
@@ -376,9 +374,9 @@ class TwoOptTests(TestCase):
 
     def test_preserva_todos_los_nodos(self):
         coords = [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0)]
-        graph = _build_distance_matrix(coords)
+        graph = build_distance_matrix(coords)
         tour = [0, 3, 1, 4, 2, 0]  # orden subóptimo
-        improved = _two_opt(tour, graph)
+        improved = two_opt(tour, graph)
         self.assertEqual(sorted(improved[1:-1]), [1, 2, 3, 4])
 
 
@@ -409,7 +407,7 @@ class OptimizeRouteTests(TestCase):
 
         ordered, dist = optimize_route([p], 19.0, -99.0)
         self.assertEqual(len(ordered), 1)
-        expected = _haversine(19.0, -99.0, 19.4326, -99.1332) * 2
+        expected = haversine(19.0, -99.0, 19.4326, -99.1332) * 2
         self.assertAlmostEqual(dist, round(expected, 4), places=4)
 
     def test_sin_puntos_lanza_error(self):
@@ -440,42 +438,14 @@ class OptimizeRouteTests(TestCase):
         _, dist = optimize_route(points, 19.0, -99.0)
         self.assertGreater(dist, 0)
 
-    @patch("apps.deliveries.services._two_opt")
-    def test_2opt_se_aplica_bajo_umbral(self, mock_two_opt):
-        """Si hay ≤ K_OPT_THRESHOLD puntos, 2-opt debe llamarse."""
-        mock_two_opt.side_effect = lambda tour, graph: tour  # no-op
-
-        points = []
-        for i in range(5):
-            p = MagicMock(spec=DeliveryPoint)
-            p.latitude = Decimal(str(19.0 + i * 0.01))
-            p.longitude = Decimal(str(-99.0 - i * 0.01))
-            points.append(p)
-
-        optimize_route(points, 19.0, -99.0)
-        mock_two_opt.assert_called_once()
-
-    @patch("apps.deliveries.services._two_opt")
-    def test_2opt_no_se_aplica_sobre_umbral(self, mock_two_opt):
-        """Si hay > K_OPT_THRESHOLD puntos, 2-opt NO debe llamarse."""
-        points = []
-        for i in range(K_OPT_THRESHOLD + 1):
-            p = MagicMock(spec=DeliveryPoint)
-            p.latitude = Decimal(str(19.0 + i * 0.001))
-            p.longitude = Decimal(str(-99.0 - i * 0.001))
-            points.append(p)
-
-        optimize_route(points, 19.0, -99.0)
-        mock_two_opt.assert_not_called()
-
     def test_2opt_mejora_tour_cruzado(self):
         """Verifica que 2-opt mejora un tour con cruces evidentes."""
         # Cuadrado: 0=(0,0), 1=(1,0), 2=(1,1), 3=(0,1)
         # Tour cruzado: 0 → 2 → 1 → 3 → 0 (las aristas se cruzan)
         coords = [(0, 0), (1, 0), (1, 1), (0, 1)]
-        graph = _build_distance_matrix(coords)
+        graph = build_distance_matrix(coords)
         crossed_tour = [0, 2, 1, 3, 0]
-        optimal_tour = _two_opt(crossed_tour, graph)
+        optimal_tour = two_opt(crossed_tour, graph)
         self.assertLess(
             _tour_distance(optimal_tour, graph),
             _tour_distance(crossed_tour, graph),
@@ -492,7 +462,7 @@ class ParseCSVTests(TestCase):
             {"address": "Calle A", "latitude": "19.43", "longitude": "-99.13"},
             {"address": "Calle B", "latitude": "20.66", "longitude": "-103.35"},
         ])
-        rows = _parse_csv(content)
+        rows = parse_csv(content)
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[0]["address"], "Calle A")
         self.assertAlmostEqual(rows[0]["latitude"], 19.43)
@@ -502,7 +472,7 @@ class ParseCSVTests(TestCase):
             [{"address": "Calle A"}],
             fieldnames=["address"],
         )
-        rows = _parse_csv(content)
+        rows = parse_csv(content)
         self.assertEqual(len(rows), 1)
         self.assertIsNone(rows[0]["latitude"])
         self.assertIsNone(rows[0]["longitude"])
@@ -513,26 +483,26 @@ class ParseCSVTests(TestCase):
             fieldnames=["nombre"],
         )
         with self.assertRaises(RouteProcessingError):
-            _parse_csv(content)
+            parse_csv(content)
 
     def test_csv_vacio_lanza_error(self):
         content = b"address,latitude,longitude\r\n"
         with self.assertRaises(RouteProcessingError):
-            _parse_csv(content)
+            parse_csv(content)
 
     def test_csv_address_vacia_lanza_error(self):
         content = _make_csv_bytes(
             [{"address": "", "latitude": "19", "longitude": "-99"}],
         )
         with self.assertRaises(RouteProcessingError):
-            _parse_csv(content)
+            parse_csv(content)
 
     def test_csv_coordenadas_parciales(self):
         """Si solo viene latitude sin longitude, longitude queda None."""
         content = _make_csv_bytes([
             {"address": "Calle A", "latitude": "19.43", "longitude": ""},
         ])
-        rows = _parse_csv(content)
+        rows = parse_csv(content)
         self.assertAlmostEqual(rows[0]["latitude"], 19.43)
         self.assertIsNone(rows[0]["longitude"])
 
@@ -546,7 +516,7 @@ class ParseJSONTests(TestCase):
         data = [
             {"address": "Calle A", "latitude": 19.43, "longitude": -99.13},
         ]
-        rows = _parse_json(_make_json_bytes(data))
+        rows = parse_json(_make_json_bytes(data))
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["address"], "Calle A")
 
@@ -556,30 +526,30 @@ class ParseJSONTests(TestCase):
                 {"address": "Calle B", "latitude": 20.0, "longitude": -100.0},
             ]
         }
-        rows = _parse_json(_make_json_bytes(data))
+        rows = parse_json(_make_json_bytes(data))
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["address"], "Calle B")
 
     def test_json_invalido_lanza_error(self):
         with self.assertRaises(RouteProcessingError):
-            _parse_json(b"{esto no es json}")
+            parse_json(b"{esto no es json}")
 
     def test_json_no_es_lista_lanza_error(self):
         with self.assertRaises(RouteProcessingError):
-            _parse_json(_make_json_bytes({"key": "value"}))
+            parse_json(_make_json_bytes({"key": "value"}))
 
     def test_json_vacio_lanza_error(self):
         with self.assertRaises(RouteProcessingError):
-            _parse_json(_make_json_bytes([]))
+            parse_json(_make_json_bytes([]))
 
     def test_json_sin_address_lanza_error(self):
         data = [{"latitude": 19.0, "longitude": -99.0}]
         with self.assertRaises(RouteProcessingError):
-            _parse_json(_make_json_bytes(data))
+            parse_json(_make_json_bytes(data))
 
     def test_json_sin_coordenadas(self):
         data = [{"address": "Calle C"}]
-        rows = _parse_json(_make_json_bytes(data))
+        rows = parse_json(_make_json_bytes(data))
         self.assertIsNone(rows[0]["latitude"])
         self.assertIsNone(rows[0]["longitude"])
 
@@ -644,12 +614,12 @@ class ParseInputFileTests(TestCase):
 class ResolveCoordinatesTests(TestCase):
     def test_filas_con_coordenadas_no_geocodifican(self):
         rows = [{"address": "A", "latitude": 19.0, "longitude": -99.0}]
-        with patch("apps.deliveries.services._geocode_address") as mock_geo:
+        with patch("apps.deliveries.services.geocode_address") as mock_geo:
             result = resolve_coordinates(rows)
             mock_geo.assert_not_called()
         self.assertEqual(result[0]["latitude"], 19.0)
 
-    @patch("apps.deliveries.services._geocode_address", return_value=(19.5, -99.5))
+    @patch("apps.deliveries.services.geocode_address", return_value=(19.5, -99.5))
     def test_filas_sin_coordenadas_geocodifican(self, mock_geo):
         rows = [{"address": "B", "latitude": None, "longitude": None}]
         result = resolve_coordinates(rows)
@@ -657,7 +627,7 @@ class ResolveCoordinatesTests(TestCase):
         self.assertEqual(result[0]["latitude"], 19.5)
         self.assertEqual(result[0]["longitude"], -99.5)
 
-    @patch("apps.deliveries.services._geocode_address", return_value=(20.0, -100.0))
+    @patch("apps.deliveries.services.geocode_address", return_value=(20.0, -100.0))
     def test_mezcla_con_y_sin_coordenadas(self, mock_geo):
         rows = [
             {"address": "A", "latitude": 19.0, "longitude": -99.0},
@@ -667,7 +637,7 @@ class ResolveCoordinatesTests(TestCase):
         self.assertEqual(len(result), 2)
         mock_geo.assert_called_once_with("B")
 
-    @patch("apps.deliveries.services._geocode_address")
+    @patch("apps.deliveries.services.geocode_address")
     def test_geocodificacion_fallida_lanza_error(self, mock_geo):
         mock_geo.side_effect = RouteProcessingError("No encontrado")
         rows = [{"address": "X", "latitude": None, "longitude": None}]
@@ -858,7 +828,7 @@ class TSPPropertiesTests(TestCase):
     def test_distancia_acotada_por_2x_mst(self):
         """
         Christofides clásico garantiza ≤ 1.5× MST, pero esta implementación
-        usa greedy matching en lugar de Blossom V (documentado en _greedy_matching),
+        usa greedy matching en lugar de Blossom V (documentado en greedy_matching),
         lo que pierde esa garantía teórica.
 
         Usamos una cota relajada de 2× MST que cualquier heurística razonable
@@ -870,8 +840,8 @@ class TSPPropertiesTests(TestCase):
 
         wh = (19.0, -99.0)
         all_coords = [wh] + coords
-        graph = _build_distance_matrix(all_coords)
-        adj = _prim_mst(graph, len(all_coords))
+        graph = build_distance_matrix(all_coords)
+        adj = prim_mst(graph, len(all_coords))
         mst_weight = 0
         for u in range(len(all_coords)):
             for v in adj[u]:
@@ -885,12 +855,12 @@ class TSPPropertiesTests(TestCase):
         """Demuestra que 2-opt no empeora la solución de Christofides."""
         coords = [(19.0 + i * 0.1, -99.0 + i * 0.05) for i in range(10)]
         all_coords = [(18.0, -98.0)] + coords
-        graph = _build_distance_matrix(all_coords)
+        graph = build_distance_matrix(all_coords)
 
-        tour_christofides = _christofides_tour(graph, len(all_coords))
+        tour_christofides = christofides_tour(graph, len(all_coords))
         dist_christofides = _tour_distance(tour_christofides, graph)
 
-        tour_2opt = _two_opt(tour_christofides[:], graph)
+        tour_2opt = two_opt(tour_christofides[:], graph)
         dist_2opt = _tour_distance(tour_2opt, graph)
 
         self.assertLessEqual(dist_2opt, dist_christofides + 1e-9)

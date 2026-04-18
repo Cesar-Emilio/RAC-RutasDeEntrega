@@ -14,12 +14,16 @@ import csv
 import json
 import io
 import math
-from loguru import logger
+import time
 import requests
 from django.conf import settings
 from typing import TypedDict
 
 from django.db import transaction
+
+from config.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 from .models import (
     DeliveryPoint,
@@ -67,6 +71,10 @@ def parse_input_file(route: Route) -> list[RawRow]:
     RouteProcessingError
         Si el archivo no tiene el formato esperado o faltan columnas requeridas.
     """
+    logger.debug(
+        "parse_input_file | action=start | route_id={route_id}",
+        route_id=route.id,
+    )
     try:
         input_file = route.input_file
     except Route.input_file.RelatedObjectDoesNotExist:
@@ -78,11 +86,19 @@ def parse_input_file(route: Route) -> list[RawRow]:
 
     # Obtiene solo el archivo y lo procesa según su tipo
     if input_file.file_type == FileType.CSV:
-        return parse_csv(content)
+        rows = parse_csv(content)
     elif input_file.file_type == FileType.JSON:
-        return parse_json(content)
+        rows = parse_json(content)
     else:
         raise RouteProcessingError(f"Tipo de archivo no soportado: {input_file.file_type}")
+
+    logger.debug(
+        "parse_input_file | action=end | route_id={route_id} | file_type={file_type} | rows_parsed={rows_parsed}",
+        route_id=route.id,
+        file_type=input_file.file_type,
+        rows_parsed=len(rows),
+    )
+    return rows
 
 def parse_csv(content: bytes) -> list[RawRow]:
     text = content.decode("utf-8-sig")
@@ -138,7 +154,7 @@ def _to_float(value) -> float | None:
     except (TypeError, ValueError):
         return None
 
-def resolve_coordinates(rows: list[RawRow]) -> list[ResolvedRow]:
+def resolve_coordinates(rows: list[RawRow], route_id: int | None = None) -> list[ResolvedRow]:
     """
     Garantiza que todas las filas tengan lat/lng.
 
@@ -151,6 +167,8 @@ def resolve_coordinates(rows: list[RawRow]) -> list[ResolvedRow]:
         Si la geocodificación falla para alguna dirección.
     """
     resolved: list[ResolvedRow] = []
+    geocoded_count = 0
+
     for row in rows:
         if row["latitude"] is not None and row["longitude"] is not None:
             resolved.append({
@@ -159,12 +177,36 @@ def resolve_coordinates(rows: list[RawRow]) -> list[ResolvedRow]:
                 "longitude": row["longitude"],
             })
         else:
+            logger.debug(
+                "resolve_coordinates | action=geocode_start | route_id={route_id} | address={address}",
+                route_id=route_id,
+                address=row["address"],
+            )
             lat, lng = geocode_address(row["address"])
+            geocoded_count += 1
+            logger.debug(
+                "resolve_coordinates | action=geocode_end | route_id={route_id} "
+                "| address={address} | lat={lat} | lng={lng}",
+                route_id=route_id,
+                address=row["address"],
+                lat=lat,
+                lng=lng,
+            )
             resolved.append({
                 "address": row["address"],
                 "latitude": lat,
                 "longitude": lng,
             })
+
+    if geocoded_count:
+        logger.debug(
+            "resolve_coordinates | action=summary | route_id={route_id} "
+            "| total_rows={total} | geocoded={geocoded} | pre_resolved={pre_resolved}",
+            route_id=route_id,
+            total=len(rows),
+            geocoded=geocoded_count,
+            pre_resolved=len(rows) - geocoded_count,
+        )
     return resolved
 
 def geocode_address(address: str) -> tuple[float, float]:
@@ -188,14 +230,35 @@ def geocode_address(address: str) -> tuple[float, float]:
         "User-Agent": "route-optimizer-app"
     }
 
+    start = time.perf_counter()
     try:
         resp = requests.get(url, params=params, headers=headers, timeout=5)
         resp.raise_for_status()
         results = resp.json()
+    except requests.Timeout:
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+        logger.warning(
+            "geocode_address | action=timeout | address={address} | elapsed_ms={elapsed_ms}",
+            address=address,
+            elapsed_ms=elapsed_ms,
+        )
+        raise RouteProcessingError(f"Timeout al conectar con Nominatim para: '{address}'")
     except requests.RequestException as exc:
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+        logger.error(
+            "geocode_address | action=request_error | address={address} "
+            "| error={error} | elapsed_ms={elapsed_ms}",
+            address=address,
+            error=str(exc),
+            elapsed_ms=elapsed_ms,
+        )
         raise RouteProcessingError(f"Error al conectar con Nominatim: {exc}")
 
     if not results:
+        logger.warning(
+            "geocode_address | action=no_results | address={address}",
+            address=address,
+        )
         raise RouteProcessingError(f"No se encontraron coordenadas para: '{address}'")
 
     return float(results[0]["lat"]), float(results[0]["lon"])
@@ -215,15 +278,19 @@ def save_delivery_points(route: Route, rows: list[ResolvedRow]) -> list[Delivery
         for row in rows
     ]
     DeliveryPoint.objects.bulk_create(points)
-    return list(DeliveryPoint.objects.filter(route=route).order_by("id"))
-
-# Umbral para activar k-opt, por encima de este valor se omite la mejora
-K_OPT_THRESHOLD = 50
+    saved = list(DeliveryPoint.objects.filter(route=route).order_by("id"))
+    logger.debug(
+        "save_delivery_points | action=bulk_create | route_id={route_id} | points_saved={count}",
+        route_id=route.id,
+        count=len(saved),
+    )
+    return saved
 
 def optimize_route(
     points: list[DeliveryPoint],
     warehouse_lat: float,
     warehouse_lng: float,
+    k_opt: int = 0,
 ) -> tuple[list[DeliveryPoint], float]:
     """
     Calcula el orden óptimo de visita para los puntos de entrega.
@@ -233,16 +300,33 @@ def optimize_route(
     1. Christofides simplificado (MST + matching de nodos de grado impar
        por nearest-neighbor) como heurística de construcción inicial.
        Garantiza una solución ≤ 1.5× el óptimo en grafos métricos.
+    2. k-opt improvement: ejecuta _two_opt exactamente k_opt veces, 
+       se eliminó el threshold. Cada iteración parte del tour
+       mejorado de la anterior, acumulando mejoras sucesivas.
+       k_opt=0 omite la mejora completamente.
  
-    2. 2-opt improvement condicional si len(points) <= K_OPT_THRESHOLD.
-       Intercambia pares de aristas hasta que no haya mejora posible.
-       Complejidad O(n²) por iteración; en la práctica converge rápido.
+    Parámetros
+    ----------
+    points         : DeliveryPoints a ordenar (sin el warehouse).
+    warehouse_lat  : Latitud del almacén (nodo origen y destino).
+    warehouse_lng  : Longitud del almacén.
+    k_opt          : Número de pasadas de mejora 2-opt (0 = sin mejora).
  
     Retorna
     -------
     ordered_points : list[DeliveryPoint] en el orden óptimo calculado.
     total_distance : Distancia total en km incluyendo salida y regreso al warehouse.
     """
+    n_points = len(points)
+    start = time.perf_counter()
+
+    logger.debug(
+        "optimize_route | action=start | points={n_points} | warehouse_lat={lat} | warehouse_lng={lng}",
+        n_points=n_points,
+        lat=warehouse_lat,
+        lng=warehouse_lng,
+    )
+
     # Caso 1: no hay paquetes a entregar
     if not points:
         raise RouteProcessingError("No hay puntos de entrega para optimizar.")
@@ -253,7 +337,15 @@ def optimize_route(
     if len(points) == 1:
         d = haversine(warehouse_lat, warehouse_lng,
                        float(points[0].latitude), float(points[0].longitude))
-        return points, round(d * 2, 4)
+        total_distance = round(d * 2, 4)
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+        logger.debug(
+            "optimize_route | action=end | strategy=single_point | total_distance_km={dist} "
+            "| execution_time_ms={elapsed_ms}",
+            dist=total_distance,
+            elapsed_ms=elapsed_ms,
+        )
+        return points, total_distance
  
     # La matriz incluye el warehouse en el índice 0, los puntos en 1..n
     all_coords = [(warehouse_lat, warehouse_lng)] + [
@@ -266,26 +358,65 @@ def optimize_route(
     graph = build_distance_matrix(all_coords)
  
     # Se construye un tour inicial siendo un recorrido que inicia y acaba en el almacén
+    logger.debug(
+        "optimize_route | action=christofides_start | nodes={n_total}",
+        n_total=n_total,
+    )
     tour = christofides_tour(graph, n_total)
+    logger.debug(
+        "optimize_route | action=christofides_end | tour_length={tour_length}",
+        tour_length=len(tour),
+    )
  
     # Si hay 50 paquetes o menos, aplica 2-opt
-    if len(points) <= K_OPT_THRESHOLD:
-        logger.debug("Aplicando 2-opt improvement (%d puntos).", len(points))
-        tour = two_opt(tour, graph)
+    if k_opt > 0:
+        logger.debug(
+            "optimize_route | action=two_opt_start | points={n_points} | k_opt={k_opt}",
+            n_points=n_points,
+            k_opt=k_opt
+        )
+        for iteration in range(k_opt):
+            tour_before = _tour_distance(tour, graph)
+            tour = two_opt(tour, graph)
+            tour_after = _tour_distance(tour, graph)
+            logger.debug(
+                "optimize_route | action=two_opt_improvement | iteration={iteration}/{k_opt} | tour_before={tour_before} | tour_after={tour_after} | improvement = {improvement}",
+                iteration=iteration + 1,
+                k_opt=k_opt,
+                tour_before=tour_before,
+                tour_after=tour_after,
+                improvement=tour_after - tour_before,
+            )
+            # Early stopping: si la iteración no mejoró nada, las siguientes tampoco lo harán
+            if tour_before - tour_after < 1e-10:
+                logger.debug(
+                    "optimize_route | action=two_opt_stop | iteration={iteration}/{k_opt}",
+                    iteration=iteration + 1,
+                    k_opt=k_opt,
+                )
+                break
+        logger.debug("optimize_route | action=two_opt_end")
     else:
-        logger.debug("2-opt omitido (%d puntos > umbral %d).", len(points), K_OPT_THRESHOLD)
+        logger.debug(
+            "optimize_route | action=two_opt_skipped | points={n_points} | k_opt={k_opt}",
+            n_points=n_points,
+            k_opt=k_opt
+        )
  
     # Suma todas las aristas del tour final
     total_distance = _tour_distance(tour, graph)
  
     # tour[0] y tour[-1] son el almacén; los puntos están en 1..n
-    # ejemplo:
-    # inicia en almacén
-    # se va al paquete 1
-    # se va al paquete 2
-    # regresa al almacén
     ordered_indices = [i - 1 for i in tour[1:-1]]  # descarta el almacén, convierte a índice de points[]
     ordered_points = [points[i] for i in ordered_indices]
+
+    elapsed_ms = int((time.perf_counter() - start) * 1000)
+    logger.debug(
+        "optimize_route | action=end | strategy=christofides | total_distance_km={dist} "
+        "| execution_time_ms={elapsed_ms}",
+        dist=round(total_distance, 4),
+        elapsed_ms=elapsed_ms,
+    )
  
     return ordered_points, round(total_distance, 4)
 
@@ -298,34 +429,14 @@ def build_distance_matrix(coords: list[tuple[float, float]]) -> list[list[float]
     Punto de extensión: reemplazar haversine() por una API de distancias
     viales (OSRM, Google Distance Matrix) para rutas más realistas.
     """
-    # El tamaño de la matriz será nxn, donde n es la cantidad total de puntos (considerando el almacén)
     n = len(coords)
-    
-    #Inicia la matriz con 0.0 en todos los valores
     matrix = [[0.0] * n for _ in range(n)]
     
-    # Por cada columna
     for i in range(n):
-        # Por cada fila
         for j in range(i + 1, n):
-            # La distancia se estima usando la formula Haversine
-            # Los parámetros son:
-            # latitud del punto 1,
-            # longitud del punto 1,
-            # latitud del punto 2,
-            # longitud del punto 2,
             d = haversine(coords[i][0], coords[i][1], coords[j][0], coords[j][1])
-            # Como es una matriz simétrica, se guarda en la mitad inferior
             matrix[i][j] = d
             matrix[j][i] = d
-
-    # Ejemplo de respuesta de la matriz:
-    #  0  1  3  5  3
-    #  1  0  2  3  1
-    #  3  2  3  5  4
-    #  5  3  5  4  2
-    #  3  1  4  2  0
-    # Donde el valor matrix[i][j] es la distancia desde el punto i hasta el j, si un índice es 0 representa el almacén
     
     return matrix
 
@@ -344,26 +455,10 @@ def christofides_tour(graph: list[list[float]], n: int) -> list[int]:
  
     El tour comienza y termina en el nodo 0 (warehouse).
     """
-    # MST (Minimum Spanning Tree) con Prim
-    # Calcula un árbol de expansión mínima
-    # Un MST conecta todos los nodos con el menor costo total, sin ciclos
-    # El MST no resuelve el problema, pero sirve como base para construir una ruta más corta
     mst_adj = prim_mst(graph, n)
-
-    # Nodos de grado impar
-    # En el MST algunos nodos tendrán grado impar
-    # Un circuito euleriano solo existe si todos los nodos tienen grado par
-    # Solo hay que "arreglar" los grados impares ('stalin sort' ahh algorithm)
     odd_nodes = odd_degree_nodes(mst_adj, n)
-
-    # Se emparejan los nodos impares entre sí
-    # Se generan aristas extra para que todos los grados se vuelvan pares
-    # Es un matching greedy, no óptimo, es aproximado 
-    # En teoría se pierde la garantía teórica del Christofides clásico, pero baja el tiempo de procesamiento
     matching_edges = greedy_matching(odd_nodes, graph)
  
-    # Multigrafo = MST + matching
-    # Se combinan las aristas del MST y las aristas del matching
     multigraph: list[list[int]] = [[] for _ in range(n)]
     for u, neighbors in enumerate(mst_adj):
         for v in neighbors:
@@ -372,39 +467,24 @@ def christofides_tour(graph: list[list[float]], n: int) -> list[int]:
         multigraph[u].append(v)
         multigraph[v].append(u)
  
-    # Circuito euleriano
-    # Con todos los grafos pares, ya es posible encontrar un recorrido que usa cada arista
-    # Aun no es la solución del TSP, pq puede repetir nodos
     euler = eulerian_circuit(multigraph, start=0)
-
-    # Se eliminan repeticiones de nodos
-    # Si el circuito euleriano pasa varias veces por el mismo nodo,
-    # se conserva la primera aparición y se saltan las demás
     tour = shortcut(euler)
     return tour
  
  
 def prim_mst(graph: list[list[float]], n: int) -> list[list[int]]:
     """
-    Este método genera el MST con algoritmo de Prim.
+    Genera el MST con algoritmo de Prim.
     Retorna lista de adyacencia (sin pesos).
     """
-    # Si el nodo v ya entró al arbol
     in_mst = [False] * n
-
-    # La arista más barata conocida para conectar v al MST
     min_edge = [math.inf] * n
-    
-    # Desde qué nodo se conecta v al MST
     parent = [-1] * n
-    
-    # Costo de arranque
     min_edge[0] = 0.0
  
     adj: list[list[int]] = [[] for _ in range(n)]
  
     for _ in range(n):
-        # Nodo con menor arista que no esté en el MST
         u = min((v for v in range(n) if not in_mst[v]), key=lambda v: min_edge[v])
         in_mst[u] = True
  
@@ -421,37 +501,23 @@ def prim_mst(graph: list[list[float]], n: int) -> list[list[int]]:
 
 def odd_degree_nodes(adj: list[list[int]], n: int) -> list[int]:
     """Retorna los índices de nodos con grado impar en el árbol dado."""
-    # Cuenta cuantas aristas tiene cada nodo en el MST
-    # Si el número es impar, ese nodo entra en la lista
     return [i for i in range(n) if len(adj[i]) % 2 != 0]
  
 def greedy_matching(nodes: list[int], graph: list[list[float]]) -> list[tuple[int, int]]:
     """
     Matching mínimo aproximado sobre un conjunto de nodos.
- 
     Greedy: empareja cada nodo libre con su vecino libre más cercano.
-    El matching exacto (algoritmo de Blossom) es O(n³),
-    por cuestiones de la capacidad del autor de este código (el sesarin)
-    se deja este que es más simple para lo que derick pidió pero sirve 
     """
     remaining = list(nodes)
     edges: list[tuple[int, int]] = []
  
-    # Mientras queden al menos 2 nodos libres
     while len(remaining) >= 2:
-        # Toma el primero
         u = remaining[0]
-
-        # Vecino más cercano entre los nodos restantes (excluyendo u)
         best_v = min(remaining[1:], key=lambda v: graph[u][v])
-
-        # Crea la arista entre ambos
         edges.append((u, best_v))
-        
-        # Elimina ambos de la lista
         remaining.remove(u)
         remaining.remove(best_v)
-
+ 
     return edges
 
 def eulerian_circuit(adj: list[list[int]], start: int) -> list[int]:
@@ -459,30 +525,20 @@ def eulerian_circuit(adj: list[list[int]], start: int) -> list[int]:
     Circuito euleriano por el algoritmo de Hierholzer (iterativo).
     Modifica una copia de adj para no alterar el multigrafo original.
     """
-    #se hace una copia para no perder el original
     graph_copy = [list(neighbors) for neighbors in adj]
-    
-    # Se usa unapila
     stack = [start]
     circuit: list[int] = []
 
-    # Mientras haya nodos en la pila:
     while stack:
-        # Si todavía tiene aristas sin usar, toma una
         v = stack[-1]
         if graph_copy[v]:
             u = graph_copy[v].pop()
             graph_copy[u].remove(v)
             stack.append(u)
-        # si no tiene más aristas, lo agrega al circuito final
         else:
             circuit.append(stack.pop())
 
-    # Invierte el circuito
     circuit.reverse()
-
-    # esta funcion produce un recorrido cerrado que usa todas las aristas exactamente una vez
-    # pero aun tiene nodos repetidos, por eso hace falta el shortcutting
     return circuit
  
  
@@ -492,7 +548,6 @@ def shortcut(euler: list[int]) -> list[int]:
     saltando nodos ya visitados (shortcutting).
     Preserva el nodo inicial al inicio y al final.
     """
-    #básicamente si un nodo ya está en la lista ya no lo coloca
     seen: set[int] = set()
     tour: list[int] = []
     for node in euler:
@@ -517,15 +572,12 @@ def two_opt(tour: list[int], graph: list[list[float]]) -> list[int]:
  
     while improved:
         improved = False
-        # Iterar sobre aristas internas (excluyendo las conexiones al warehouse)
         for i in range(1, len(best) - 2):
             for j in range(i + 1, len(best) - 1):
-                # Distancia actual: best[i-1]→best[i] + best[j]→best[j+1]
                 current = graph[best[i - 1]][best[i]] + graph[best[j]][best[j + 1]]
-                # Distancia si invertimos el segmento entre i y j
                 swapped = graph[best[i - 1]][best[j]] + graph[best[i]][best[j + 1]]
  
-                if swapped < current - 1e-10:  # tolerancia para floats
+                if swapped < current - 1e-10:
                     best[i:j + 1] = best[i:j + 1][::-1]
                     improved = True
  
@@ -562,52 +614,123 @@ def save_solution(route: Route, ordered_points: list[DeliveryPoint], total_dista
         ]
         RouteSolutionDetail.objects.bulk_create(details)
 
+    logger.debug(
+        "save_solution | action=persist | route_id={route_id} | solution_id={solution_id} "
+        "| details_count={count} | total_distance_km={dist}",
+        route_id=route.id,
+        solution_id=solution.id,
+        count=len(details),
+        dist=total_distance,
+    )
     return solution
 
-def process_route(route_id: int) -> None:
+def process_route(route_id: int, task_id: str | None = None) -> None:
     """
     Punto de entrada principal. Ejecuta el flujo completo de procesamiento
     de una ruta y actualiza su estado en cada etapa.
     """
+    start = time.perf_counter()
+
     try:
         route = Route.objects.select_related("input_file", "warehouse").get(id=route_id)
     except Route.DoesNotExist:
-        logger.error("process_route: ruta %s no encontrada.", route_id)
+        logger.error(
+            "process_route | action=route_not_found | result=failure | route_id={route_id} "
+            "| task_id={task_id}",
+            route_id=route_id,
+            task_id=task_id,
+        )
         return
 
-    logger.info("Iniciando procesamiento de ruta %s.", route_id)
+    company_id = getattr(route.company, "id", None) if hasattr(route, "company") else None
+    warehouse_id = getattr(route.warehouse, "id", None)
+
+    logger.info(
+        "process_route | action=start | route_id={route_id} | company_id={company_id} "
+        "| warehouse_id={warehouse_id} | task_id={task_id}",
+        route_id=route_id,
+        company_id=company_id,
+        warehouse_id=warehouse_id,
+        task_id=task_id,
+    )
+
     route.status = Status.PROCESSING
     route.save(update_fields=["status"])
 
     try:
         raw_rows = parse_input_file(route)
-        logger.debug("Ruta %s: %d filas parseadas.", route_id, len(raw_rows))
+        logger.debug(
+            "process_route | action=parse_done | route_id={route_id} | rows={rows}",
+            route_id=route_id,
+            rows=len(raw_rows),
+        )
 
-        resolved_rows = resolve_coordinates(raw_rows)
-        logger.debug("Ruta %s: coordenadas resueltas.", route_id)
+        resolved_rows = resolve_coordinates(raw_rows, route_id=route_id)
+        logger.debug(
+            "process_route | action=resolve_done | route_id={route_id} | resolved={resolved}",
+            route_id=route_id,
+            resolved=len(resolved_rows),
+        )
 
         points = save_delivery_points(route, resolved_rows)
-        logger.debug("Ruta %s: %d DeliveryPoints creados.", route_id, len(points))
+        logger.debug(
+            "process_route | action=points_saved | route_id={route_id} | points={points}",
+            route_id=route_id,
+            points=len(points),
+        )
  
         warehouse = route.warehouse
         ordered_points, total_distance = optimize_route(
             points,
             warehouse_lat=float(warehouse.latitude),
             warehouse_lng=float(warehouse.longitude),
+            k_opt=route.k_opt,
         )
-        logger.debug("Ruta %s: distancia total %.2f km.", route_id, total_distance)
+        logger.debug(
+            "process_route | action=optimize_done | route_id={route_id} | total_distance_km={dist}",
+            route_id=route_id,
+            dist=total_distance,
+        )
 
         save_solution(route, ordered_points, total_distance)
-        logger.info("Ruta %s procesada correctamente.", route_id)
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+
+        logger.info(
+            "process_route | action=end | result=success | route_id={route_id} "
+            "| company_id={company_id} | delivery_count={delivery_count} "
+            "| total_distance_km={dist} | execution_time_ms={elapsed_ms} | task_id={task_id}",
+            route_id=route_id,
+            company_id=company_id,
+            delivery_count=len(points),
+            dist=total_distance,
+            elapsed_ms=elapsed_ms,
+            task_id=task_id,
+        )
 
         route.status = Status.COMPLETED
 
     except RouteProcessingError as exc:
-        logger.error("Ruta %s — error controlado: %s", route_id, exc)
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+        logger.opt(exception=True).error(
+            "process_route | action=end | result=controlled_error | route_id={route_id} "
+            "| error_message={error} | execution_time_ms={elapsed_ms} | task_id={task_id}",
+            route_id=route_id,
+            error=str(exc),
+            elapsed_ms=elapsed_ms,
+            task_id=task_id,
+        )
         route.status = Status.ERROR
         
     except Exception as exc:
-        logger.critical("Ruta %s — error inesperado: %s", route_id, exc)
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+        logger.opt(exception=True).critical(
+            "process_route | action=end | result=unexpected_error | route_id={route_id} "
+            "| error_message={error} | execution_time_ms={elapsed_ms} | task_id={task_id}",
+            route_id=route_id,
+            error=str(exc),
+            elapsed_ms=elapsed_ms,
+            task_id=task_id,
+        )
         route.status = Status.ERROR
 
     finally:

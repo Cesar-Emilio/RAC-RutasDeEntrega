@@ -57,7 +57,7 @@ export default function CompanyDashboardPage() {
       title="Dashboard empresa"
       breadcrumbs={["Empresa", "Dashboard"]}
     >
-      <div className="flex min-h-screen flex-col text-[14px] md:text-[15px]" style={{ backgroundColor: "#0f1115" }}>
+      <div className="flex min-h-screen flex-col text-[14px] md:text-[15px]" style={{ backgroundColor: "var(--color-background)" }}>
         <CompanyDashboardHeader
           title="Dashboard"
           description="Panel de administracion de la empresa"

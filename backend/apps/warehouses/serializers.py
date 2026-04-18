@@ -7,7 +7,9 @@ class WarehouseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Warehouse
         fields = "__all__"
-        read_only_fields = ['id', 'country', 'created_at', 'updated_at']
+        # CAMBIO: 'company' se agrega a read_only_fields porque se inyecta automáticamente
+        # desde request.user.company en perform_create/perform_update del ViewSet
+        read_only_fields = ['id', 'company', 'country', 'created_at', 'updated_at']
 
     def validate_name(self, value):
         return value.strip().title()
@@ -25,6 +27,10 @@ class WarehouseSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
+    # 🔥 CLAVE: si es PATCH, no validar ubicación
+        if self.partial:
+            return data
+
         has_address = all([
             data.get('address'),
             data.get('city'),

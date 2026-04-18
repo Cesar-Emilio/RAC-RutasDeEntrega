@@ -1,4 +1,3 @@
-import logging
 import os
 import secrets
 import urllib.parse
@@ -24,8 +23,9 @@ from .permissions import IsActiveUser
 from .serializers import LoginSerializer, MeSerializer, _serialize_user
 from .throttles import LoginRateThrottle
 from utils.response_helper import ApiResponse
+from config.logging_utils import get_logger, get_client_ip
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class LoginView(APIView):
@@ -38,37 +38,71 @@ class LoginView(APIView):
         responses={200: LoginSerializer},
     )
     def post(self, request):
+        ip = get_client_ip(request)
+        email = request.data.get("email", "")
+
         serializer = LoginSerializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
         except TokenError:
+            logger.warning(
+                "login | action=authenticate | result=invalid_credentials | email={email} | ip={ip}",
+                email=email,
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Invalid credentials.",
                 errors={"detail": "Invalid credentials."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         except AuthenticationFailed as exc:
+            logger.warning(
+                "login | action=authenticate | result=auth_failed | email={email} | ip={ip} | detail={detail}",
+                email=email,
+                ip=ip,
+                detail=str(exc.detail),
+            )
             return ApiResponse.error(
                 message="Invalid credentials.",
                 errors={"detail": exc.detail},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         except ValidationError as exc:
+            logger.warning(
+                "login | action=authenticate | result=validation_error | email={email} | ip={ip}",
+                email=email,
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Login failed.",
                 errors={"detail": exc.detail},
             )
         except Exception as exc:
-            logger.exception("Unexpected login error: %s", exc)
+            logger.error(
+                "login | action=authenticate | result=unexpected_error | email={email} | ip={ip} | error={error}",
+                email=email,
+                ip=ip,
+                error=str(exc),
+            )
             return ApiResponse.error(
                 message="Login failed.",
                 errors={"detail": "Unable to process login."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+        user_data = serializer.validated_data
+        user_id = user_data.get("user", {}).get("id") if isinstance(user_data.get("user"), dict) else None
+        logger.info(
+            "login | action=authenticate | result=success | user_id={user_id} | email={email} "
+            "| ip={ip} | method=POST | status_code=200",
+            user_id=user_id,
+            email=email,
+            ip=ip,
+        )
+
         return ApiResponse.success(
             message="Login successful.",
-            data=serializer.validated_data,
+            data=user_data,
         )
 
 
@@ -81,15 +115,24 @@ class RefreshView(TokenRefreshView):
         responses={200: OpenApiResponse(description='Token refreshed successfully.')},
     )
     def post(self, request, *args, **kwargs):
+        ip = get_client_ip(request)
         try:
             response = super().post(request, *args, **kwargs)
         except TokenError:
+            logger.warning(
+                "token_refresh | action=refresh | result=invalid_token | ip={ip}",
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Invalid refresh token.",
                 errors={"detail": "Invalid refresh token."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
+        logger.info(
+            "token_refresh | action=refresh | result=success | ip={ip} | status_code=200",
+            ip=ip,
+        )
         return ApiResponse.success(
             message="Token refreshed.",
             data=response.data,
@@ -104,6 +147,10 @@ class MeView(APIView):
         responses=MeSerializer,
     )
     def get(self, request):
+        logger.debug(
+            "me | action=get_profile | user_id={user_id} | endpoint=/auth/me/ | method=GET",
+            user_id=request.user.id,
+        )
         serializer = MeSerializer(instance=request.user)
         return ApiResponse.success(
             message="User profile retrieved.",
@@ -121,6 +168,7 @@ class LogoutView(APIView):
         responses={200: OpenApiResponse(description='Logout successful.')},
     )
     def post(self, request):
+        user_id = request.user.id
         refresh_token = request.data.get("refresh")
 
         if refresh_token:
@@ -129,6 +177,13 @@ class LogoutView(APIView):
                 token_user_id = token.payload.get("user_id")
 
                 if token_user_id is None or str(token_user_id) != str(request.user.id):
+                    logger.warning(
+                        "logout | action=blacklist_token | result=token_mismatch | user_id={user_id} "
+                        "| token_owner={token_owner} | ip={ip}",
+                        user_id=user_id,
+                        token_owner=token_user_id,
+                        ip=get_client_ip(request),
+                    )
                     return ApiResponse.error(
                         message="Refresh token does not belong to the authenticated user.",
                         errors={
@@ -140,12 +195,22 @@ class LogoutView(APIView):
                 token.blacklist()
 
             except TokenError:
+                logger.warning(
+                    "logout | action=blacklist_token | result=invalid_token | user_id={user_id} | ip={ip}",
+                    user_id=user_id,
+                    ip=get_client_ip(request),
+                )
                 return ApiResponse.error(
                     message="Invalid refresh token.",
                     errors={"detail": "Invalid refresh token."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+        logger.info(
+            "logout | action=logout | result=success | user_id={user_id} | ip={ip} | status_code=200",
+            user_id=user_id,
+            ip=get_client_ip(request),
+        )
         return ApiResponse.success(
             message="Logout successful.",
             data=None,
@@ -165,6 +230,10 @@ class GoogleLoginView(APIView):
         redirect_uri = os.getenv("GOOGLE_REDIRECT_URI")
 
         if not client_id or not redirect_uri:
+            logger.error(
+                "google_login | action=initiate | result=misconfigured | ip={ip}",
+                ip=get_client_ip(request),
+            )
             return ApiResponse.error(
                 message="Google OAuth not configured.",
                 errors={"detail": "Missing Google OAuth configuration."},
@@ -174,6 +243,11 @@ class GoogleLoginView(APIView):
         state = secrets.token_urlsafe(16)
         request.session["google_oauth_state"] = state
         request.session.modified = True
+
+        logger.debug(
+            "google_login | action=redirect | ip={ip}",
+            ip=get_client_ip(request),
+        )
 
         params = {
             "client_id": client_id,
@@ -213,17 +287,27 @@ class GoogleCallbackView(APIView):
         responses=OpenApiResponse(description='Redirect back to frontend with access and refresh tokens.'),
     )
     def get(self, request):
+        ip = get_client_ip(request)
         code = request.query_params.get("code")
         state = request.query_params.get("state")
         expected_state = request.session.get("google_oauth_state")
 
         if not code:
+            logger.warning(
+                "google_callback | action=validate | result=missing_code | ip={ip}",
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Missing authorization code.",
                 errors={"detail": "Missing code."},
             )
 
         if not state or state != expected_state:
+            logger.warning(
+                "google_callback | action=validate | result=state_mismatch | ip={ip} "
+                "| possible_csrf=true",
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Invalid Google OAuth state.",
                 errors={"detail": "Invalid state."},
@@ -236,6 +320,10 @@ class GoogleCallbackView(APIView):
         redirect_uri = os.getenv("GOOGLE_REDIRECT_URI")
 
         if not client_id or not client_secret or not redirect_uri:
+            logger.error(
+                "google_callback | action=token_exchange | result=misconfigured | ip={ip}",
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Google OAuth not configured.",
                 errors={"detail": "Missing Google OAuth configuration."},
@@ -254,7 +342,12 @@ class GoogleCallbackView(APIView):
         token_response = requests.post(token_url, data=token_payload, timeout=10)
 
         if token_response.status_code != 200:
-            logger.warning("Google token exchange failed: %s", token_response.text)
+            logger.warning(
+                "google_callback | action=token_exchange | result=failed | ip={ip} "
+                "| http_status={http_status}",
+                ip=ip,
+                http_status=token_response.status_code,
+            )
             return ApiResponse.error(
                 message="Google authentication failed.",
                 errors={"detail": "Unable to complete Google authentication."},
@@ -265,6 +358,10 @@ class GoogleCallbackView(APIView):
         id_token_value = token_data.get("id_token")
 
         if not id_token_value:
+            logger.warning(
+                "google_callback | action=token_exchange | result=missing_id_token | ip={ip}",
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Google token missing.",
                 errors={"detail": "Missing id_token."},
@@ -279,7 +376,11 @@ class GoogleCallbackView(APIView):
                 clock_skew_in_seconds=30,
             )
         except Exception as exc:
-            logger.warning("Google id token validation failed: %s", exc)
+            logger.warning(
+                "google_callback | action=verify_id_token | result=invalid | ip={ip} | error={error}",
+                ip=ip,
+                error=str(exc),
+            )
             return ApiResponse.error(
                 message="Google token invalid.",
                 errors={"detail": "Invalid Google token."},
@@ -290,6 +391,10 @@ class GoogleCallbackView(APIView):
         email = id_info.get("email")
 
         if not google_id or not email:
+            logger.warning(
+                "google_callback | action=extract_user_info | result=missing_data | ip={ip}",
+                ip=ip,
+            )
             return ApiResponse.error(
                 message="Google user data missing.",
                 errors={"detail": "Missing google id or email."},
@@ -305,7 +410,17 @@ class GoogleCallbackView(APIView):
             if user:
                 user.google_id = google_id
                 user.save(update_fields=["google_id"])
+                logger.debug(
+                    "google_callback | action=link_google_id | user_id={user_id} | email={email}",
+                    user_id=user.id,
+                    email=email,
+                )
             else:
+                logger.warning(
+                    "google_callback | action=find_user | result=not_found | email={email} | ip={ip}",
+                    email=email,
+                    ip=ip,
+                )
                 return ApiResponse.error(
                     message="User account not found.",
                     errors={"detail": "Account does not exist."},
@@ -313,6 +428,14 @@ class GoogleCallbackView(APIView):
                 )
 
         refresh = RefreshToken.for_user(user)
+
+        logger.info(
+            "google_callback | action=authenticate | result=success | user_id={user_id} "
+            "| email={email} | ip={ip} | status_code=302",
+            user_id=user.id,
+            email=email,
+            ip=ip,
+        )
 
         data = {
             "access": str(refresh.access_token),

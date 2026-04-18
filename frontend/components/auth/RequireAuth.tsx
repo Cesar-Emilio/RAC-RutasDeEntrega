@@ -10,9 +10,9 @@ export function RequireAuth({
   roles,
   redirectTo = "/login",
 }: {
-  children: React.ReactNode;
-  roles?: AuthRole[];
-  redirectTo?: string;
+  readonly children: React.ReactNode;
+  readonly roles?: AuthRole[];
+  readonly redirectTo?: string;
 }) {
   const router = useRouter();
   const { status, hasRole } = useAuth();

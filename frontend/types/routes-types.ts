@@ -11,6 +11,7 @@ export interface Route {
 
   warehouse: number;
   delivery_count: number;
+  k_opt: number;
   status: RouteStatus;
 
   created_at: string;
@@ -62,9 +63,10 @@ export interface RouteDetail {
   solution: {
     id: number;
     total_distance: number;
+    // CAMBIO: delivery_point era `number` (ID) pero el backend devuelve el objeto completo DeliveryPoint
     details: {
       order_index: number;
-      delivery_point: number;
+      delivery_point: DeliveryPoint;
     }[];
   } | null;
 }
@@ -83,4 +85,5 @@ export interface CreateRoutePayload {
   warehouse: number;
   file: File;
   file_type: FileType;
+  k_opt: number;
 }

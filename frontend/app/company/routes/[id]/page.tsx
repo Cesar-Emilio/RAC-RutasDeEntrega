@@ -7,7 +7,7 @@ import { RouteMetrics } from "@/components/routes/route-metrics";
 import { RouteStatusAlert } from "@/components/routes/route-status-alert";
 import { getRouteByIdRequest } from "@/lib/routes-api";
 import { RouteDetail } from "@/types/routes-types";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function formatDate(dateString: string): string {
@@ -41,8 +41,9 @@ export default function CreateRoutePage() {
         const data = await getRouteByIdRequest(id);
 
         setRoute(data);
-        } catch (err: any) {
-        setError(err?.message || "Error loading route");
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : "Error loading route";
+          setError(message);
         } finally {
         setLoading(false);
         }
@@ -51,9 +52,31 @@ export default function CreateRoutePage() {
     fetchRoute();
     }, [id]);
 
-    if (!route) {
-      //TODO: Hacer un buen loader (orlando)
-        return <div>Loading...</div>;
+    if (loading) {
+      return (
+        <ContentShell
+          role="company"
+          title="Historial de rutas"
+          breadcrumbs={["Empresa", "Rutas"]}
+          isLoading
+          loadingTitle="Cargando ruta..."
+          loadingMessage="Estamos trayendo la informacion de la ruta seleccionada."
+        />
+      );
+    }
+
+    if (error || !route) {
+      return (
+        <ContentShell
+          role="company"
+          title="Historial de rutas"
+          breadcrumbs={["Empresa", "Rutas"]}
+        >
+          <div className="rounded-2xl border border-error/40 bg-error/10 px-5 py-4 text-sm text-secondary">
+            {error || "No se pudo cargar la ruta seleccionada."}
+          </div>
+        </ContentShell>
+      );
     }
 
   const formattedDate = formatDate(route.created_at);
