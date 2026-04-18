@@ -286,13 +286,11 @@ def save_delivery_points(route: Route, rows: list[ResolvedRow]) -> list[Delivery
     )
     return saved
 
-# Umbral para activar k-opt, por encima de este valor se omite la mejora
-K_OPT_THRESHOLD = 50
-
 def optimize_route(
     points: list[DeliveryPoint],
     warehouse_lat: float,
     warehouse_lng: float,
+    k_opt: int = 0,
 ) -> tuple[list[DeliveryPoint], float]:
     """
     Calcula el orden óptimo de visita para los puntos de entrega.
@@ -302,10 +300,17 @@ def optimize_route(
     1. Christofides simplificado (MST + matching de nodos de grado impar
        por nearest-neighbor) como heurística de construcción inicial.
        Garantiza una solución ≤ 1.5× el óptimo en grafos métricos.
+    2. k-opt improvement: ejecuta _two_opt exactamente k_opt veces, 
+       se eliminó el threshold. Cada iteración parte del tour
+       mejorado de la anterior, acumulando mejoras sucesivas.
+       k_opt=0 omite la mejora completamente.
  
-    2. 2-opt improvement condicional si len(points) <= K_OPT_THRESHOLD.
-       Intercambia pares de aristas hasta que no haya mejora posible.
-       Complejidad O(n²) por iteración; en la práctica converge rápido.
+    Parámetros
+    ----------
+    points         : DeliveryPoints a ordenar (sin el warehouse).
+    warehouse_lat  : Latitud del almacén (nodo origen y destino).
+    warehouse_lng  : Longitud del almacén.
+    k_opt          : Número de pasadas de mejora 2-opt (0 = sin mejora).
  
     Retorna
     -------
@@ -364,18 +369,38 @@ def optimize_route(
     )
  
     # Si hay 50 paquetes o menos, aplica 2-opt
-    if len(points) <= K_OPT_THRESHOLD:
+    if k_opt > 0:
         logger.debug(
-            "optimize_route | action=two_opt_start | points={n_points}",
+            "optimize_route | action=two_opt_start | points={n_points} | k_opt={k_opt}",
             n_points=n_points,
+            k_opt=k_opt
         )
-        tour = two_opt(tour, graph)
+        for iteration in range(k_opt):
+            tour_before = _tour_distance(tour, graph)
+            tour = two_opt(tour, graph)
+            tour_after = _tour_distance(tour, graph)
+            logger.debug(
+                "optimize_route | action=two_opt_improvement | iteration={iteration}/{k_opt} | tour_before={tour_before} | tour_after={tour_after} | improvement = {improvement}",
+                iteration=iteration + 1,
+                k_opt=k_opt,
+                tour_before=tour_before,
+                tour_after=tour_after,
+                improvement=tour_after - tour_before,
+            )
+            # Early stopping: si la iteración no mejoró nada, las siguientes tampoco lo harán
+            if tour_before - tour_after < 1e-10:
+                logger.debug(
+                    "optimize_route | action=two_opt_stop | iteration={iteration}/{k_opt}",
+                    iteration=iteration + 1,
+                    k_opt=k_opt,
+                )
+                break
         logger.debug("optimize_route | action=two_opt_end")
     else:
         logger.debug(
-            "optimize_route | action=two_opt_skipped | points={n_points} | threshold={threshold}",
+            "optimize_route | action=two_opt_skipped | points={n_points} | k_opt={k_opt}",
             n_points=n_points,
-            threshold=K_OPT_THRESHOLD,
+            k_opt=k_opt
         )
  
     # Suma todas las aristas del tour final
@@ -659,6 +684,7 @@ def process_route(route_id: int, task_id: str | None = None) -> None:
             points,
             warehouse_lat=float(warehouse.latitude),
             warehouse_lng=float(warehouse.longitude),
+            k_opt=route.k_opt,
         )
         logger.debug(
             "process_route | action=optimize_done | route_id={route_id} | total_distance_km={dist}",

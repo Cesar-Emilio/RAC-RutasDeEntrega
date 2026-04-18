@@ -51,10 +51,17 @@ class RouteCreateSerializer(serializers.ModelSerializer):
         choices=FileType.choices,
         write_only=True,
     )
+ 
+    k_opt = serializers.IntegerField(
+        min_value=0,
+        max_value=10,
+        default=0,
+        help_text="Iteraciones de mejora k-opt (0 = sin mejora, máx. 10).",
+    )
 
     class Meta:
         model = Route
-        fields = ["warehouse", "file", "file_type"]
+        fields = ["company", "warehouse", "delivery_count", "file", "file_type", "k_opt"]
 
     def create(self, validated_data):
         file = validated_data.pop("file")

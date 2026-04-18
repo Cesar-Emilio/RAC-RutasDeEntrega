@@ -36,6 +36,8 @@ class Route(models.Model):
     )
 
     delivery_count = models.IntegerField()
+    
+    k_opt = models.PositiveSmallIntegerField(default=2)
 
     status = models.CharField(
         max_length=15,
