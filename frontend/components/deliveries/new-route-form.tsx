@@ -68,7 +68,7 @@ export function NewRouteForm() {
 
       const response = await createRouteRequest(payload);
 
-      router.push(`/company/routes/${response.id}`);
+      router.push(`/company/deliveries/${response.id}`);
     } catch (err: any) {
       console.log(err)
     } finally {
