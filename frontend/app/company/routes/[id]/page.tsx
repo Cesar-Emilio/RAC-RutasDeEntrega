@@ -39,9 +39,11 @@ export default function CreateRoutePage() {
         setError(null);
 
         const data = await getRouteByIdRequest(id);
+        console.log(data);
 
         setRoute(data);
         } catch (err: unknown) {
+          console.log(err)
           const message = err instanceof Error ? err.message : "Error loading route";
           setError(message);
         } finally {

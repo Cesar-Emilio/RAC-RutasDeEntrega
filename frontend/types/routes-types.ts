@@ -1,4 +1,4 @@
-export type FileType = "json" | "csv";
+export type FileType = "json" | "csv" | "xlsx";
 
 export type RouteStatus =
   | "pending"
@@ -63,7 +63,6 @@ export interface RouteDetail {
   solution: {
     id: number;
     total_distance: number;
-    // CAMBIO: delivery_point era `number` (ID) pero el backend devuelve el objeto completo DeliveryPoint
     details: {
       order_index: number;
       delivery_point: DeliveryPoint;

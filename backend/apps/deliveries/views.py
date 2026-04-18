@@ -155,6 +155,7 @@ class RouteCreateView(generics.CreateAPIView):
         antes de que el worker procese el archivo.
         """
         import csv, json, io
+        import openpyxl
  
         file.seek(0)
         content = file.read()
@@ -169,6 +170,13 @@ class RouteCreateView(generics.CreateAPIView):
                 if isinstance(data, dict):
                     data = data.get("deliveries", [])
                 return len(data) if isinstance(data, list) else 0
+            elif file_type == "xlsx":
+                wb = openpyxl.load_workbook(io.BytesIO(content), read_only=True, data_only=True)
+                ws = wb["Entregas"]
+                return sum(
+                    1 for row in ws.iter_rows(min_row=2, values_only=True)
+                    if any(cell is not None for cell in row)
+                )
         except Exception:
             return 0
  
