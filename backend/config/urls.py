@@ -32,7 +32,7 @@ urlpatterns = [
 
     path('api/companies/invite/', InviteCompanyView.as_view(), name='company-invite'),
 
-    # Rutas API
+    # Entregas API
     path('api/', include(router.urls)),
     path('api/auth/', include('apps.authorization.urls')),
     path('api/deliveries/', include('apps.deliveries.urls')),

@@ -14,7 +14,7 @@ export default function Home() {
           Smart Route Planner
         </span>
         <h1 className="max-w-2xl text-4xl font-semibold leading-tight text-white sm:text-6xl">
-          Controla tus rutas con velocidad, foco y claridad.
+          Controla tus rutas de entrega con velocidad, foco y claridad.
         </h1>
         <p className="mt-6 max-w-xl text-lg leading-8 text-[var(--color-text-muted)]">
           Accede a tableros por rol, gestiona empresas y protege cada operacion

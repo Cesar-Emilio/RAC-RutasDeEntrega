@@ -43,7 +43,7 @@ export function RoutesTable({ data, onViewRoute, isLoading = false }: RoutesTabl
                 <td colSpan={6} className="px-4 py-12">
                   <div className="flex min-h-55 flex-col items-center justify-center gap-4 text-secondary">
                     <LoadingSpinner className="h-12 w-12" />
-                    <p className="text-sm font-medium">Cargando rutas...</p>
+                    <p className="text-sm font-medium">Cargando entregas...</p>
                   </div>
                 </td>
               </tr>
@@ -83,7 +83,7 @@ export function RoutesTable({ data, onViewRoute, isLoading = false }: RoutesTabl
                       transition-colors duration-200
                     "
                   >
-                    Ir a la ruta
+                    Ir a la entrega
                   </button>
                 </td>
               </tr>
@@ -93,7 +93,7 @@ export function RoutesTable({ data, onViewRoute, isLoading = false }: RoutesTabl
 
         {!isLoading && data.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-text-secondary">
-            <p className="text-sm">No se encontraron rutas</p>
+            <p className="text-sm">No se encontraron entregas</p>
           </div>
         )}
       </div>

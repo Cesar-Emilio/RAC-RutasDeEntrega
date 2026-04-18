@@ -103,7 +103,7 @@ export async function downloadExcelTemplate() {
 
   help.columns = [{ width: 80 }];
 
-  help.getCell("A1").value = "Instrucciones para cargar rutas";
+  help.getCell("A1").value = "Instrucciones para cargar entregas";
   help.getCell("A1").font = { bold: true, size: 16 };
 
   help.getCell("A3").value =
@@ -123,7 +123,7 @@ export async function downloadExcelTemplate() {
 
   saveAs(
     new Blob([buffer]),
-    "plantilla_rutas.xlsx"
+    "plantilla_entregas.xlsx"
   );
 }
 
@@ -134,7 +134,7 @@ export function downloadJsonTemplate() {
     type: "application/json;charset=utf-8",
   });
 
-  saveAs(blob, "plantilla_rutas.json");
+  saveAs(blob, "plantilla_entregas.json");
 }
 
 export function downloadCsvTemplate() {
@@ -157,7 +157,7 @@ export function downloadCsvTemplate() {
     type: "text/csv;charset=utf-8;",
   });
 
-  saveAs(blob, "plantilla_rutas.csv");
+  saveAs(blob, "plantilla_entregas.csv");
 }
 
 function escapeCsv(value: string) {

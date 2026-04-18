@@ -31,13 +31,13 @@ type SidebarProps = {
 const adminLinks: SidebarItem[] = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/companies", label: "Empresas", icon: Users },
-  { href: "/admin/routes", label: "Rutas", icon: Route, isHighlighted: true },
+  { href: "/admin/deliveries", label: "Entregas", icon: Route, isHighlighted: true },
 ];
 
 const companyLinks: SidebarItem[] = [
   { href: "/company/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/company/warehouses", label: "Almacenes", icon: Warehouse },
-  { href: "/company/routes", label: "Rutas", icon: Route, isHighlighted: true },
+  { href: "/company/deliveries", label: "Entregas", icon: Route, isHighlighted: true },
 ];
 
 function getNavItemColor(isActive: boolean, isHighlighted?: boolean) {

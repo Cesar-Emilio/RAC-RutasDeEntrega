@@ -21,7 +21,7 @@ const statusConfig: Record<
 > = {
   pending: {
     icon: Clock,
-    message: "La ruta está pendiente de procesamiento",
+    message: "La entrega está pendiente de procesamiento",
     bgColor: "bg-blue-500/10",
     borderColor: "border-blue-500/30",
     textColor: "text-blue-400",
@@ -29,16 +29,16 @@ const statusConfig: Record<
   },
   processing: {
     icon: Loader2,
-    message: "La ruta se está procesando...",
+    message: "La entrega se está procesando...",
     bgColor: "bg-yellow-500/10",
     borderColor: "border-yellow-500/30",
     textColor: "text-yellow-400",
     iconColor: "text-yellow-400",
   },
-  completed: null, // No alert for completed status
+  completed: null,
   error: {
     icon: AlertCircle,
-    message: "Hubo un error al procesar esta ruta",
+    message: "Hubo un error al procesar esta entrega",
     bgColor: "bg-red-500/10",
     borderColor: "border-red-500/30",
     textColor: "text-red-400",

@@ -253,21 +253,21 @@ class RouteCreateView(generics.CreateAPIView):
             location=OpenApiParameter.PATH,
             required=True,
             type=OpenApiTypes.INT,
-            description="ID de la ruta a obtener.",
+            description="ID de la ruta de entrega a obtener.",
         ),
     ],
     responses={
         200: RouteDetailSerializer,
-        403: OpenApiResponse(description="La ruta no pertenece a la compañía del usuario."),
-        404: OpenApiResponse(description="Ruta no encontrada."),
+        403: OpenApiResponse(description="La ruta de entrega no pertenece a la compañía del usuario."),
+        404: OpenApiResponse(description="Ruta de entrega no encontrada."),
     },
 )
 class RouteDetailView(CompanyScopedMixin, generics.RetrieveAPIView):
     """
-    Devuelve el detalle completo de una ruta con su solución ordenada.
+    Devuelve el detalle completo de una ruta de entrega con su solución ordenada.
  
     El scope de compañía se aplica en get_queryset, por lo que un usuario
-    de empresa que intente acceder a una ruta ajena recibirá 404 en lugar
+    de empresa que intente acceder a una ruta de entrega ajena recibirá 404 en lugar
     de 403, evitando exponer la existencia del recurso.
     """
 
