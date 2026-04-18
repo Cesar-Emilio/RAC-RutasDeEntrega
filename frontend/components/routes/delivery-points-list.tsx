@@ -12,6 +12,8 @@ interface OrderedDeliveryPoint {
   address: string;
   latitude: number;
   longitude: number;
+  receiver_name: string;
+  package_quantity: number;
   orderIndex: number;
 }
 
@@ -22,12 +24,13 @@ export function DeliveryPointsList({ route }: DeliveryPointsListProps) {
         (a, b) => a.order_index - b.order_index
       );
 
-      // CAMBIO: delivery_point ya es un objeto completo (no un ID) — se usa directamente
       return sortedDetails.map((detail) => ({
         id: detail.delivery_point.id,
         address: detail.delivery_point.address,
         latitude: Number(detail.delivery_point.latitude),
         longitude: Number(detail.delivery_point.longitude),
+        receiver_name: detail.delivery_point.receiver_name,
+        package_quantity: detail.delivery_point.package_quantity,
         orderIndex: detail.order_index,
       }));
     } else {
@@ -36,6 +39,8 @@ export function DeliveryPointsList({ route }: DeliveryPointsListProps) {
         address: point.address,
         latitude: point.latitude,
         longitude: point.longitude,
+        receiver_name: point.receiver_name,
+        package_quantity: point.package_quantity,
         orderIndex: index + 1,
       }));
     }
@@ -64,10 +69,14 @@ export function DeliveryPointsList({ route }: DeliveryPointsListProps) {
               </div>
 
               <div className="min-w-0 flex-1 pt-0.5">
-                <p className="text-sm font-medium text-text-primary">
-                  {/* CAMBIO: se reemplaza el texto hardcodeado de prueba "El sebas" */}
-                  Parada {point.orderIndex}
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-text-primary">
+                    {point.receiver_name}
+                  </p>
+                  <span className="text-xs text-text-secondary flex-shrink-0">
+                    {point.package_quantity} {point.package_quantity === 1 ? "paquete" : "paquetes"}
+                  </span>
+                </div>
                 <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">
                   {point.address}
                 </p>

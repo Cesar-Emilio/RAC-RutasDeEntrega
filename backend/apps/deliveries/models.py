@@ -88,8 +88,9 @@ class DeliveryPoint(models.Model):
 
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
-
-    sequence_order = models.IntegerField(null=True, blank=True)
+    
+    receiver_name = models.CharField(max_length=255)
+    package_quantity = models.PositiveIntegerField()
 
     def __str__(self):
         return f"{self.address} ({self.route_id})"

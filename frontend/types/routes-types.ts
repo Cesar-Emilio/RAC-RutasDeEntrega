@@ -29,8 +29,8 @@ export interface DeliveryPoint {
   address: string;
   latitude: number;
   longitude: number;
-
-  sequence_order?: number | null;
+  receiver_name: string;
+  package_quantity: number;
 }
 
 export interface RouteSolution {
@@ -53,13 +53,7 @@ export interface RouteDetail {
   warehouse_name: string;
   delivery_count: number;
   file_name: string | null;
-  delivery_points: {
-    id: number;
-    address: string;
-    latitude: number;
-    longitude: number;
-    sequence_order?: number | null;
-  }[];
+  delivery_points: DeliveryPoint[];
   solution: {
     id: number;
     total_distance: number;
