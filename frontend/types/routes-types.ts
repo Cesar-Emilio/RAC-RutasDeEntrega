@@ -11,6 +11,7 @@ export interface Route {
 
   warehouse: number;
   delivery_count: number;
+  k_opt: number;
   status: RouteStatus;
 
   created_at: string;
@@ -84,4 +85,5 @@ export interface CreateRoutePayload {
   warehouse: number;
   file: File;
   file_type: FileType;
+  k_opt: number;
 }

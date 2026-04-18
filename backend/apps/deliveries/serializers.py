@@ -61,7 +61,7 @@ class RouteCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Route
-        fields = ["company", "warehouse", "delivery_count", "file", "file_type", "k_opt"]
+        fields = ["warehouse", "file", "file_type", "k_opt"]
 
     def create(self, validated_data):
         file = validated_data.pop("file")

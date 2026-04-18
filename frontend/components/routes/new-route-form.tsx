@@ -12,6 +12,7 @@ interface FormState {
   warehouse: number | null;
   file: File | null;
   allowOutOfState: boolean;
+  kOpt: number;
 }
 
 export function NewRouteForm() {
@@ -21,6 +22,7 @@ export function NewRouteForm() {
     warehouse: null,
     file: null,
     allowOutOfState: false,
+    kOpt: 0,
   });
   const [isDragging, setIsDragging] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -94,6 +96,15 @@ export function NewRouteForm() {
     }));
   };
 
+  const handleKOptChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value) && value >= 0 && value <= 10) {
+      setFormState((prev) => ({ ...prev, kOpt: value }));
+    } else if (e.target.value === "") {
+      setFormState((prev) => ({ ...prev, kOpt: 0 }));
+    }
+  };
+
   const handleSubmit = async () => {
     if (!formState.warehouse) {
         //TODO: Validación de formulario
@@ -114,6 +125,7 @@ export function NewRouteForm() {
         warehouse: formState.warehouse,
         file: formState.file,
         file_type: fileType,
+        k_opt: formState.kOpt
     };
 
     try {
@@ -302,6 +314,37 @@ export function NewRouteForm() {
           </div>
         </div>
 
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-surface border border-border">
+            <div className="flex-1">
+              <h4 className="text-sm font-medium text-text-primary mb-1">
+                Optimización K-Opt
+              </h4>
+              <p className="text-sm text-text-secondary leading-relaxed">
+                Nivel de optimización para el cálculo de ruta (0-10). Valores más altos pueden mejorar la ruta pero aumentan el tiempo de cálculo.
+              </p>
+            </div>
+            
+            <input
+              type="number"
+              min={0}
+              max={10}
+              value={formState.kOpt}
+              onChange={handleKOptChange}
+              className="
+                flex-shrink-0 w-20
+                px-3 py-2 rounded-lg
+                bg-background border border-border
+                text-text-primary text-center
+                focus:outline-none focus:border-primary-500
+                transition-colors duration-200
+                [appearance:textfield]
+                [&::-webkit-outer-spin-button]:appearance-none
+                [&::-webkit-inner-spin-button]:appearance-none
+              "
+            />
+          </div>
+
         <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-surface border border-border">
           <div className="flex-1">
             <h4 className="text-sm font-medium text-text-primary mb-1">
@@ -334,6 +377,7 @@ export function NewRouteForm() {
             />
           </button>
         </div>
+      </div>
       </div>
 
       <button
