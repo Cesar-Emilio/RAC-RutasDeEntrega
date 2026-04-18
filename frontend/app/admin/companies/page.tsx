@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo, type SyntheticEvent } from "react";
 import { Mail, AlertCircle, Check } from "lucide-react";
 import { ContentShell } from "@/components/layout/ContentShell";
 import { CardStatistics } from "@/components/layout/CardStatistics";
@@ -11,17 +11,17 @@ import { API_BASE_URL, requestJson } from "@/lib/http";
 
 type Company = {
   id: string;
-  nombre: string;
+  name: string;
   email: string;
   rfc: string;
-  estado: "Activo" | "Inactivo";
+  active: boolean;
 };
 
 const companiesData: Company[] = [];
 
 const columns: CrudColumn<Company>[] = [
   {
-    key: "nombre",
+    key: "name",
     label: "Nombre",
     align: "left",
   },
@@ -36,19 +36,9 @@ const columns: CrudColumn<Company>[] = [
     align: "left",
   },
   {
-    key: "estado",
+    key: "active",
     label: "Estado",
-    render: (company) => (
-      <span
-        className={`px-3 py-1 rounded-full text-xs font-medium ${
-          company.estado === "Activo"
-            ? "bg-green-900/30 text-green-400"
-            : "bg-gray-600/30 text-gray-400"
-        }`}
-      >
-        {company.estado}
-      </span>
-    ),
+    align: "left",
   },
 ];
 
@@ -56,6 +46,10 @@ export default function AdminCompaniesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [companies, setCompanies] = useState<Company[]>(companiesData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState("");
+  const [statusSuccessMessage, setStatusSuccessMessage] = useState("");
+  const [actionLoadingId, setActionLoadingId] = useState<string | number | null>(null);
   
   // Modal States
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -64,36 +58,102 @@ export default function AdminCompaniesPage() {
   const [inviteError, setInviteError] = useState("");
   const [inviteSuccess, setInviteSuccess] = useState(false);
 
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      setIsLoading(true);
+      setFetchError("");
+
+      try {
+        const data = await requestJson<Company[]>(`${API_BASE_URL}/api/companies/`, {
+          method: "GET",
+        });
+
+        setCompanies(data);
+      } catch (error: unknown) {
+        console.error("Error fetching companies:", error);
+        setFetchError("Error al cargar las empresas. Intenta de nuevo más tarde.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
+
   const filteredCompanies = useMemo(() => {
     return companies.filter((company) => {
+      const normalizedSearch = searchTerm.toLowerCase().trim();
       const matchesSearch =
-        company.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        company.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        company.rfc.toLowerCase().includes(searchTerm.toLowerCase());
+        company.name.toLowerCase().includes(normalizedSearch) ||
+        company.email.toLowerCase().includes(normalizedSearch) ||
+        company.rfc.toLowerCase().includes(normalizedSearch);
 
       const matchesStatus =
         statusFilter === "all" ||
-        (statusFilter === "active" && company.estado === "Activo") ||
-        (statusFilter === "inactive" && company.estado === "Inactivo");
+        (statusFilter === "active" && company.active) ||
+        (statusFilter === "inactive" && !company.active);
 
       return matchesSearch && matchesStatus;
     });
   }, [searchTerm, statusFilter, companies]);
 
   const handleToggleStatus = async (company: Company) => {
-    // Simular llamada a API
-    await new Promise(resolve => setTimeout(resolve, 500));
+    setActionLoadingId(company.id);
+    setStatusSuccessMessage("");
 
-    setCompanies(prevCompanies =>
-      prevCompanies.map(c =>
-        c.id === company.id
-          ? { ...c, estado: c.estado === "Activo" ? "Inactivo" : "Activo" }
-          : c
-      )
-    );
+    try {
+      const updatedCompany = await requestJson<Company>(
+        `${API_BASE_URL}/api/companies/${company.id}/`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ active: !company.active }),
+        }
+      );
+
+      setCompanies((prevCompanies) =>
+        prevCompanies.map((item) =>
+          item.id === updatedCompany.id ? updatedCompany : item
+        )
+      );
+
+      setStatusSuccessMessage(
+        `Empresa ${company.active ? "desactivada" : "activada"} correctamente.`
+      );
+      setTimeout(() => setStatusSuccessMessage(""), 4000);
+    } catch (error: unknown) {
+      console.error("Error toggling company status:", error);
+    } finally {
+      setActionLoadingId(null);
+    }
   };
 
-  const handleInviteSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEditSubmit = async (updatedCompany: Company, originalCompany: Company) => {
+    const payload: Partial<Company> = {
+      name: updatedCompany.name,
+      rfc: updatedCompany.rfc,
+    };
+
+    try {
+      const savedCompany = await requestJson<Company>(
+        `${API_BASE_URL}/api/companies/${originalCompany.id}/`,
+        {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        }
+      );
+
+      setCompanies((prevCompanies) =>
+        prevCompanies.map((item) =>
+          item.id === savedCompany.id ? savedCompany : item
+        )
+      );
+    } catch (error: unknown) {
+      console.error("Error editing company:", error);
+      throw error;
+    }
+  };
+
+  const handleInviteSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setInviteError("");
     setInviteSuccess(false);
@@ -158,7 +218,7 @@ export default function AdminCompaniesPage() {
           description="Administra las empresas del sistema"
           items={[
             { id: 1, label: "Empresas totales", value: companies.length },
-            { id: 2, label: "Activas", value: companies.filter(c => c.estado === "Activo").length },
+            { id: 2, label: "Activas", value: companies.filter((c) => c.active).length },
           ]}
         />
 
@@ -190,13 +250,33 @@ export default function AdminCompaniesPage() {
         </div>
 
         {/* Tabla de Empresas */}
+        {fetchError ? (
+          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-950/20 p-4 text-sm text-red-100">
+            {fetchError}
+          </div>
+        ) : null}
+        {statusSuccessMessage ? (
+          <div className="mb-4 rounded-lg border border-green-500/30 bg-green-950/20 p-4 text-sm text-green-100">
+            <div className="flex items-center gap-2">
+              <Check size={18} className="text-green-400" />
+              <span>{statusSuccessMessage}</span>
+            </div>
+          </div>
+        ) : null}
         <CrudTable
           title="Empresas registradas"
-          description="Gestiona las empresas del sistema"
+          description={isLoading ? "Cargando empresas..." : "Gestiona las empresas del sistema"}
           items={filteredCompanies}
           columns={columns}
-          statusKey="estado"
+          statusKey="active"
+          editFields={[
+            { name: "name", label: "Nombre", type: "text", required: true },
+            { name: "rfc", label: "RFC", type: "text", required: true },
+          ]}
+          onEditSubmit={handleEditSubmit}
           onToggleStatus={handleToggleStatus}
+          actionLoadingId={actionLoadingId}
+          isLoading={isLoading}
           emptyMessage="No hay empresas que coincidan con los filtros."
         />
 
