@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { ContentShell } from "@/components/layout/ContentShell";
-import { Filters } from "@/components/routes/filters";
-import { RoutesTable } from "@/components/routes/routes-table";
+import { Filters } from "@/components/deliveries/filters";
+import { RoutesTable } from "@/components/deliveries/routes-table";
 import { useRouter } from "next/navigation";
 import { getDeliveriesRequest } from "@/lib/routes-api";
 import { RouteTableItem } from "@/types/routes-types";
@@ -27,7 +27,7 @@ export default function CompanyRoutesPage() {
         const data = await getDeliveriesRequest();
         setRoutes(data);
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : "Error al cargar las rutas";
+        const message = err instanceof Error ? err.message : "Error al cargar las entregas";
         setError(message)
       } finally {
         setLoading(false);
@@ -50,18 +50,18 @@ export default function CompanyRoutesPage() {
   });
 
   const handleNewRoute = () => {
-    router.push("/company/new-route")
+    router.push("/company/new-delivery")
   };
 
   const handleViewRoute = (route: RouteTableItem) => {
-    router.push(`/company/routes/${route.id}`)
+    router.push(`/company/deliveries/${route.id}`)
   };
 
   return (
     <ContentShell
       role="company"
-      title="Historial de rutas"
-      breadcrumbs={["Empresa", "Rutas"]}
+      title="Historial de entregas"
+      breadcrumbs={["Empresa", "Entregas"]}
     >
       <div className="space-y-6">
         <Filters

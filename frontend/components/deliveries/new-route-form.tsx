@@ -80,11 +80,11 @@ export function NewRouteForm() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="text-center mb-10">
         <h2 className="text-2xl font-semibold text-text-primary mb-3">
-          Nuevo cálculo de ruta
+          Nuevo cálculo de ruta de entrega
         </h2>
 
         <p className="text-sm text-text-secondary max-w-md mx-auto">
-          Sube un archivo y calcula la ruta más eficiente.
+          Sube un archivo y calcula la ruta de entrega más eficiente.
         </p>
       </div>
 
@@ -139,7 +139,7 @@ export function NewRouteForm() {
           disabled:opacity-70
         "
       >
-        {submitting ? "Calculando ruta..." : "Calcular ruta óptima"}
+        {submitting ? "Calculando entrega..." : "Calcular entrega óptima"}
       </button>
     </div>
   );

@@ -50,7 +50,7 @@ export function RouteMetrics({ route }: RouteMetricsProps) {
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-border/30 transition-colors"
       >
         <h3 className="text-sm font-medium text-text-primary">
-          Información general de la ruta
+          Información general de la entrega
         </h3>
         {isExpanded ? (
           <ChevronUp className="w-5 h-5 text-text-secondary" />

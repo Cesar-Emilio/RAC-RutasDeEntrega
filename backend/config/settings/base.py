@@ -137,7 +137,7 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'RAC Rutas de Entrega API',
-    'DESCRIPTION': 'API para la administración de rutas, empresas, almacenes y entregas.',
+    'DESCRIPTION': 'API para la administración de rutas de entrega, empresas, almacenes y entregas.',
     'VERSION': '1.0.0',
 }
 

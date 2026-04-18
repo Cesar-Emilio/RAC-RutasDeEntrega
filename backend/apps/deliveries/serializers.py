@@ -86,7 +86,7 @@ class DeliveryPointSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DeliveryPoint
-        fields = ["id", "address", "latitude", "longitude"]
+        fields = ["id", "address", "latitude", "longitude", "receiver_name", "package_quantity"]
 
 
 class RouteSolutionDetailSerializer(serializers.ModelSerializer):

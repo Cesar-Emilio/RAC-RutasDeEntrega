@@ -76,14 +76,14 @@ export default function CompanyDashboardPage() {
           />
 
           <CompanyRoutesCards
-            title="Historial de rutas"
-            description="Ultimas rutas calculadas"
+            title="Historial de entregas"
+            description="Ultimas rutas de entrega calculadas"
             items={routes}
             isLoading={false}
             scrollRef={routesScrollRef}
             scrollProgress={routesScrollProgress}
             linkHref="#"
-            linkLabel="Calcular nueva ruta"
+            linkLabel="Calcular nueva ruta de entrega"
           />
 
           <TableHistory

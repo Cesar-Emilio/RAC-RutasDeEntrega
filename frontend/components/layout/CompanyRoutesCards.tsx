@@ -37,8 +37,8 @@ export function CompanyRoutesCards({
       description={description}
       items={items}
       isLoading={isLoading}
-      loadingText="Cargando rutas..."
-      emptyText="Aun no hay rutas registradas."
+      loadingText="Cargando entregas..."
+      emptyText="Aun no hay entregas registradas."
       scrollRef={scrollRef}
       scrollProgress={scrollProgress}
       linkHref={linkHref}

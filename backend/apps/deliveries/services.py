@@ -40,12 +40,16 @@ class RawRow(TypedDict):
     address: str
     latitude: float | None
     longitude: float | None
+    receiver_name: str
+    package_quantity: int
 
 class ResolvedRow(TypedDict):
     """Fila con coordenadas garantizadas, lista para persistir."""
     address: str
     latitude: float
     longitude: float
+    receiver_name: str
+    package_quantity: int
 
 class RouteProcessingError(Exception):
     """
@@ -84,10 +88,6 @@ def parse_input_file(route: Route) -> list[RawRow]:
     file_obj = input_file.file
     file_obj.seek(0)
     content = file_obj.read()
-    
-    logger.warning("tipo de archivo: {file_type}", file_type=input_file.file_type)
-    logger.critical("tipo de archivo: {file_type}", file_type=input_file.file_type)
-    logger.error("tipo de archivo: {file_type}", file_type=input_file.file_type)
 
     # Obtiene solo el archivo y lo procesa según su tipo
     if input_file.file_type == FileType.CSV:
@@ -111,18 +111,31 @@ def parse_csv(content: bytes) -> list[RawRow]:
     text = content.decode("utf-8-sig")
     reader = csv.DictReader(io.StringIO(text))
 
-    if "address" not in (reader.fieldnames or []):
-        raise RouteProcessingError("El CSV debe contener la columna 'address'.")
+    required = {"address", "receiver_name", "package_quantity"}
+    missing = required - set(reader.fieldnames or [])
+    if missing:
+        raise RouteProcessingError(f"El CSV debe contener las columnas: {', '.join(missing)}.")
 
     rows: list[RawRow] = []
-    for i, raw in enumerate(reader, start=2):  # start=2 porque la fila 1 es el header (adress,lat,lng)
+    for i, raw in enumerate(reader, start=2):
         address = raw.get("address", "").strip()
         if not address:
             raise RouteProcessingError(f"Fila {i}: la columna 'address' está vacía.")
+        
+        receiver_name = raw.get("receiver_name", "").strip()
+        if not receiver_name:
+            raise RouteProcessingError(f"Fila {i}: la columna 'receiver_name' está vacía.")
+
+        package_quantity = _to_int(raw.get("package_quantity"))
+        if package_quantity is None or package_quantity < 1:
+            raise RouteProcessingError(f"Fila {i}: 'package_quantity' debe ser un entero positivo.")
+
         rows.append({
             "address": address,
             "latitude": _to_float(raw.get("latitude")),
             "longitude": _to_float(raw.get("longitude")),
+            "receiver_name": receiver_name,
+            "package_quantity": package_quantity,
         })
 
     if not rows:
@@ -138,20 +151,29 @@ def parse_json(content: bytes) -> list[RawRow]:
     # Acepta lista directa o dict con clave "deliveries"
     if isinstance(data, dict):
         data = data.get("deliveries", [])
-    if not isinstance(data, list):
+    if not isinstance(data, list) or not data:
         raise RouteProcessingError("El JSON debe ser una lista de objetos o contener la clave 'deliveries'.")
-    if not data:
-        raise RouteProcessingError("El JSON no contiene registros.")
 
     rows: list[RawRow] = []
     for i, item in enumerate(data):
         address = str(item.get("address", "")).strip()
         if not address:
             raise RouteProcessingError(f"Elemento {i}: falta el campo 'address'.")
+        
+        receiver_name = str(item.get("receiver_name", "")).strip()
+        if not receiver_name:
+            raise RouteProcessingError(f"Elemento {i}: falta el campo 'receiver_name'.")
+
+        package_quantity = _to_int(item.get("package_quantity"))
+        if package_quantity is None or package_quantity < 1:
+            raise RouteProcessingError(f"Elemento {i}: 'package_quantity' debe ser un entero positivo.")
+
         rows.append({
             "address": address,
             "latitude": _to_float(item.get("latitude")),
             "longitude": _to_float(item.get("longitude")),
+            "receiver_name": receiver_name,
+            "package_quantity": package_quantity,
         })
     return rows
 
@@ -189,14 +211,18 @@ def parse_xlsx(content: bytes) -> list[RawRow]:
     except StopIteration:
         raise RouteProcessingError("La hoja 'Entregas' está vacía.")
 
-    if "address" not in headers:
+    required = {"address", "receiver_name", "package_quantity"}
+    missing = required - set(headers)
+    if missing:
         raise RouteProcessingError(
-            "La hoja 'Entregas' debe contener la columna 'address'."
+            f"La hoja 'Entregas' debe contener las columnas: {', '.join(missing)}."
         )
 
-    idx_address   = headers.index("address")
-    idx_latitude  = headers.index("latitude")  if "latitude"  in headers else None
-    idx_longitude = headers.index("longitude") if "longitude" in headers else None
+    idx_address        = headers.index("address")
+    idx_latitude       = headers.index("latitude") if "latitude" in headers else None
+    idx_longitude      = headers.index("longitude") if "longitude" in headers else None
+    idx_receiver       = headers.index("receiver_name")
+    idx_pkg_quantity   = headers.index("package_quantity")
 
     rows: list[RawRow] = []
     for row_num, row in enumerate(rows_iter, start=2):
@@ -207,10 +233,20 @@ def parse_xlsx(content: bytes) -> list[RawRow]:
         if not address:
             raise RouteProcessingError(f"Fila {row_num}: la columna 'address' está vacía.")
 
+        receiver_name = str(row[idx_receiver]).strip() if row[idx_receiver] is not None else ""
+        if not receiver_name:
+            raise RouteProcessingError(f"Fila {row_num}: la columna 'receiver_name' está vacía.")
+
+        package_quantity = _to_int(row[idx_pkg_quantity])
+        if package_quantity is None or package_quantity < 1:
+            raise RouteProcessingError(f"Fila {row_num}: 'package_quantity' debe ser un entero positivo.")
+
         rows.append({
             "address": address,
             "latitude":  _to_float(row[idx_latitude])  if idx_latitude  is not None else None,
             "longitude": _to_float(row[idx_longitude]) if idx_longitude is not None else None,
+            "receiver_name": receiver_name,
+            "package_quantity": package_quantity,
         })
 
     if not rows:
@@ -221,6 +257,12 @@ def parse_xlsx(content: bytes) -> list[RawRow]:
 def _to_float(value) -> float | None:
     try:
         return float(value)
+    except (TypeError, ValueError):
+        return None
+
+def _to_int(value) -> int | None:
+    try:
+        return int(value)
     except (TypeError, ValueError):
         return None
 
@@ -241,11 +283,7 @@ def resolve_coordinates(rows: list[RawRow], route_id: int | None = None) -> list
 
     for row in rows:
         if row["latitude"] is not None and row["longitude"] is not None:
-            resolved.append({
-                "address": row["address"],
-                "latitude": row["latitude"],
-                "longitude": row["longitude"],
-            })
+            lat, lng = row["latitude"], row["longitude"]
         else:
             logger.debug(
                 "resolve_coordinates | action=geocode_start | route_id={route_id} | address={address}",
@@ -262,11 +300,14 @@ def resolve_coordinates(rows: list[RawRow], route_id: int | None = None) -> list
                 lat=lat,
                 lng=lng,
             )
-            resolved.append({
-                "address": row["address"],
-                "latitude": lat,
-                "longitude": lng,
-            })
+
+        resolved.append({
+            "address": row["address"],
+            "latitude": lat,
+            "longitude": lng,
+            "receiver_name": row["receiver_name"],
+            "package_quantity": row["package_quantity"],
+        })
 
     if geocoded_count:
         logger.debug(
@@ -344,6 +385,8 @@ def save_delivery_points(route: Route, rows: list[ResolvedRow]) -> list[Delivery
             address=row["address"],
             latitude=row["latitude"],
             longitude=row["longitude"],
+            receiver_name=row["receiver_name"],
+            package_quantity=row["package_quantity"],
         )
         for row in rows
     ]

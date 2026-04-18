@@ -38,7 +38,7 @@ export function RouteMap({ warehouseName, details }: RouteMapProps) {
   return (
     <div className="bg-surface rounded-xl border border-border overflow-hidden h-full flex flex-col">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <h3 className="text-sm font-medium text-text-primary">Mapa de ruta</h3>
+        <h3 className="text-sm font-medium text-text-primary">Mapa de entrega</h3>
         <span className="text-sm text-text-secondary">
           Origen: {warehouseName}
         </span>
@@ -58,7 +58,7 @@ export function RouteMap({ warehouseName, details }: RouteMapProps) {
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="h-10 w-10 animate-spin text-primary-400" />
               <p className="text-text-secondary text-sm font-medium">
-                Cargando mapa de ruta
+                Cargando mapa de entrega
               </p>
             </div>
           ) : (
@@ -67,7 +67,7 @@ export function RouteMap({ warehouseName, details }: RouteMapProps) {
                 <Map className="w-8 h-8 text-text-light" />
               </div>
               <p className="text-text-secondary text-sm font-medium">
-                Mapa de ruta
+                Mapa de entrega
               </p>
               <p className="text-text-light text-xs mt-1">
                 (próximamente)

@@ -67,7 +67,6 @@ export function Filters({
         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-light pointer-events-none" />
       </div>
 
-      {/* New Route Button */}
       <button
         onClick={onNewRoute}
         className="
@@ -79,7 +78,7 @@ export function Filters({
         "
       >
         <Plus className="w-4 h-4" />
-        <span>Nueva ruta</span>
+        <span>Nueva entrega</span>
       </button>
     </div>
   );

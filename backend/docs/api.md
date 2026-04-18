@@ -305,7 +305,7 @@ Campos:
 
 # Routes
 
-## Listar rutas
+## Listar rutas de entrega
 - Método: GET  
 - Endpoint: /api/routes/  
 
@@ -321,7 +321,7 @@ Campos:
 ]
 
 
-## Crear ruta
+## Crear ruta de entrega
 - Método: POST  
 - Endpoint: /api/routes/create/  
 
@@ -346,7 +346,7 @@ Campos:
 }
 
 
-## Obtener ruta
+## Obtener ruta de entrega
 - Método: GET  
 - Endpoint: /api/routes/{id}/  
 
