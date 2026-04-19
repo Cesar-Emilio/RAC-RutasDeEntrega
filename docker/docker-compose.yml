@@ -1,0 +1,99 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: rac_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE:      ${DB_NAME}
+      MYSQL_USER:          ${DB_USER}
+      MYSQL_PASSWORD:      ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - rac_mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - rac_net
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    container_name: rac_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.base
+      DB_HOST: db
+    volumes:
+      - rac_logs:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             gunicorn config.wsgi:application
+               --bind 0.0.0.0:8000
+               --workers 4
+               --timeout 120"
+    networks:
+      - rac_net
+
+  qcluster:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    container_name: rac_qcluster
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.base
+      DB_HOST: db
+    volumes:
+      - rac_logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python manage.py qcluster
+    networks:
+      - rac_net
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        NEXT_PUBLIC_API_URL:    ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        NEXT_PUBLIC_ORS_API_KEY: ${NEXT_PUBLIC_ORS_API_KEY}
+    container_name: rac_frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - rac_net
+
+volumes:
+  rac_mysql_data:
+  rac_logs:
+
+networks:
+  rac_net:
+    driver: bridge
