@@ -179,7 +179,8 @@ export default function AdminCompaniesPage() {
           item.id === savedCompany.id ? savedCompany : item
         )
       );
-      addAlert("success", `Empresa "${savedCompany.name}" actualizada correctamente`);
+      const companyName = savedCompany?.name || updatedCompany.name || originalCompany.name;
+      addAlert("success", `Empresa "${companyName}" actualizada correctamente`);
     } catch (error: unknown) {
       console.error("Error editing company:", error);
       addAlert("error", "Error al editar la empresa");
