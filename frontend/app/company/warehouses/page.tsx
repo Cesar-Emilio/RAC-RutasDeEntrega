@@ -1,6 +1,7 @@
 "use client";
 
 import { ContentShell } from "@/components/layout/ContentShell";
+import { useAlert } from "@/components/layout/AlertProvider";
 import { EditWarehouseModal } from "@/components/warehouses/editwarehousemodal";
 import { FiltersBar } from "@/components/warehouses/filtersbar";
 import { StatsCard } from "@/components/warehouses/statscard";
@@ -15,28 +16,29 @@ import {
 import type { Warehouse } from "@/types/warehouses-types";
 import { MapPin, Warehouse as WarehouseIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export default function CompanyWarehousesPage() {
   const router = useRouter();
+  const { addAlert } = useAlert();
 
   const [searchValue, setSearchValue] = useState("");
   const [filterValue, setFilterValue] = useState("all");
 
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [editing, setEditing] = useState<WarehouseData | null>(null);
 
-  // 🔥 función reutilizable
+  const isTogglingRef = useRef(false);
+
   const fetchWarehouses = async () => {
     try {
       setLoading(true);
       const data = await getWarehousesRequest();
       setWarehouses(data);
     } catch (err: any) {
-      setError(err?.message || "Error al cargar almacenes");
+      addAlert("error", err?.message || "Error al cargar almacenes");
     } finally {
       setLoading(false);
     }
@@ -46,12 +48,18 @@ export default function CompanyWarehousesPage() {
     fetchWarehouses();
   }, []);
 
+  const sortedWarehouses = useMemo(() => {
+    return [...warehouses].sort((a, b) => a.id - b.id);
+  }, [warehouses]);
+
   const filteredWarehouses = useMemo(() => {
-    return warehouses.filter((w) => {
+    return sortedWarehouses.filter((w) => {
       const matchesSearch =
         w.name.toLowerCase().includes(searchValue.toLowerCase()) ||
         w.city.toLowerCase().includes(searchValue.toLowerCase()) ||
         w.address.toLowerCase().includes(searchValue.toLowerCase());
+
+      if (isTogglingRef.current) return matchesSearch;
 
       const matchesFilter =
         filterValue === "all" ||
@@ -60,10 +68,11 @@ export default function CompanyWarehousesPage() {
 
       return matchesSearch && matchesFilter;
     });
-  }, [searchValue, filterValue, warehouses]);
+  }, [searchValue, filterValue, sortedWarehouses]);
 
   const handleToggleStatus = async (warehouse: WarehouseData) => {
     try {
+      isTogglingRef.current = true;
       const updated = await toggleWarehouseRequest(warehouse.id);
 
       setWarehouses((prev) =>
@@ -73,8 +82,17 @@ export default function CompanyWarehousesPage() {
             : w
         )
       );
+
+      addAlert(
+        "success",
+        `Almacén "${warehouse.name}" ${updated.active ? "activado" : "desactivado"} correctamente`
+      );
     } catch (err: any) {
-      setError(err?.message || "Error al cambiar estado");
+      addAlert("error", err?.message || "Error al cambiar estado");
+    } finally {
+      setTimeout(() => {
+        isTogglingRef.current = false;
+      }, 300);
     }
   };
   
@@ -89,12 +107,6 @@ export default function CompanyWarehousesPage() {
       breadcrumbs={["Empresa", "Almacenes"]}
     >
       <div className="flex-1 overflow-y-auto px-6 pb-6">
-        {error && (
-          <div className="mb-4 p-4 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 text-sm">
-            {error}
-          </div>
-        )}
-
         {loading && (
           <div className="flex items-center gap-2 mb-4 text-text-muted text-sm">
             <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />

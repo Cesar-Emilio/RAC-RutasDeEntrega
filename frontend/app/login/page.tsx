@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useRoleRedirect } from "@/components/auth/useRoleRedirect";
+import { useAlert } from "@/components/layout/AlertProvider";
 import { API_BASE_URL } from "@/lib/http";
+import { loginSchema, type LoginFormErrors } from "@/schemas/login-schema";
 
 type FormState = {
   email: string;
@@ -15,6 +17,7 @@ type FormState = {
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
+  const { addAlert } = useAlert();
   useRoleRedirect();
   const [form, setForm] = useState<FormState>({
     email: "",
@@ -22,6 +25,7 @@ export default function LoginPage() {
     remember: false,
   });
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<LoginFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onChange = (field: keyof FormState) =>
@@ -31,15 +35,36 @@ export default function LoginPage() {
           ? event.target.checked
           : event.target.value;
       setForm((prev) => ({ ...prev, [field]: value }));
+      if (fieldErrors[field as keyof LoginFormErrors]) {
+        setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
     };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setFieldErrors({});
+
+    const result = loginSchema.safeParse({
+      email: form.email.trim(),
+      password: form.password,
+    });
+
+    if (!result.success) {
+      const errors: LoginFormErrors = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof LoginFormErrors;
+        if (!errors[field]) errors[field] = issue.message;
+      });
+      setFieldErrors(errors);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       await login(form.email.trim(), form.password, form.remember);
+      addAlert("success", "Sesión iniciada correctamente");
       router.push("/");
     } catch (err) {
       const maybeError = err as {
@@ -47,13 +72,16 @@ export default function LoginPage() {
         message?: string;
       };
       const detail = maybeError?.errors?.detail;
+      let errorMsg: string;
       if (Array.isArray(detail) && detail.length > 0) {
-        setError(String(detail[0]));
+        errorMsg = String(detail[0]);
       } else if (typeof detail === "string" && detail.trim().length > 0) {
-        setError(detail);
+        errorMsg = detail;
       } else {
-        setError(maybeError?.message || "Invalid credentials or inactive account.");
+        errorMsg = maybeError?.message || "Credenciales inválidas o cuenta inactiva.";
       }
+      setError(errorMsg);
+      addAlert("error", errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -88,10 +116,16 @@ export default function LoginPage() {
                   type="email"
                   value={form.email}
                   onChange={onChange("email")}
-                  required
-                  className="mt-2 w-full rounded-lg border border-divider bg-surface px-4 py-2 text-sm text-primary outline-none ring-primary-500 transition focus:ring-2"
+                  className={`mt-2 w-full rounded-lg border bg-surface px-4 py-2 text-sm text-primary outline-none transition focus:ring-2 ${
+                    fieldErrors.email
+                      ? "border-red-500 ring-red-500/30 focus:ring-red-500/30"
+                      : "border-divider ring-primary-500 focus:ring-primary-500"
+                  }`}
                   placeholder="tu@correo.com"
                 />
+                {fieldErrors.email && (
+                  <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
+                )}
               </label>
               <label className="block text-sm text-secondary">
                 <span>Contraseña</span>
@@ -99,17 +133,23 @@ export default function LoginPage() {
                   type="password"
                   value={form.password}
                   onChange={onChange("password")}
-                  required
-                  className="mt-2 w-full rounded-lg border border-divider bg-surface px-4 py-2 text-sm text-primary outline-none ring-primary-500 transition focus:ring-2"
+                  className={`mt-2 w-full rounded-lg border bg-surface px-4 py-2 text-sm text-primary outline-none transition focus:ring-2 ${
+                    fieldErrors.password
+                      ? "border-red-500 ring-red-500/30 focus:ring-red-500/30"
+                      : "border-divider ring-primary-500 focus:ring-primary-500"
+                  }`}
                   placeholder="Ingresa tu contrasena"
                 />
+                {fieldErrors.password && (
+                  <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>
+                )}
               </label>
               <label className="flex items-center gap-2 text-xs text-secondary">
                 <input
                   type="checkbox"
                   checked={form.remember}
                   onChange={onChange("remember")}
-                  className="h-3.5 w-3.5 rounded border border-border bg-surface"
+                  className="h-3.5 w-3.5 rounded border border-border bg-surface cursor-pointer"
                 />
                 <span>Mantener la sesion iniciada</span>
               </label>
@@ -121,7 +161,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex w-full items-center justify-center rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-[var(--color-background)] transition hover:bg-primary-400 hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-70"
+                className="flex w-full cursor-pointer items-center justify-center rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-[var(--color-background)] transition hover:bg-primary-400 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSubmitting ? "Iniciando..." : "Iniciar sesion"}
               </button>
@@ -132,7 +172,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={onGoogleLogin}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-divider bg-border px-4 py-2 text-sm text-primary"
+              className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-divider bg-border px-4 py-2 text-sm text-primary"
             >
               <svg
                 aria-hidden="true"

@@ -78,7 +78,7 @@ export function WarehouseTable({ warehouses, onEdit, onToggleStatus }: Warehouse
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => onEdit(warehouse)}
-                      className="p-2 rounded-lg text-text-muted hover:text-primary-500 hover:bg-primary-500/10 transition-colors"
+                      className="p-2 rounded-lg text-text-muted hover:text-primary-500 hover:bg-primary-500/10 transition-colors cursor-pointer"
                       title="Editar almacén"
                     >
                       <Pencil className="w-4 h-4" />
@@ -86,7 +86,7 @@ export function WarehouseTable({ warehouses, onEdit, onToggleStatus }: Warehouse
 
                     <button
                       onClick={() => onToggleStatus(warehouse)}
-                      className={`p-2 rounded-lg transition-colors ${
+                      className={`p-2 rounded-lg transition-colors cursor-pointer ${
                         warehouse.active
                           ? "text-text-muted hover:text-red-400 hover:bg-red-500/10"
                           : "text-text-muted hover:text-success hover:bg-success/10"

@@ -7,6 +7,7 @@ import { CardStatistics } from "@/components/layout/CardStatistics";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { StatusFilter } from "@/components/layout/StatusFilter";
 import { CrudTable, type CrudColumn } from "@/components/layout/CrudTable";
+import { useAlert } from "@/components/layout/AlertProvider";
 import { API_BASE_URL, requestJson } from "@/lib/http";
 
 type Company = {
@@ -43,12 +44,12 @@ const columns: CrudColumn<Company>[] = [
 ];
 
 export default function AdminCompaniesPage() {
+  const { addAlert } = useAlert();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [companies, setCompanies] = useState<Company[]>(companiesData);
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
-  const [statusSuccessMessage, setStatusSuccessMessage] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState<string | number | null>(null);
   
   // Modal States
@@ -71,7 +72,9 @@ export default function AdminCompaniesPage() {
         setCompanies(data);
       } catch (error: unknown) {
         console.error("Error fetching companies:", error);
-        setFetchError("Error al cargar las empresas. Intenta de nuevo más tarde.");
+        const msg = "Error al cargar las empresas. Intenta de nuevo más tarde.";
+        setFetchError(msg);
+        addAlert("error", msg);
       } finally {
         setIsLoading(false);
       }
@@ -128,7 +131,6 @@ export default function AdminCompaniesPage() {
 
   const handleToggleStatus = async (company: Company) => {
     setActionLoadingId(company.id);
-    setStatusSuccessMessage("");
 
     try {
       const updatedCompany = await requestJson<Company>(
@@ -145,12 +147,13 @@ export default function AdminCompaniesPage() {
         )
       );
 
-      setStatusSuccessMessage(
-        `Empresa ${company.active ? "desactivada" : "activada"} correctamente.`
+      addAlert(
+        "success",
+        `Empresa "${company.name}" ${company.active ? "desactivada" : "activada"} correctamente`
       );
-      setTimeout(() => setStatusSuccessMessage(""), 4000);
     } catch (error: unknown) {
       console.error("Error toggling company status:", error);
+      addAlert("error", "Error al cambiar el estado de la empresa");
     } finally {
       setActionLoadingId(null);
     }
@@ -176,8 +179,10 @@ export default function AdminCompaniesPage() {
           item.id === savedCompany.id ? savedCompany : item
         )
       );
+      addAlert("success", `Empresa "${savedCompany.name}" actualizada correctamente`);
     } catch (error: unknown) {
       console.error("Error editing company:", error);
+      addAlert("error", "Error al editar la empresa");
       throw error;
     }
   };
@@ -216,6 +221,7 @@ export default function AdminCompaniesPage() {
 
       setInviteSuccess(true);
       setInviteEmail("");
+      addAlert("success", "Invitación enviada correctamente");
       setTimeout(() => {
         setIsInviteModalOpen(false);
         setInviteSuccess(false);
@@ -274,7 +280,7 @@ export default function AdminCompaniesPage() {
             />
             <button
               onClick={() => setIsInviteModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-primary-500 bg-primary-500 px-3 py-1 text-sm font-semibold text-background transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg border border-primary-500 bg-primary-500 px-3 py-1 text-sm font-semibold text-background transition hover:opacity-90 cursor-pointer"
             >
               <Mail size={16} />
               Registrar Empresa
@@ -286,14 +292,6 @@ export default function AdminCompaniesPage() {
         {fetchError ? (
           <div className="mb-4 rounded-lg border border-red-500/30 bg-red-950/20 p-4 text-sm text-red-100">
             {fetchError}
-          </div>
-        ) : null}
-        {statusSuccessMessage ? (
-          <div className="mb-4 rounded-lg border border-green-500/30 bg-green-950/20 p-4 text-sm text-green-100">
-            <div className="flex items-center gap-2">
-              <Check size={18} className="text-green-400" />
-              <span>{statusSuccessMessage}</span>
-            </div>
           </div>
         ) : null}
         <CrudTable
@@ -376,7 +374,7 @@ export default function AdminCompaniesPage() {
                 <button
                   type="submit"
                   disabled={inviteLoading || inviteSuccess}
-                  className="w-full rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                 >
                   {inviteLoading ? "Enviando..." : "Enviar Invitación"}
                 </button>
@@ -394,7 +392,7 @@ export default function AdminCompaniesPage() {
                     type="button"
                     onClick={closeInviteModal}
                     disabled={inviteLoading}
-                    className="rounded-lg border border-divider px-4 py-1 text-sm font-medium text-(--color-text-primary) transition hover:bg-surface disabled:opacity-50"
+                    className="rounded-lg border border-divider px-4 py-1 text-sm font-medium text-(--color-text-primary) transition hover:bg-surface disabled:opacity-50 cursor-pointer"
                   >
                     Cerrar
                   </button>

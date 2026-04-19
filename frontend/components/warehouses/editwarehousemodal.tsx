@@ -1,6 +1,8 @@
 "use client";
 
+import { useAlert } from "@/components/layout/AlertProvider";
 import { updateWarehouseRequest } from "@/lib/warehouses-api";
+import { warehouseSchema, type WarehouseFormErrors } from "@/schemas/warehouse-schema";
 import { ChevronDown, Minus, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { WarehouseData } from "./warehousetable";
@@ -22,16 +24,6 @@ interface FormData {
   postal_code: string;
   latitude: string;
   longitude: string;
-}
-
-interface FormErrors {
-  name?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  postal_code?: string;
-  latitude?: string;
-  longitude?: string;
 }
 
 interface Props {
@@ -63,7 +55,7 @@ function CustomSelect({ value, onChange, options, placeholder, error }: {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between px-4 py-2.5 bg-surface border rounded-xl text-sm transition-all focus:outline-none ${
+        className={`w-full flex items-center justify-between px-4 py-2.5 bg-surface border rounded-xl text-sm transition-all focus:outline-none cursor-pointer ${
           error ? "border-red-500" : open ? "border-primary-500 ring-2 ring-primary-500/20" : "border-border hover:border-primary-500/50"
         } ${value ? "text-text-primary" : "text-text-muted"}`}
       >
@@ -80,7 +72,7 @@ function CustomSelect({ value, onChange, options, placeholder, error }: {
                   key={opt}
                   type="button"
                   onClick={() => { onChange(opt); setOpen(false); }}
-                  className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                  className={`w-full text-left px-4 py-2 text-sm transition-colors cursor-pointer ${
                     value === opt ? "bg-primary-500 text-white font-medium" : "text-text-secondary hover:bg-surface hover:text-text-primary"
                   }`}
                 >
@@ -110,7 +102,7 @@ function CoordInput({ label, value, onChange, placeholder, error, step = 0.0001 
       <div className={`flex items-center bg-surface border rounded-xl overflow-hidden transition-all focus-within:ring-2 focus-within:ring-primary-500/20 ${
         error ? "border-red-500" : "border-border focus-within:border-primary-500"
       }`}>
-        <button type="button" onClick={decrement} className="px-3 py-2.5 text-text-muted hover:text-primary-500 hover:bg-primary-500/10 transition-colors border-r border-border">
+        <button type="button" onClick={decrement} className="px-3 py-2.5 text-text-muted hover:text-primary-500 hover:bg-primary-500/10 transition-colors border-r border-border cursor-pointer">
           <Minus className="w-3.5 h-3.5" />
         </button>
         <input
@@ -119,7 +111,7 @@ function CoordInput({ label, value, onChange, placeholder, error, step = 0.0001 
           placeholder={placeholder}
           className="flex-1 bg-transparent px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
-        <button type="button" onClick={increment} className="px-3 py-2.5 text-text-muted hover:text-primary-500 hover:bg-primary-500/10 transition-colors border-l border-border">
+        <button type="button" onClick={increment} className="px-3 py-2.5 text-text-muted hover:text-primary-500 hover:bg-primary-500/10 transition-colors border-l border-border cursor-pointer">
           <Plus className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -129,15 +121,15 @@ function CoordInput({ label, value, onChange, placeholder, error, step = 0.0001 
 }
 
 export function EditWarehouseModal({ warehouse, onClose, onSaved }: Props) {
+  const { addAlert } = useAlert();
   const [formData, setFormData] = useState<FormData>({
     name: "", address: "", city: "", state: "",
     postal_code: "", latitude: "", longitude: "",
   });
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState<WarehouseFormErrors>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Precarga cuando se abre el modal
   useEffect(() => {
     if (!warehouse) return;
     setFormData({
@@ -158,31 +150,23 @@ export function EditWarehouseModal({ warehouse, onClose, onSaved }: Props) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof FormErrors])
+    if (errors[name as keyof WarehouseFormErrors])
       setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const validate = (): boolean => {
-    const e: FormErrors = {};
-    if (formData.name.length < 2) e.name = "Mínimo 2 caracteres";
-    if (formData.address.length < 5) e.address = "Mínimo 5 caracteres";
-    if (!/^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]+$/.test(formData.city)) e.city = "Solo letras";
-    if (!formData.state) e.state = "Selecciona un estado";
-    if (!/^\d{5}$/.test(formData.postal_code)) e.postal_code = "5 dígitos requeridos";
-    if (!formData.latitude.trim()) {
-      e.latitude = "Obligatoria";
-    } else {
-      const lat = parseFloat(formData.latitude);
-      if (isNaN(lat) || lat < 14.5 || lat > 32.7) e.latitude = "Entre 14.5 y 32.7";
+    const result = warehouseSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: WarehouseFormErrors = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof WarehouseFormErrors;
+        if (!fieldErrors[field]) fieldErrors[field] = issue.message;
+      });
+      setErrors(fieldErrors);
+      return false;
     }
-    if (!formData.longitude.trim()) {
-      e.longitude = "Obligatoria";
-    } else {
-      const lng = parseFloat(formData.longitude);
-      if (isNaN(lng) || lng < -118.4 || lng > -86.7) e.longitude = "Entre -118.4 y -86.7";
-    }
-    setErrors(e);
-    return Object.keys(e).length === 0;
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -200,10 +184,13 @@ export function EditWarehouseModal({ warehouse, onClose, onSaved }: Props) {
         latitude: parseFloat(formData.latitude),
         longitude: parseFloat(formData.longitude),
       });
+      addAlert("success", "Almacén actualizado correctamente");
       onSaved();
       onClose();
     } catch (err: any) {
-      setApiError(err?.message || err?.detail || "Error al actualizar");
+      const msg = err?.message || err?.detail || "Error al actualizar";
+      setApiError(msg);
+      addAlert("error", msg);
     } finally {
       setLoading(false);
     }
@@ -215,14 +202,11 @@ export function EditWarehouseModal({ warehouse, onClose, onSaved }: Props) {
     }`;
 
   return (
-    /* Backdrop */
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Modal */}
       <div className="relative w-full max-w-2xl bg-[var(--color-surface-elevated,#1e1e2e)] border border-border rounded-2xl shadow-2xl max-h-[90vh] flex flex-col">
 
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div>
             <h2 className="text-base font-semibold text-text-primary">Editar almacén</h2>
@@ -230,13 +214,12 @@ export function EditWarehouseModal({ warehouse, onClose, onSaved }: Props) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface transition-colors"
+            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Body */}
         <div className="overflow-y-auto flex-1 px-6 py-5">
           {apiError && (
             <div className="mb-4 p-3 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 text-sm">
@@ -245,7 +228,6 @@ export function EditWarehouseModal({ warehouse, onClose, onSaved }: Props) {
           )}
 
           <form id="edit-warehouse-form" onSubmit={handleSubmit} className="space-y-6">
-            {/* Datos generales */}
             <div>
               <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">
                 Datos del almacén
@@ -286,7 +268,6 @@ export function EditWarehouseModal({ warehouse, onClose, onSaved }: Props) {
               </div>
             </div>
 
-            {/* Coordenadas */}
             <div className="border-t border-border pt-5">
               <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">
                 Coordenadas
@@ -312,12 +293,11 @@ export function EditWarehouseModal({ warehouse, onClose, onSaved }: Props) {
           </form>
         </div>
 
-        {/* Footer */}
         <div className="flex justify-end gap-3 px-6 py-4 border-t border-border">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl border border-border text-sm text-text-primary hover:bg-surface transition-colors"
+            className="px-5 py-2.5 rounded-xl border border-border text-sm text-text-primary hover:bg-surface transition-colors cursor-pointer"
           >
             Cancelar
           </button>
@@ -325,7 +305,7 @@ export function EditWarehouseModal({ warehouse, onClose, onSaved }: Props) {
             type="submit"
             form="edit-warehouse-form"
             disabled={loading}
-            className="flex items-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-400 active:scale-95 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-400 active:scale-95 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
             {loading ? "Guardando..." : "Guardar cambios"}

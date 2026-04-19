@@ -104,7 +104,7 @@ export function ModalEdit<T extends { id: string | number }>({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-[var(--color-divider)] px-4 py-1 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)]"
+            className="rounded-lg border border-[var(--color-divider)] px-4 py-1 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)] cursor-pointer"
           >
             {cancelLabel}
           </button>
@@ -112,7 +112,7 @@ export function ModalEdit<T extends { id: string | number }>({
             type="submit"
             form="modal-edit-form"
             disabled={isSubmitting}
-            className="rounded-lg bg-[var(--color-primary-500)] px-4 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+            className="rounded-lg bg-[var(--color-primary-500)] px-4 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
           >
             {isSubmitting ? "Guardando..." : submitLabel}
           </button>

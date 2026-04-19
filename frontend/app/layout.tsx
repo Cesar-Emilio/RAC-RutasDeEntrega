@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { AlertProvider } from "@/components/layout/AlertProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -30,7 +31,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AlertProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </AlertProvider>
       </body>
     </html>
   );

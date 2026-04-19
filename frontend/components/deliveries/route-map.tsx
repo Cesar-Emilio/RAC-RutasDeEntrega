@@ -1,7 +1,7 @@
 "use client";
 
 import { sendCoordinates } from "@/lib/routes-api";
-import { Loader2, Maximize2, Map } from "lucide-react";
+import { Loader2, Maximize2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 
@@ -20,6 +20,7 @@ export function RouteMap({ warehouseName, details, origin }: RouteMapProps) {
   const [route, setRoute] = useState<any>(null);
   const [loadingRoute, setLoadingRoute] = useState(true);
 
+  console.log("DETAILS:", details);
   const stops = useMemo(() => {
     const sorted = [...details].sort((a, b) => a.order_index - b.order_index);
 
