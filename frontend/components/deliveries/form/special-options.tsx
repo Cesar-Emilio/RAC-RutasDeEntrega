@@ -2,16 +2,12 @@ import { SectionHeader } from "./section-header";
 
 interface RouteOptionsProps {
   kOpt: number;
-  allowOutOfState: boolean;
   onKOptChange: (value: number) => void;
-  onToggle: () => void;
 }
 
 export const RouteOptions = ({
   kOpt,
-  allowOutOfState,
   onKOptChange,
-  onToggle,
 }: RouteOptionsProps) => {
   return (
     <div className="mb-10">
@@ -44,38 +40,6 @@ export const RouteOptions = ({
               text-center bg-background
             "
           />
-        </div>
-
-        <div className="p-4 rounded-lg bg-surface border border-border flex items-start justify-between gap-4">
-          <div>
-            <h4 className="text-sm font-medium text-text-primary mb-1">
-              Permitir entregas fuera del estado
-            </h4>
-
-            <p className="text-sm text-text-secondary">
-              Incluye paquetes fuera del estado del almacén.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onToggle}
-            role="switch"
-            aria-checked={allowOutOfState}
-            className={`
-              relative w-11 h-6 rounded-full transition-colors cursor-pointer
-              ${allowOutOfState ? "bg-primary-500" : "bg-border"}
-            `}
-          >
-            <span
-              className={`
-                absolute top-0.5 left-0.5
-                w-5 h-5 rounded-full bg-white
-                transition-transform
-                ${allowOutOfState ? "translate-x-5" : ""}
-              `}
-            />
-          </button>
         </div>
       </div>
     </div>
