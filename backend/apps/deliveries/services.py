@@ -17,6 +17,7 @@ import math
 import time
 import requests
 import openpyxl
+import networkx as nx
 from django.conf import settings
 from typing import TypedDict
 
@@ -562,7 +563,6 @@ def christofides_tour(graph: list[list[float]], n: int) -> list[int]:
     1. MST de Prim sobre el grafo completo (nodos 0..n-1).
     2. Identificar nodos de grado impar en el MST.
     3. Matching mínimo aproximado de los nodos impares
-       (greedy nearest-neighbor; el matching exacto requiere Blossom V).
     4. Construir multigrafo MST + matching y extraer circuito euleriano.
     5. Shortcutting: saltar nodos ya visitados para obtener tour hamiltoniano.
  
@@ -570,7 +570,7 @@ def christofides_tour(graph: list[list[float]], n: int) -> list[int]:
     """
     mst_adj = prim_mst(graph, n)
     odd_nodes = odd_degree_nodes(mst_adj, n)
-    matching_edges = greedy_matching(odd_nodes, graph)
+    matching_edges = blossom_matching(odd_nodes, graph)
  
     multigraph: list[list[int]] = [[] for _ in range(n)]
     for u, neighbors in enumerate(mst_adj):
@@ -616,22 +616,34 @@ def odd_degree_nodes(adj: list[list[int]], n: int) -> list[int]:
     """Retorna los índices de nodos con grado impar en el árbol dado."""
     return [i for i in range(n) if len(adj[i]) % 2 != 0]
  
-def greedy_matching(nodes: list[int], graph: list[list[float]]) -> list[tuple[int, int]]:
+def blossom_matching(nodes: list[int], graph: list[list[float]]) -> list[tuple[int, int]]:
     """
-    Matching mínimo aproximado sobre un conjunto de nodos.
-    Greedy: empareja cada nodo libre con su vecino libre más cercano.
+    Matching de peso mínimo exacto sobre los nodos de grado impar del MST,
+    usando el algoritmo de Blossom (Edmonds) implementado en NetworkX.
+
+    Complejidad: O(n³) en el peor caso.
+
+    Parámetros
+    ----------
+    nodes : Índices de nodos con grado impar en el MST.
+    graph : Matriz de distancias completa del grafo.
+
+    Retorna
+    -------
+    Lista de pares (u, v) que forman el matching mínimo.
     """
-    remaining = list(nodes)
-    edges: list[tuple[int, int]] = []
- 
-    while len(remaining) >= 2:
-        u = remaining[0]
-        best_v = min(remaining[1:], key=lambda v: graph[u][v])
-        edges.append((u, best_v))
-        remaining.remove(u)
-        remaining.remove(best_v)
- 
-    return edges
+    if not nodes:
+        return []
+
+    G = nx.Graph()
+    for i in range(len(nodes)):
+        for j in range(i + 1, len(nodes)):
+            u, v = nodes[i], nodes[j]
+            G.add_edge(u, v, weight=graph[u][v])
+
+    matching = nx.min_weight_matching(G)
+
+    return list(matching)
 
 def eulerian_circuit(adj: list[list[int]], start: int) -> list[int]:
     """

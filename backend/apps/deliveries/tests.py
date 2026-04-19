@@ -15,12 +15,11 @@ Cubre:
 import io
 import json
 import csv
-import math
 from decimal import Decimal
-from unittest.mock import patch, MagicMock, PropertyMock
+from unittest.mock import patch, MagicMock
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
 from apps.deliveries.models import (
     DeliveryPoint,
@@ -36,7 +35,6 @@ from apps.deliveries.services import (
     build_distance_matrix,
     christofides_tour,
     eulerian_circuit,
-    greedy_matching,
     haversine,
     odd_degree_nodes,
     parse_csv,
@@ -227,35 +225,8 @@ class OddDegreeNodesTests(TestCase):
         self.assertIn(0, odd)
         self.assertIn(2, odd)
         self.assertNotIn(1, odd)
-
-
-# ──────────────────────────────────────────────
-# 5. Greedy matching
-# ──────────────────────────────────────────────
-
-class GreedyMatchingTests(TestCase):
-    def test_empareja_todos_los_nodos(self):
-        coords = [(0, 0), (1, 0), (0, 1), (1, 1)]
-        graph = build_distance_matrix(coords)
-        nodes = [0, 1, 2, 3]
-        edges = greedy_matching(nodes, graph)
-        matched = set()
-        for u, v in edges:
-            matched.add(u)
-            matched.add(v)
-        self.assertEqual(matched, {0, 1, 2, 3})
-
-    def test_dos_nodos(self):
-        graph = [[0, 5], [5, 0]]
-        edges = greedy_matching([0, 1], graph)
-        self.assertEqual(len(edges), 1)
-        self.assertEqual(set(edges[0]), {0, 1})
-
-    def test_lista_vacia(self):
-        edges = greedy_matching([], [[]])
-        self.assertEqual(edges, [])
-
-
+        
+        
 # ──────────────────────────────────────────────
 # 6. Circuito euleriano (Hierholzer)
 # ──────────────────────────────────────────────
