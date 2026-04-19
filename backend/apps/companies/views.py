@@ -231,8 +231,15 @@ class InviteCompanyView(APIView):
             )
 
     def send_invitation_email(self, email, token, actor_id=None, ip=None):
-        subject = 'Invitación para completar el registro'
-        message = f'Por favor complete su registro en el siguiente enlace: {settings.FRONTEND_URL}/auth/complete-registration/{token}'
+        subject = 'Invitación - Completa tu registro en Root Access (RAC)'
+        message = (
+            'Para finalizar la creación de tu cuenta en Root Access (RAC), te invitamos a completar tu registro en el siguiente enlace:\n\n'
+            f'{settings.FRONTEND_URL}/auth/complete-registration/{token}\n\n'
+            'Este paso es necesario para activar tu cuenta y comenzar a utilizar la plataforma.\n\n'
+            'Si tienes alguna duda o necesitas apoyo durante el proceso, no dudes en contactarnos.\n\n'
+            'Saludos,\n'
+            'Equipo de Root Access (RAC)'
+        )
         try:
             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
         except Exception as exc:
