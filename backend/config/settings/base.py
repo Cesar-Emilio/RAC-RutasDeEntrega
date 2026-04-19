@@ -8,6 +8,7 @@ from datetime import timedelta
 import os
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
+from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
 from loguru import logger
 
@@ -61,6 +62,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'config.payloadEncryption.PayloadEncryptionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     "apps.audit.middleware.AuditMiddleware",
@@ -172,6 +174,9 @@ def _env_list(name, default=None):
 ALLOWED_HOSTS = _env_list('ALLOWED_HOSTS', [])
 CORS_ALLOWED_ORIGINS = _env_list('CORS_ALLOWED_ORIGINS', ['http://localhost:3000'])
 CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'x-payload-encrypted',
+]
 
 NOMINATIM_USER_AGENT = "route-optimization-app"
 
