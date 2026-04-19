@@ -75,6 +75,7 @@ export function Filters({
           text-white font-medium
           transition-colors duration-200
           whitespace-nowrap
+          cursor-pointer
         "
       >
         <Plus className="w-4 h-4" />

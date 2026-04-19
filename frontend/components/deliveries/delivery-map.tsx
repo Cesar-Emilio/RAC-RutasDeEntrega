@@ -5,11 +5,11 @@ import type { Map as LeafletMap } from "leaflet";
 
 interface DeliveryMapProps {
   geojson: any | null;
-  singlePoint?: { lat: number; lng: number };
   stops: { lat: number; lng: number; label: string }[];
+  invalidateKey?: boolean;
 }
 
-export function DeliveryMap({ geojson, stops }: DeliveryMapProps) {
+export function DeliveryMap({ geojson, stops, invalidateKey }: DeliveryMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
 
@@ -73,6 +73,11 @@ export function DeliveryMap({ geojson, stops }: DeliveryMapProps) {
       mapRef.current = null;
     };
   }, [geojson, stops]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    setTimeout(() => mapRef.current?.invalidateSize(), 100);
+  }, [invalidateKey]);
 
   return <div ref={containerRef} className="absolute inset-0" />;
 }

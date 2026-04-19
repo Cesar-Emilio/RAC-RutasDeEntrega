@@ -163,6 +163,7 @@ export function NewRouteForm() {
           bg-primary-500 hover:bg-primary-400
           text-white font-medium
           disabled:opacity-70
+          cursor-pointer
         "
       >
         {submitting ? "Calculando entrega..." : "Calcular entrega óptima"}

@@ -78,6 +78,7 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
                 text-text-secondary text-sm
                 hover:border-divisor hover:text-text-primary
                 transition-colors duration-200
+                cursor-pointer
               "
             >
               <Download className="w-4 h-4" />
@@ -103,6 +104,7 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
                     w-full px-4 py-2 text-left text-sm
                     text-text-primary hover:bg-border/50
                     transition-colors duration-200
+                    cursor-pointer
                   "
                 >
                   {template.label}
@@ -157,7 +159,7 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
                 o{" "}
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-primary-400 hover:text-primary-300 underline"
+                  className="text-primary-400 hover:text-primary-300 underline cursor-pointer"
                 >
                   selecciona un archivo
                 </button>

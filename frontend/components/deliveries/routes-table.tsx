@@ -81,6 +81,7 @@ export function RoutesTable({ data, onViewRoute, isLoading = false }: RoutesTabl
                       text-primary-400 hover:text-primary-300
                       text-sm font-medium
                       transition-colors duration-200
+                      cursor-pointer
                     "
                   >
                     Ir a la entrega

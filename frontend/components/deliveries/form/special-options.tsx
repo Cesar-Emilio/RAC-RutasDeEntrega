@@ -63,7 +63,7 @@ export const RouteOptions = ({
             role="switch"
             aria-checked={allowOutOfState}
             className={`
-              relative w-11 h-6 rounded-full transition-colors
+              relative w-11 h-6 rounded-full transition-colors cursor-pointer
               ${allowOutOfState ? "bg-primary-500" : "bg-border"}
             `}
           >
