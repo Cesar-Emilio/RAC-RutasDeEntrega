@@ -57,6 +57,11 @@ export interface RouteDetail {
   solution: {
     id: number;
     total_distance: number;
+    origin: {
+      name: string;
+      latitude: number;
+      longitude: number;
+    };
     details: {
       order_index: number;
       delivery_point: DeliveryPoint;

@@ -39,7 +39,6 @@ export default function CreateRoutePage() {
         setError(null);
 
         const data = await getRouteByIdRequest(id);
-        console.log(data);
 
         setRoute(data);
         } catch (err: unknown) {
@@ -105,7 +104,7 @@ export default function CreateRoutePage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <RouteMap warehouseName={route.warehouse_name} details={route.solution?.details} />
+              <RouteMap warehouseName={route.warehouse_name} details={route.solution?.details} origin={route.solution?.origin} />
             </div>
 
             <div className="lg:col-span-1">
