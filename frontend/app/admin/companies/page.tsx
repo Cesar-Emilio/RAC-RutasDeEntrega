@@ -51,6 +51,7 @@ export default function AdminCompaniesPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState<string | number | null>(null);
+  const [reloadCompanies, setReloadCompanies] = useState(0);
   
   // Modal States
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -59,29 +60,29 @@ export default function AdminCompaniesPage() {
   const [inviteError, setInviteError] = useState("");
   const [inviteSuccess, setInviteSuccess] = useState(false);
 
+  const loadCompanies = async () => {
+    setIsLoading(true);
+    setFetchError("");
+
+    try {
+      const data = await requestJson<Company[]>(`${API_BASE_URL}/api/companies/`, {
+        method: "GET",
+      });
+
+      setCompanies(data);
+    } catch (error: unknown) {
+      console.error("Error fetching companies:", error);
+      const msg = "Error al cargar las empresas. Intenta de nuevo más tarde.";
+      setFetchError(msg);
+      addAlert("error", msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCompanies = async () => {
-      setIsLoading(true);
-      setFetchError("");
-
-      try {
-        const data = await requestJson<Company[]>(`${API_BASE_URL}/api/companies/`, {
-          method: "GET",
-        });
-
-        setCompanies(data);
-      } catch (error: unknown) {
-        console.error("Error fetching companies:", error);
-        const msg = "Error al cargar las empresas. Intenta de nuevo más tarde.";
-        setFetchError(msg);
-        addAlert("error", msg);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCompanies();
-  }, []);
+    loadCompanies();
+  }, [reloadCompanies]);
 
   useEffect(() => {
     const disableSubmitButtons = (event: Event) => {
@@ -133,7 +134,7 @@ export default function AdminCompaniesPage() {
     setActionLoadingId(company.id);
 
     try {
-      const updatedCompany = await requestJson<Company>(
+      await requestJson<Company>(
         `${API_BASE_URL}/api/companies/${company.id}/`,
         {
           method: "PATCH",
@@ -141,16 +142,12 @@ export default function AdminCompaniesPage() {
         }
       );
 
-      setCompanies((prevCompanies) =>
-        prevCompanies.map((item) =>
-          item.id === updatedCompany.id ? updatedCompany : item
-        )
-      );
-
       addAlert(
         "success",
         `Empresa "${company.name}" ${company.active ? "desactivada" : "activada"} correctamente`
       );
+
+      setReloadCompanies((prev) => prev + 1);
     } catch (error: unknown) {
       console.error("Error toggling company status:", error);
       addAlert("error", "Error al cambiar el estado de la empresa");
@@ -174,13 +171,10 @@ export default function AdminCompaniesPage() {
         }
       );
 
-      setCompanies((prevCompanies) =>
-        prevCompanies.map((item) =>
-          item.id === savedCompany.id ? savedCompany : item
-        )
-      );
       const companyName = savedCompany?.name || updatedCompany.name || originalCompany.name;
       addAlert("success", `Empresa "${companyName}" actualizada correctamente`);
+
+      setReloadCompanies((prev) => prev + 1);
     } catch (error: unknown) {
       console.error("Error editing company:", error);
       addAlert("error", "Error al editar la empresa");
