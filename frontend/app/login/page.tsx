@@ -81,7 +81,7 @@ export default function LoginPage() {
             <p className="mt-2 text-sm text-secondary">
               Ingresa tus credenciales para acceder a tu panel
             </p>
-            <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+            <form className="mt-6 space-y-4" method="post" onSubmit={onSubmit}>
               <label className="block text-sm text-secondary">
                 <span>Correo electronico</span>
                 <input

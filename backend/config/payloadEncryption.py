@@ -53,7 +53,13 @@ class PayloadEncryptionMiddleware:
             )
 
         try:
-            decoded_bytes = base64.b64decode(payload)
+            # Normalize padding to avoid false negatives with base64 payloads.
+            normalized_payload = payload.strip()
+            missing_padding = len(normalized_payload) % 4
+            if missing_padding:
+                normalized_payload += "=" * (4 - missing_padding)
+
+            decoded_bytes = base64.b64decode(normalized_payload, validate=True)
             decoded_data = json.loads(decoded_bytes.decode("utf-8"))
         except (ValueError, UnicodeDecodeError, json.JSONDecodeError):
             return JsonResponse(
