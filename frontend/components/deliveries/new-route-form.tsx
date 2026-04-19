@@ -91,7 +91,7 @@ export function NewRouteForm() {
       addAlert("success", "Ruta calculada exitosamente");
       router.push(`/company/deliveries`);
     } catch (err: any) {
-      addAlert("error", err?.message || "Error al calcular la ruta de entrega");
+      addAlert("error", "Error al calcular la ruta de entrega");
       console.log(err)
     } finally {
       setSubmitting(false);
