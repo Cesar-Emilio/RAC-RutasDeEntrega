@@ -1,11 +1,11 @@
 import { ChangeEvent, DragEvent, useRef, useState } from "react";
 import { SectionHeader } from "./section-header";
-import { ChevronDown, Download, Upload } from "lucide-react";
+import { ChevronDown, Download, FileText, Upload, X } from "lucide-react";
 import { downloadCsvTemplate, downloadExcelTemplate, downloadJsonTemplate } from "@/lib/templates";
 
 interface FileUploadProps {
   file: File | null;
-  onChange: (file: File) => void;
+  onChange: (file: File | null) => void;
 }
 
 const templateOptions = [
@@ -132,7 +132,24 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
           </div>
           
           {file ? (
-            <p className="text-text-primary font-medium">{file.name}</p>
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-surface border border-border">
+            <FileText className="w-4 h-4 text-text-secondary shrink-0" />
+            <span className="text-text-primary font-medium text-sm truncate max-w-xs">
+              {file.name}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange(null);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+              }}
+              className="ml-auto p-1 rounded hover:bg-border/60 text-text-secondary hover:text-text-primary transition-colors"
+              aria-label="Eliminar archivo"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
           ) : (
             <>
               <p className="text-text-primary mb-1">Arrastra tu archivo aquí</p>

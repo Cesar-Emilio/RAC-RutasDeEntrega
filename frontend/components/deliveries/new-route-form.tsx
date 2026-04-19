@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { WarehouseSelect } from "./form/warehouse-select";
 import { FileUpload } from "./form/file-upload";
 import { RouteOptions } from "./form/special-options";
+import { RouteFormErrors, routeSchema } from "@/schemas/route-schema";
 
 interface FormState {
   warehouse: number | null;
@@ -25,6 +26,7 @@ export function NewRouteForm() {
     kOpt: 0,
   });
 
+  const [errors, setErrors] = useState<RouteFormErrors>({});
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loadingWarehouses, setLoadingWarehouses] = useState(true);
   const [errorWarehouses, setErrorWarehouses] = useState<string | null>(null);
@@ -45,21 +47,41 @@ export function NewRouteForm() {
     fetchWarehouses();
   }, []);
 
-  const handleSubmit = async () => {
-    if (!form.warehouse) {
-      alert("Selecciona un almacén");
-      return;
-    }
+  const clearError = (field: keyof RouteFormErrors) => {
+    setErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
 
-    if (!form.file) {
-      alert("Selecciona un archivo");
-      return;
-    }
-
-    const payload: CreateRoutePayload = {
+  const validate = (): boolean => {
+    const result = routeSchema.safeParse({
       warehouse: form.warehouse,
       file: form.file,
-      file_type: form.file.name.endsWith(".csv") ? "csv" : form.file.name.endsWith(".json") ? "json" : "xlsx",
+    });
+
+    if (!result.success) {
+      const fieldErrors: RouteFormErrors = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof RouteFormErrors;
+        if (!fieldErrors[field]) fieldErrors[field] = issue.message;
+      });
+      setErrors(fieldErrors);
+      return false;
+    }
+
+    setErrors({});
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+
+    const payload: CreateRoutePayload = {
+      warehouse: form.warehouse!,
+      file: form.file!,
+      file_type: form.file!.name.endsWith(".csv")
+        ? "csv"
+        : form.file!.name.endsWith(".json")
+        ? "json"
+        : "xlsx",
       k_opt: form.kOpt,
     };
 
@@ -86,28 +108,34 @@ export function NewRouteForm() {
         </p>
       </div>
 
-      <WarehouseSelect
-        warehouses={warehouses}
-        selectedId={form.warehouse}
-        loading={loadingWarehouses}
-        error={errorWarehouses}
-        onSelect={(warehouse) =>
-          setForm((prev) => ({
-            ...prev,
-            warehouse: warehouse.id,
-          }))
-        }
-      />
+      <div>
+        <WarehouseSelect
+          warehouses={warehouses}
+          selectedId={form.warehouse}
+          loading={loadingWarehouses}
+          error={errorWarehouses}
+          onSelect={(warehouse) => {
+            setForm((prev) => ({ ...prev, warehouse: warehouse.id }));
+            clearError("warehouse");
+          }}
+        />
+        {errors.warehouse && (
+          <p className="text-error text-sm mt-1 -mt-6 mb-8">{errors.warehouse}</p>
+        )}
+      </div>
 
-      <FileUpload
-        file={form.file}
-        onChange={(file) =>
-          setForm((prev) => ({
-            ...prev,
-            file,
-          }))
-        }
-      />
+      <div>
+        <FileUpload
+          file={form.file}
+          onChange={(file) => {
+            setForm((prev) => ({ ...prev, file }));
+            clearError("file");
+          }}
+        />
+        {errors.file && (
+          <p className="text-error text-sm -mt-6 mb-8">{errors.file}</p>
+        )}
+      </div>
 
       <RouteOptions
         kOpt={form.kOpt}
