@@ -211,7 +211,7 @@ export default function AdminCompaniesPage() {
       title="Empresas"
       breadcrumbs={["Admin", "Empresas"]}
     >
-      <div className="min-h-screen bg-[var(--color-background)] p-6">
+      <div className="bg-background p-6">
         {/* Estadísticas */}
         <CardStatistics
           title="Empresas totales"
@@ -241,7 +241,7 @@ export default function AdminCompaniesPage() {
             />
             <button
               onClick={() => setIsInviteModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-primary-500)] bg-[var(--color-primary-500)] px-3 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg border border-primary-500 bg-primary-500 px-3 py-1 text-sm font-semibold text-background transition hover:opacity-90"
             >
               <Mail size={16} />
               Registrar Empresa
@@ -283,11 +283,11 @@ export default function AdminCompaniesPage() {
         {/* Modal de Invitación */}
         {isInviteModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6">
-            <div className="w-full max-w-md rounded-2xl border border-[var(--color-divider)] bg-[var(--color-surface)] shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+            <div className="w-full max-w-md rounded-2xl border border-divider bg-surface shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
               {/* Header */}
-              <div className="border-b border-[var(--color-divider)] px-6 py-5">
-                <h2 className="text-lg font-semibold text-[var(--color-text-secondary)]">Registrar Empresa</h2>
-                <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+              <div className="border-b border-divider px-6 py-5">
+                <h2 className="text-lg font-semibold text-(--color-text-secondary)">Registrar Empresa</h2>
+                <p className="mt-1 text-sm text-(--color-text-muted)">
                   Envía un enlace de invitación al correo de la empresa
                 </p>
               </div>
@@ -296,16 +296,16 @@ export default function AdminCompaniesPage() {
               <form onSubmit={handleInviteSubmit} className="space-y-4 px-6 py-5">
                 {/* Error Message */}
                 {inviteError && (
-                  <div className="flex items-start gap-3 rounded-lg bg-red-950/40 p-3">
-                    <AlertCircle size={18} className="mt-0.5 flex-shrink-0 text-red-500" />
+                    <div className="flex items-start gap-3 rounded-lg bg-red-950/40 p-3">
+                    <AlertCircle size={18} className="mt-0.5 shrink-0 text-red-500" />
                     <p className="text-sm text-red-400">{inviteError}</p>
                   </div>
                 )}
 
                 {/* Success Message */}
                 {inviteSuccess && (
-                  <div className="flex items-start gap-3 rounded-lg bg-green-950/40 p-3">
-                    <Check size={18} className="mt-0.5 flex-shrink-0 text-green-500" />
+                    <div className="flex items-start gap-3 rounded-lg bg-green-950/40 p-3">
+                    <Check size={18} className="mt-0.5 shrink-0 text-green-500" />
                     <p className="text-sm text-green-400">
                       ¡Invitación enviada correctamente!
                     </p>
@@ -313,11 +313,11 @@ export default function AdminCompaniesPage() {
                 )}
 
               {/* Email Input */}
-                <label className="flex flex-col gap-2 text-sm text-[var(--color-text-secondary)]">
+                <label className="flex flex-col gap-2 text-sm text-(--color-text-secondary)">
                   <span className="font-medium">
                     Correo Electrónico
                     {' '}
-                    <span className="ml-1 text-[var(--color-error)]">*</span>
+                    <span className="ml-1 text-error">*</span>
                   </span>
                   <input
                     type="email"
@@ -328,7 +328,7 @@ export default function AdminCompaniesPage() {
                     }}
                     placeholder="empresa@correo.com"
                     disabled={inviteLoading || inviteSuccess}
-                    className="rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:border-[var(--color-primary-500)] disabled:opacity-50"
+                    className="rounded-lg border border-divider bg-background px-4 py-3 text-sm text-(--color-text-primary) placeholder-(--color-text-muted) outline-none transition focus:border-primary-500 disabled:opacity-50"
                   />
                 </label>
 
@@ -336,19 +336,19 @@ export default function AdminCompaniesPage() {
                 <button
                   type="submit"
                   disabled={inviteLoading || inviteSuccess}
-                  className="w-full rounded-lg bg-[var(--color-primary-500)] px-4 py-2 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {inviteLoading ? "Enviando..." : "Enviar Invitación"}
                 </button>
 
                 {/* Info Text */}
-                <p className="text-xs text-[var(--color-text-muted)]">
+                <p className="text-xs text-(--color-text-muted)">
                   Se enviará un enlace al correo para que la empresa complete su registro.
                 </p>
               </form>
 
               {/* Footer */}
-              <div className="border-t border-[var(--color-divider)] px-6 py-5">
+              <div className="border-t border-divider px-6 py-5">
                 <div className="flex items-center justify-end gap-3">
                   <button
                     type="button"
@@ -359,7 +359,7 @@ export default function AdminCompaniesPage() {
                       setInviteSuccess(false);
                     }}
                     disabled={inviteLoading}
-                    className="rounded-lg border border-[var(--color-divider)] px-4 py-1 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)] disabled:opacity-50"
+                    className="rounded-lg border border-divider px-4 py-1 text-sm font-medium text-(--color-text-primary) transition hover:bg-surface disabled:opacity-50"
                   >
                     Cerrar
                   </button>
