@@ -64,7 +64,7 @@ export function DeliveryPointsList({ route }: DeliveryPointsListProps) {
             >
               <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-500 flex items-center justify-center">
                 <span className="text-xs font-bold text-white">
-                  {point.orderIndex}
+                  {point.orderIndex + 1}
                 </span>
               </div>
 

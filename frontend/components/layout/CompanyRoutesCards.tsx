@@ -15,6 +15,7 @@ type CompanyRoutesCardsProps = {
   description: string;
   items: CompanyRouteCard[];
   isLoading?: boolean;
+  hideHeader?: boolean;
   scrollRef: RefObject<HTMLDivElement | null>;
   scrollProgress: number;
   linkHref?: string;
@@ -26,6 +27,7 @@ export function CompanyRoutesCards({
   description,
   items,
   isLoading = false,
+  hideHeader = false,
   scrollRef,
   scrollProgress,
   linkHref,
@@ -37,6 +39,7 @@ export function CompanyRoutesCards({
       description={description}
       items={items}
       isLoading={isLoading}
+      hideHeader={hideHeader}
       loadingText="Cargando entregas..."
       emptyText="Aun no hay entregas registradas."
       scrollRef={scrollRef}
@@ -46,7 +49,7 @@ export function CompanyRoutesCards({
       renderCard={(route) => (
         <div
           key={route.id}
-          className="w-42 flex-none cursor-pointer rounded-xl border p-3 transition-all duration-200 hover:border-[var(--color-primary-500)]/50 md:w-44 md:p-4"
+          className="w-42 flex-none cursor-pointer rounded-xl border p-3 transition-all duration-200 hover:border-primary-500/50 md:w-44 md:p-4"
           style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-divider)" }}
         >
           <div className="mb-3 flex items-start justify-between">

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { PencilLine, Power } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, PencilLine, Power } from "lucide-react";
 import type { ReactNode } from "react";
 import { ModalConfirm } from "./ModalConfirm";
 import { ModalEdit } from "./ModalEdit";
@@ -33,6 +33,7 @@ type CrudTableProps<T extends { id: string | number }> = {
   editModalDescription?: string;
   editSubmitLabel?: string;
   editCancelLabel?: string;
+  pageSize?: number;
 };
 
 function getAlignmentClass(align?: CrudColumn<never>["align"]) {
@@ -63,6 +64,7 @@ export function CrudTable<T extends { id: string | number }>({
   editModalDescription = "Actualiza la informacion del registro seleccionado.",
   editSubmitLabel = "Guardar cambios",
   editCancelLabel = "Cancelar",
+  pageSize = 5,
 }: Readonly<CrudTableProps<T>>) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -70,6 +72,7 @@ export function CrudTable<T extends { id: string | number }>({
   const [isStatusConfirmOpen, setIsStatusConfirmOpen] = useState(false);
   const [statusTargetItem, setStatusTargetItem] = useState<T | null>(null);
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const defaultEditFields = useMemo<ModalEditField<T>[]>(() => {
     if (editFields && editFields.length > 0) {
@@ -89,6 +92,22 @@ export function CrudTable<T extends { id: string | number }>({
 
   const canEdit = Boolean(onEdit || onEditSubmit || defaultEditFields.length > 0);
   const hasActions = Boolean(canEdit || onToggleStatus);
+  const safePageSize = Math.max(1, pageSize);
+  const totalPages = Math.max(1, Math.ceil(items.length / safePageSize));
+  const paginatedItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * safePageSize;
+    return items.slice(startIndex, startIndex + safePageSize);
+  }, [currentPage, items, safePageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [items, safePageSize]);
 
   const openEditModal = (item: T) => {
     setEditingItem(item);
@@ -253,8 +272,8 @@ export function CrudTable<T extends { id: string | number }>({
               </tr>
             </thead>
             <tbody>
-              {items.length > 0 ? (
-                items.map((item) => {
+              {paginatedItems.length > 0 ? (
+                paginatedItems.map((item) => {
                   const isActive = getItemIsActive(item);
                   const actionDisabled = actionLoadingId === item.id;
                   const statusAction = getStatusActionMeta(isActive);
@@ -262,7 +281,7 @@ export function CrudTable<T extends { id: string | number }>({
                   return (
                     <tr
                       key={String(item.id)}
-                      className="border-t transition-colors hover:bg-[var(--color-surface)]"
+                      className="border-t transition-colors hover:bg-surface"
                       style={{ borderColor: "var(--color-divider)" }}
                     >
                       {columns.map((column) => {
@@ -286,7 +305,7 @@ export function CrudTable<T extends { id: string | number }>({
                                 type="button"
                                 onClick={() => openEditModal(item)}
                                 disabled={actionDisabled}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[var(--color-border)] text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-(--color-text-primary) transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
                                 aria-label="Editar"
                                 title="Editar"
                               >
@@ -319,7 +338,8 @@ export function CrudTable<T extends { id: string | number }>({
               ) : (
                 <tr>
                   <td
-                    className="px-4 py-8 text-center text-sm text-[var(--color-text-muted)]"
+                    className="px-4 py-8 text-center text-sm"
+                    style={{ color: "var(--color-text-muted)" }}
                     colSpan={columns.length + (hasActions ? 1 : 0)}
                   >
                     {isLoading ? "Cargando registros..." : emptyMessage}
@@ -329,6 +349,54 @@ export function CrudTable<T extends { id: string | number }>({
             </tbody>
           </table>
         </div>
+
+        {items.length > 0 ? (
+          <div className="border-t px-3 py-2" style={{ borderColor: "var(--color-divider)" }}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[10px]" style={{ color: "var(--color-text-muted)" }}>
+                Mostrando {Math.min((currentPage - 1) * safePageSize + 1, items.length)}-{Math.min(currentPage * safePageSize, items.length)} de {items.length}
+              </p>
+
+              <div className="inline-flex items-center gap-0.5 rounded-full border px-1 py-0.5" style={{ borderColor: "var(--color-divider)", backgroundColor: "var(--color-background)" }}>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-full border transition disabled:cursor-not-allowed disabled:opacity-40"
+                  style={{ borderColor: "transparent", color: "var(--color-text-primary)", backgroundColor: "transparent" }}
+                  aria-label="Página anterior"
+                  title="Página anterior"
+                >
+                  <ChevronLeft size={12} />
+                </button>
+
+                <div className="min-w-14 rounded-full px-2 py-0.5 text-center" style={{ backgroundColor: "var(--color-surface)" }}>
+                  <span className="text-[10px] font-medium" style={{ color: "var(--color-text-secondary)" }}>
+                    {currentPage}
+                  </span>
+                  <span className="mx-0.5 text-[10px]" style={{ color: "var(--color-text-muted)" }}>
+                    /
+                  </span>
+                  <span className="text-[10px]" style={{ color: "var(--color-text-muted)" }}>
+                    {totalPages}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-full border transition disabled:cursor-not-allowed disabled:opacity-40"
+                  style={{ borderColor: "transparent", color: "var(--color-text-primary)", backgroundColor: "transparent" }}
+                  aria-label="Página siguiente"
+                  title="Página siguiente"
+                >
+                  <ChevronRight size={12} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <ModalEdit

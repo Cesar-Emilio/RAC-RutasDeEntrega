@@ -45,29 +45,29 @@ export function TableHistory({
         style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-divider)" }}
       >
         <div className="overflow-x-auto">
-          <table className="min-w-225 w-full">
+          <table className="min-w-200 w-full">
             <thead>
               <tr style={{ backgroundColor: "var(--color-surface)" }}>
                 <th
-                  className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider"
+                  className="px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wide"
                   style={{ color: "var(--color-text-muted)" }}
                 >
                   Accion
                 </th>
                 <th
-                  className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider"
+                  className="px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wide"
                   style={{ color: "var(--color-text-muted)" }}
                 >
                   Descripcion
                 </th>
                 <th
-                  className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider"
+                  className="px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wide"
                   style={{ color: "var(--color-text-muted)" }}
                 >
                   Usuario
                 </th>
                 <th
-                  className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider"
+                  className="px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-wide"
                   style={{ color: "var(--color-text-muted)" }}
                 >
                   Tiempo
@@ -79,50 +79,50 @@ export function TableHistory({
                 items.map((activity) => (
                   <tr
                     key={activity.id}
-                    className="border-t transition-colors hover:bg-[var(--color-surface)]"
+                    className="border-t transition-colors hover:bg-surface"
                     style={{ borderColor: "var(--color-divider)" }}
                   >
-                    <td className="px-4 py-4 text-center">
-                      <div className="flex items-center justify-center gap-3">
+                    <td className="px-3 py-2.5 text-center align-middle">
+                      <div className="flex items-center justify-center gap-2.5">
                         <div
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
                           style={{ backgroundColor: "var(--color-background)" }}
                         >
-                          {getActivityIcon(activity.type)}
+                          <div className="scale-90">{getActivityIcon(activity.type)}</div>
                         </div>
                         <span
-                          className="whitespace-nowrap text-sm font-medium"
+                          className="whitespace-nowrap text-xs font-medium"
                           style={{ color: "var(--color-text-secondary)" }}
                         >
                           {activity.action}
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-center">
-                      <span className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+                    <td className="px-3 py-2.5 text-center align-middle">
+                      <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
                         {activity.description}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
+                    <td className="px-3 py-2.5 text-center align-middle">
+                      <div className="flex items-center justify-center gap-1.5">
                         <div
-                          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+                          className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full"
                           style={{ backgroundColor: "var(--color-primary-500)" }}
                         >
-                          <User size={12} style={{ color: "var(--color-background)" }} />
+                          <User size={11} style={{ color: "var(--color-background)" }} />
                         </div>
                         <span
-                          className="whitespace-nowrap text-sm"
+                          className="whitespace-nowrap text-xs"
                           style={{ color: "var(--color-text-secondary)" }}
                         >
                           {activity.user}
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-center">
+                    <td className="px-3 py-2.5 text-center align-middle">
                       <div className="flex items-center justify-center gap-1">
-                        <Clock size={12} style={{ color: "var(--color-text-muted)" }} />
-                        <span className="whitespace-nowrap text-sm" style={{ color: "var(--color-text-muted)" }}>
+                        <Clock size={11} style={{ color: "var(--color-text-muted)" }} />
+                        <span className="whitespace-nowrap text-xs" style={{ color: "var(--color-text-muted)" }}>
                           {activity.time}
                         </span>
                       </div>
@@ -132,7 +132,8 @@ export function TableHistory({
               ) : (
                 <tr>
                   <td
-                    className="px-4 py-8 text-center text-sm text-[var(--color-text-muted)]"
+                    className="px-4 py-8 text-center text-sm"
+                    style={{ color: "var(--color-text-muted)" }}
                     colSpan={4}
                   >
                     {isLoading ? "Cargando actividad..." : "Aun no hay actividad reciente."}

@@ -1,6 +1,8 @@
+import "./globals.css";
+import "leaflet/dist/leaflet.css";
+
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 
 const inter = Inter({
