@@ -38,6 +38,7 @@ export const RouteOptions = ({
             className="
               w-20 px-3 py-2 rounded-lg border border-border
               text-center bg-background
+              [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
             "
           />
         </div>
