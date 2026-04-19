@@ -8,6 +8,7 @@ import { WarehouseSelect } from "./form/warehouse-select";
 import { FileUpload } from "./form/file-upload";
 import { RouteOptions } from "./form/special-options";
 import { RouteFormErrors, routeSchema } from "@/schemas/route-schema";
+import { useAlert } from "@/components/layout/AlertProvider";
 
 interface FormState {
   warehouse: number | null;
@@ -17,6 +18,7 @@ interface FormState {
 
 export function NewRouteForm() {
   const router = useRouter();
+  const { addAlert } = useAlert();
 
   const [form, setForm] = useState<FormState>({
     warehouse: null,
@@ -86,8 +88,10 @@ export function NewRouteForm() {
     try {
       setSubmitting(true);
       await createRouteRequest(payload);
+      addAlert("success", "Ruta calculada exitosamente");
       router.push(`/company/deliveries`);
     } catch (err: any) {
+      addAlert("error", err?.message || "Error al calcular la ruta de entrega");
       console.log(err)
     } finally {
       setSubmitting(false);

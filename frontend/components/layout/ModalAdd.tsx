@@ -93,7 +93,7 @@ export function ModalAdd<T extends Record<string, unknown>>({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-primary-500)] bg-[var(--color-primary-500)] px-3 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-primary-500)] bg-[var(--color-primary-500)] px-3 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 cursor-pointer"
       >
         <Plus size={14} />
         {buttonLabel}
@@ -111,7 +111,7 @@ export function ModalAdd<T extends Record<string, unknown>>({
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-lg border border-[var(--color-divider)] px-4 py-1 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)]"
+                className="rounded-lg border border-[var(--color-divider)] px-4 py-1 text-sm font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)] cursor-pointer"
               >
                 {cancelLabel}
               </button>
@@ -119,7 +119,7 @@ export function ModalAdd<T extends Record<string, unknown>>({
                 type="submit"
                 form="modal-add-form"
                 disabled={isSubmitting}
-                className="rounded-lg bg-[var(--color-primary-500)] px-4 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+                className="rounded-lg bg-[var(--color-primary-500)] px-4 py-1 text-sm font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
               >
                 {isSubmitting ? "Guardando..." : submitLabel}
               </button>

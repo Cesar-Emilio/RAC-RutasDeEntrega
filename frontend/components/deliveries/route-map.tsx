@@ -21,6 +21,7 @@ export function RouteMap({ warehouseName, details, origin }: RouteMapProps) {
   const [loadingRoute, setLoadingRoute] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  console.log("DETAILS:", details);
   const stops = useMemo(() => {
     const sorted = [...details].sort((a, b) => a.order_index - b.order_index);
 

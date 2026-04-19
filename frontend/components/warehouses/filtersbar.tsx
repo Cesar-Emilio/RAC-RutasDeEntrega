@@ -45,7 +45,7 @@ export function FiltersBar({
       <div className="relative">
         <button
           onClick={() => setIsFilterOpen(!isFilterOpen)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border rounded-xl text-sm text-text-secondary hover:text-text-primary hover:border-primary-500 transition-colors w-full sm:w-auto"
+          className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border rounded-xl text-sm text-text-secondary hover:text-text-primary hover:border-primary-500 transition-colors w-full sm:w-auto cursor-pointer"
         >
           <Filter className="w-4 h-4" />
           <span className="flex-1 text-left">{selectedFilter?.label}</span>
@@ -60,7 +60,7 @@ export function FiltersBar({
                 <button
                   key={option.value}
                   onClick={() => { onFilterChange(option.value); setIsFilterOpen(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
                     filterValue === option.value
                       ? "bg-primary-500 text-white font-medium"
                       : "text-text-secondary hover:bg-surface hover:text-text-primary"
@@ -77,7 +77,7 @@ export function FiltersBar({
       {/* New Warehouse Button */}
       <button
         onClick={onNewWarehouse}
-        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-400 active:scale-95 text-white font-semibold rounded-xl transition-all duration-150 shadow-sm"
+        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-400 active:scale-95 text-white font-semibold rounded-xl transition-all duration-150 shadow-sm cursor-pointer"
       >
         <Plus className="w-4 h-4" />
         <span>Nuevo almacén</span>

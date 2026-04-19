@@ -67,7 +67,7 @@ function SidebarNavItem({
   return (
     <Link
       href={item.href}
-      className={`flex min-h-11 items-center gap-3 rounded-md px-3 py-3 transition-all duration-200 ${isOpen ? "" : "justify-center"}`}
+      className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-3 py-3 transition-all duration-200 ${isOpen ? "" : "justify-center"}`}
       style={{
         backgroundColor: isActive ? "var(--color-primary-500)" : "transparent",
         borderLeft: isActive ? "3px solid var(--color-primary-500)" : "3px solid transparent",
@@ -127,7 +127,7 @@ export function Sidebar({ role }: Readonly<SidebarProps>) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed top-4 left-4 z-40 rounded-md p-2 lg:hidden ${isOpen ? "hidden" : "block"}`}
+        className={`fixed top-4 left-4 z-40 cursor-pointer rounded-md p-2 lg:hidden ${isOpen ? "hidden" : "block"}`}
         style={{ backgroundColor: "var(--color-surface)", color: "var(--color-text-secondary)" }}
       >
         <Menu size={24} />
@@ -161,7 +161,7 @@ export function Sidebar({ role }: Readonly<SidebarProps>) {
 
             <button
               onClick={() => setIsOpen((prev) => !prev)}
-              className={`flex min-h-11 items-center gap-3 rounded-md px-3 py-3 transition-all duration-200 ${
+              className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-md px-3 py-3 transition-all duration-200 ${
                 isOpen ? "" : "justify-center"
               }`}
               style={{ color: "var(--color-text-secondary)" }}
@@ -195,7 +195,7 @@ export function Sidebar({ role }: Readonly<SidebarProps>) {
           <div className="border-t p-4" style={{ borderColor: "var(--color-divider)" }}>
             <button
               onClick={handleLogout}
-              className={`flex min-h-11 w-full items-center gap-3 rounded-md px-3 py-3 transition-all duration-200 ${
+              className={`flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-md px-3 py-3 transition-all duration-200 ${
                 isOpen ? "" : "justify-center"
               }`}
               style={{ color: "var(--color-text-secondary)" }}
