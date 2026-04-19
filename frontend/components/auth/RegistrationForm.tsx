@@ -1,10 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { API_BASE_URL, requestJson } from "@/lib/http";
+import { z } from "zod";
+
+const registrationSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "El nombre es requerido")
+      .min(2, "El nombre debe tener al menos 2 caracteres")
+      .max(100, "El nombre no puede exceder 100 caracteres"),
+    password: z
+      .string()
+      .min(1, "La contraseña es requerida")
+      .min(8, "La contraseña debe tener al menos 8 caracteres"),
+    confirmPassword: z
+      .string()
+      .min(1, "Debe confirmar la contraseña"),
+    companyName: z
+      .string()
+      .min(1, "El nombre de la empresa es requerido")
+      .min(2, "El nombre de la empresa debe tener al menos 2 caracteres")
+      .max(100, "El nombre de la empresa no puede exceder 100 caracteres"),
+    rfc: z
+      .string()
+      .min(1, "El RFC es requerido")
+      .regex(
+        /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/,
+        "RFC inválido. Formato: ABC123456XYZ (3-4 letras, 6 dígitos, 3 caracteres)"
+      ),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
 
 interface CompleteRegistrationFormData {
   name: string;
@@ -29,6 +62,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof CompleteRegistrationFormData, string>>>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [form, setForm] = useState<CompleteRegistrationFormData>({
@@ -39,59 +73,46 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
     rfc: "",
   });
 
+  useEffect(() => {
+    // El botón se controla automáticamente por el estado `loading`
+    // No necesitamos un listener global para deshabilitarlo
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
       [name]: value,
     }));
+    // Limpiar error general
     setError("");
+    // Limpiar error del campo específico
+    if (fieldErrors[name as keyof CompleteRegistrationFormData]) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [name]: undefined,
+      }));
+    }
   };
 
-  const validateRFC = (rfc: string): boolean => {
-    const rfcRegex = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/;
-    return rfcRegex.test(rfc.toUpperCase());
-  };
-
-  const validateForm = (): boolean => {
-    if (!form.name.trim()) {
-      setError("El nombre es requerido");
+  const validateFormWithZod = (): boolean => {
+    try {
+      registrationSchema.parse(form);
+      setFieldErrors({});
+      return true;
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        const newFieldErrors: Partial<Record<keyof CompleteRegistrationFormData, string>> = {};
+        err.issues.forEach((issue) => {
+          if (issue.path.length > 0) {
+            const path = issue.path[0] as keyof CompleteRegistrationFormData;
+            newFieldErrors[path] = issue.message;
+          }
+        });
+        setFieldErrors(newFieldErrors);
+      }
       return false;
     }
-
-    if (!form.password) {
-      setError("La contraseña es requerida");
-      return false;
-    }
-
-    if (form.password.length < 8) {
-      setError("La contraseña debe tener al menos 8 caracteres");
-      return false;
-    }
-
-    if (form.password !== form.confirmPassword) {
-      setError("Las contraseñas no coinciden");
-      return false;
-    }
-
-    if (!form.companyName.trim()) {
-      setError("El nombre de la empresa es requerido");
-      return false;
-    }
-
-    if (!form.rfc.trim()) {
-      setError("El RFC es requerido");
-      return false;
-    }
-
-    if (!validateRFC(form.rfc)) {
-      setError(
-        "RFC inválido. Formato: ABC123456XYZ (3-4 letras, 6 dígitos, 3 caracteres)"
-      );
-      return false;
-    }
-
-    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -99,7 +120,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
     setError("");
     setSuccessMessage("");
 
-    if (!validateForm()) {
+    if (!validateFormWithZod()) {
       return;
     }
 
@@ -213,8 +234,15 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                       value={form.name}
                       onChange={handleInputChange}
                       placeholder="Juan Pérez"
-                      className="mt-2 w-full rounded-lg border border-[var(--color-divider)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:border-[var(--color-primary-500)] focus:ring-1 focus:ring-[var(--color-primary-500)]/30"
+                      className={`mt-2 w-full rounded-lg border bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:ring-1 ${
+                        fieldErrors.name
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-500/30"
+                          : "border-[var(--color-divider)] focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-500)]/30"
+                      }`}
                     />
+                    {fieldErrors.name && (
+                      <p className="mt-1 text-xs text-red-500">{fieldErrors.name}</p>
+                    )}
                   </div>
 
                   {/* Password */}
@@ -231,7 +259,11 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                         value={form.password}
                         onChange={handleInputChange}
                         placeholder="Mínimo 8 caracteres"
-                        className="w-full rounded-lg border border-[var(--color-divider)] bg-[var(--color-surface)] px-4 py-3 pr-10 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:border-[var(--color-primary-500)] focus:ring-1 focus:ring-[var(--color-primary-500)]/30"
+                        className={`w-full rounded-lg border bg-[var(--color-surface)] px-4 py-3 pr-10 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:ring-1 ${
+                          fieldErrors.password
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500/30"
+                            : "border-[var(--color-divider)] focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-500)]/30"
+                        }`}
                       />
                       <button
                         type="button"
@@ -245,10 +277,11 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                         )}
                       </button>
                     </div>
-                    {form.password && form.password.length < 8 && (
-                      <p className="mt-1 text-xs text-yellow-500">
-                        Mínimo 8 caracteres
-                      </p>
+                    {fieldErrors.password && (
+                      <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>
+                    )}
+                    {!fieldErrors.password && form.password && form.password.length >= 8 && (
+                      <p className="mt-1 text-xs text-green-500">✓ Contraseña válida</p>
                     )}
                   </div>
 
@@ -266,7 +299,11 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                         value={form.confirmPassword}
                         onChange={handleInputChange}
                         placeholder="Repite tu contraseña"
-                        className="w-full rounded-lg border border-[var(--color-divider)] bg-[var(--color-surface)] px-4 py-3 pr-10 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:border-[var(--color-primary-500)] focus:ring-1 focus:ring-[var(--color-primary-500)]/30"
+                        className={`w-full rounded-lg border bg-[var(--color-surface)] px-4 py-3 pr-10 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:ring-1 ${
+                          fieldErrors.confirmPassword
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500/30"
+                            : "border-[var(--color-divider)] focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-500)]/30"
+                        }`}
                       />
                       <button
                         type="button"
@@ -282,12 +319,12 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                         )}
                       </button>
                     </div>
-                    {form.confirmPassword &&
-                      form.password !== form.confirmPassword && (
-                        <p className="mt-1 text-xs text-red-500">
-                          Las contraseñas no coinciden
-                        </p>
-                      )}
+                    {fieldErrors.confirmPassword && (
+                      <p className="mt-1 text-xs text-red-500">{fieldErrors.confirmPassword}</p>
+                    )}
+                    {!fieldErrors.confirmPassword && form.confirmPassword && form.password === form.confirmPassword && (
+                      <p className="mt-1 text-xs text-green-500">✓ Contraseñas coinciden</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -318,8 +355,15 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                       value={form.companyName}
                       onChange={handleInputChange}
                       placeholder="Ej: Transportes ABC S.A."
-                      className="mt-2 w-full rounded-lg border border-[var(--color-divider)] bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:border-[var(--color-primary-500)] focus:ring-1 focus:ring-[var(--color-primary-500)]/30"
+                      className={`mt-2 w-full rounded-lg border bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:ring-1 ${
+                        fieldErrors.companyName
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-500/30"
+                          : "border-[var(--color-divider)] focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-500)]/30"
+                      }`}
                     />
+                    {fieldErrors.companyName && (
+                      <p className="mt-1 text-xs text-red-500">{fieldErrors.companyName}</p>
+                    )}
                   </div>
 
                   {/* RFC */}
@@ -340,15 +384,32 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                           rfc: value,
                         }));
                         setError("");
+                        if (fieldErrors.rfc) {
+                          setFieldErrors((prev) => ({
+                            ...prev,
+                            rfc: undefined,
+                          }));
+                        }
                       }}
                       placeholder="ABC123456XYZ"
                       maxLength={13}
-                      className="mt-2 w-full rounded-lg border border-[var(--color-divider)] bg-[var(--color-surface)] px-4 py-3 font-mono text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] uppercase outline-none transition focus:border-[var(--color-primary-500)] focus:ring-1 focus:ring-[var(--color-primary-500)]/30"
+                      className={`mt-2 w-full rounded-lg border bg-[var(--color-surface)] px-4 py-3 font-mono text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] uppercase outline-none transition focus:ring-1 ${
+                        fieldErrors.rfc
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-500/30"
+                          : "border-[var(--color-divider)] focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-500)]/30"
+                      }`}
                     />
-                    <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                      Formato: 3-4 letras, 6 dígitos, 3 caracteres (ej:
-                      ABC123456XYZ)
-                    </p>
+                    {fieldErrors.rfc && (
+                      <p className="mt-1 text-xs text-red-500">{fieldErrors.rfc}</p>
+                    )}
+                    {!fieldErrors.rfc && form.rfc && /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/.test(form.rfc) && (
+                      <p className="mt-1 text-xs text-green-500">✓ RFC válido</p>
+                    )}
+                    {!fieldErrors.rfc && form.rfc && !/^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/.test(form.rfc) && (
+                      <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                        Formato: 3-4 letras, 6 dígitos, 3 caracteres (ej: ABC123456XYZ)
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

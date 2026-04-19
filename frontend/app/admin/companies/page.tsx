@@ -80,6 +80,35 @@ export default function AdminCompaniesPage() {
     fetchCompanies();
   }, []);
 
+  useEffect(() => {
+    const disableSubmitButtons = (event: Event) => {
+      const form = event.target as HTMLFormElement | null;
+      if (!form?.matches("form")) {
+        return;
+      }
+
+      const buttons = Array.from(
+        form.querySelectorAll("button[type='submit'], input[type='submit']"),
+      ) as Array<HTMLButtonElement | HTMLInputElement>;
+
+      buttons.forEach((button) => {
+        if (!button.disabled) {
+          button.disabled = true;
+        }
+      });
+    };
+
+    document.addEventListener("submit", disableSubmitButtons, true);
+    return () => document.removeEventListener("submit", disableSubmitButtons, true);
+  }, []);
+
+  const closeInviteModal = () => {
+    setIsInviteModalOpen(false);
+    setInviteEmail("");
+    setInviteError("");
+    setInviteSuccess(false);
+  };
+
   const filteredCompanies = useMemo(() => {
     return companies.filter((company) => {
       const normalizedSearch = searchTerm.toLowerCase().trim();
@@ -155,6 +184,10 @@ export default function AdminCompaniesPage() {
 
   const handleInviteSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (inviteLoading) {
+      return;
+    }
+
     setInviteError("");
     setInviteSuccess(false);
 
@@ -282,7 +315,14 @@ export default function AdminCompaniesPage() {
 
         {/* Modal de Invitación */}
         {isInviteModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6">
+          <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closeInviteModal();
+            }
+          }}
+        >
             <div className="w-full max-w-md rounded-2xl border border-divider bg-surface shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
               {/* Header */}
               <div className="border-b border-divider px-6 py-5">
@@ -352,12 +392,7 @@ export default function AdminCompaniesPage() {
                 <div className="flex items-center justify-end gap-3">
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsInviteModalOpen(false);
-                      setInviteEmail("");
-                      setInviteError("");
-                      setInviteSuccess(false);
-                    }}
+                    onClick={closeInviteModal}
                     disabled={inviteLoading}
                     className="rounded-lg border border-divider px-4 py-1 text-sm font-medium text-(--color-text-primary) transition hover:bg-surface disabled:opacity-50"
                   >
