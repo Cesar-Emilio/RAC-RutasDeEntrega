@@ -305,7 +305,7 @@ export function CrudTable<T extends { id: string | number }>({
                                 type="button"
                                 onClick={() => openEditModal(item)}
                                 disabled={actionDisabled}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-(--color-text-primary) transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-border text-(--color-text-primary) transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
                                 aria-label="Editar"
                                 title="Editar"
                               >
@@ -318,7 +318,7 @@ export function CrudTable<T extends { id: string | number }>({
                                 type="button"
                                 onClick={() => openStatusConfirmModal(item)}
                                 disabled={actionDisabled}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border transition disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border transition disabled:cursor-not-allowed disabled:opacity-60"
                                 style={{
                                   borderColor: statusAction.borderColor,
                                   color: statusAction.color,
@@ -362,7 +362,7 @@ export function CrudTable<T extends { id: string | number }>({
                   type="button"
                   onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-full border transition disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border transition disabled:cursor-not-allowed disabled:opacity-40"
                   style={{ borderColor: "transparent", color: "var(--color-text-primary)", backgroundColor: "transparent" }}
                   aria-label="Página anterior"
                   title="Página anterior"
@@ -386,7 +386,7 @@ export function CrudTable<T extends { id: string | number }>({
                   type="button"
                   onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-full border transition disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border transition disabled:cursor-not-allowed disabled:opacity-40"
                   style={{ borderColor: "transparent", color: "var(--color-text-primary)", backgroundColor: "transparent" }}
                   aria-label="Página siguiente"
                   title="Página siguiente"

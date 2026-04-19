@@ -8,21 +8,21 @@ import { WarehouseSelect } from "./form/warehouse-select";
 import { FileUpload } from "./form/file-upload";
 import { RouteOptions } from "./form/special-options";
 import { RouteFormErrors, routeSchema } from "@/schemas/route-schema";
+import { useAlert } from "@/components/layout/AlertProvider";
 
 interface FormState {
   warehouse: number | null;
   file: File | null;
-  allowOutOfState: boolean;
   kOpt: number;
 }
 
 export function NewRouteForm() {
   const router = useRouter();
+  const { addAlert } = useAlert();
 
   const [form, setForm] = useState<FormState>({
     warehouse: null,
     file: null,
-    allowOutOfState: false,
     kOpt: 0,
   });
 
@@ -88,8 +88,10 @@ export function NewRouteForm() {
     try {
       setSubmitting(true);
       await createRouteRequest(payload);
+      addAlert("success", "Ruta calculada exitosamente");
       router.push(`/company/deliveries`);
     } catch (err: any) {
+      addAlert("error", "Error al calcular la ruta de entrega");
       console.log(err)
     } finally {
       setSubmitting(false);
@@ -139,17 +141,10 @@ export function NewRouteForm() {
 
       <RouteOptions
         kOpt={form.kOpt}
-        allowOutOfState={form.allowOutOfState}
         onKOptChange={(value) =>
           setForm((prev) => ({
             ...prev,
             kOpt: Math.max(0, Math.min(10, value || 0)),
-          }))
-        }
-        onToggle={() =>
-          setForm((prev) => ({
-            ...prev,
-            allowOutOfState: !prev.allowOutOfState,
           }))
         }
       />

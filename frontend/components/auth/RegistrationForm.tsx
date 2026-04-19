@@ -236,7 +236,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition cursor-pointer"
                       >
                         {showPassword ? (
                           <EyeOff size={18} />
@@ -278,7 +278,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                         onClick={() =>
                           setShowConfirmPassword(!showConfirmPassword)
                         }
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition cursor-pointer"
                       >
                         {showConfirmPassword ? (
                           <EyeOff size={18} />
@@ -388,7 +388,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 rounded-lg bg-[var(--color-primary-strong)] px-6 py-3 text-center font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 cursor-pointer rounded-lg bg-[var(--color-primary-strong)] px-6 py-3 text-center font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? "Completando registro..." : "Completar Registro"}
               </button>

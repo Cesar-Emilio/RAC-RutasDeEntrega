@@ -9,6 +9,7 @@ import { getRouteByIdRequest } from "@/lib/routes-api";
 import { RouteDetail } from "@/types/routes-types";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAlert } from "@/components/layout/AlertProvider";
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -25,6 +26,7 @@ function formatDate(dateString: string): string {
 export default function CreateRoutePage() {
     const params = useParams();
     const id = params.id as string;
+    const { addAlert } = useAlert();
     
     const [route, setRoute] = useState<RouteDetail | null>(null);
     const [loading, setLoading] = useState(true);
@@ -42,7 +44,7 @@ export default function CreateRoutePage() {
 
         setRoute(data);
         } catch (err: unknown) {
-          console.log(err)
+          addAlert("error", "Error al cargar la ruta");
           const message = err instanceof Error ? err.message : "Error loading route";
           setError(message);
         } finally {

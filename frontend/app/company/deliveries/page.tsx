@@ -7,9 +7,11 @@ import { RoutesTable } from "@/components/deliveries/routes-table";
 import { useRouter } from "next/navigation";
 import { getDeliveriesRequest } from "@/lib/routes-api";
 import { RouteTableItem } from "@/types/routes-types";
+import { useAlert } from "@/components/layout/AlertProvider";
 
 export default function CompanyRoutesPage() {
   const router = useRouter();
+  const { addAlert } = useAlert();
 
   const [routes, setRoutes] = useState<RouteTableItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +29,7 @@ export default function CompanyRoutesPage() {
         const data = await getDeliveriesRequest();
         setRoutes(data);
       } catch (err: unknown) {
+        addAlert("error", "Error al cargar la tabla de entregas");
         const message = err instanceof Error ? err.message : "Error al cargar las entregas";
         setError(message)
       } finally {
