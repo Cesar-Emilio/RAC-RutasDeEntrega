@@ -109,11 +109,24 @@ class RouteSolutionSerializer(serializers.ModelSerializer):
     """
 
     details = serializers.SerializerMethodField()
+    origin  = serializers.SerializerMethodField()
 
     class Meta:
         model = RouteSolution
-        fields = ["id", "total_distance", "created_at", "details"]
+        fields = ["id", "total_distance", "created_at", "origin", "details"]
 
+    def get_origin(self, obj) -> dict:
+        """
+        Devuelve las coordenadas del warehouse como punto 0 de la ruta.
+        El frontend lo usa como nodo de partida y llegada.
+        """
+        w = obj.route.warehouse
+        return {
+            "name": w.name,
+            "latitude": str(w.latitude),
+            "longitude": str(w.longitude),
+        }
+        
     def get_details(self, obj):
         ordered_details = obj.details.select_related("delivery_point").order_by("order_index")
         return RouteSolutionDetailSerializer(ordered_details, many=True).data
