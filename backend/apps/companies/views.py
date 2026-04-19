@@ -93,7 +93,11 @@ class CompanyViewSet(viewsets.ModelViewSet):
                 company_id=company_id,
                 actor_id=actor_id,
             )
-            return response
+            return ApiResponse.success(
+                data=response.data,
+                message="Empresa creada correctamente.",
+                status=response.status_code,
+            )
         except Exception as e:
             logger.error(
                 "company | action=create | result=failure | actor_user_id={actor_id} | error={error}",
@@ -117,10 +121,44 @@ class CompanyViewSet(viewsets.ModelViewSet):
                 company_id=company_id,
                 actor_id=actor_id,
             )
-            return response
+            return ApiResponse.success(
+                data=response.data,
+                message="Empresa actualizada correctamente.",
+                status=response.status_code,
+            )
         except Exception as e:
             logger.error(
                 "company | action=update | result=failure | company_id={company_id} "
+                "| actor_user_id={actor_id} | error={error}",
+                company_id=company_id,
+                actor_id=actor_id,
+                error=str(e),
+            )
+            return ApiResponse.error(
+                message="Error al actualizar la empresa.",
+                errors={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def partial_update(self, request, *args, **kwargs):
+        actor_id = getattr(request.user, "id", None)
+        company_id = kwargs.get("pk")
+        try:
+            response = super().partial_update(request, *args, **kwargs)
+            logger.info(
+                "company | action=partial_update | result=success | company_id={company_id} "
+                "| actor_user_id={actor_id} | status_code=200",
+                company_id=company_id,
+                actor_id=actor_id,
+            )
+            return ApiResponse.success(
+                data=response.data,
+                message="Empresa actualizada correctamente.",
+                status=response.status_code,
+            )
+        except Exception as e:
+            logger.error(
+                "company | action=partial_update | result=failure | company_id={company_id} "
                 "| actor_user_id={actor_id} | error={error}",
                 company_id=company_id,
                 actor_id=actor_id,
@@ -136,14 +174,18 @@ class CompanyViewSet(viewsets.ModelViewSet):
         actor_id = getattr(request.user, "id", None)
         company_id = kwargs.get("pk")
         try:
-            response = super().destroy(request, *args, **kwargs)
+            super().destroy(request, *args, **kwargs)
             logger.info(
                 "company | action=destroy | result=success | company_id={company_id} "
                 "| actor_user_id={actor_id} | status_code=204",
                 company_id=company_id,
                 actor_id=actor_id,
             )
-            return response
+            return ApiResponse.success(
+                data=None,
+                message="Empresa eliminada correctamente.",
+                status=status.HTTP_204_NO_CONTENT,
+            )
         except Exception as e:
             logger.error(
                 "company | action=destroy | result=failure | company_id={company_id} "
