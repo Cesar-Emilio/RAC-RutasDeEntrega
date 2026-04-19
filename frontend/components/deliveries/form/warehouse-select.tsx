@@ -45,6 +45,7 @@ export const WarehouseSelect = ({
             hover:border-divisor
             transition-colors
             disabled:cursor-not-allowed disabled:opacity-70
+            cursor-pointer
           "
         >
           {loading ? (
@@ -89,6 +90,7 @@ export const WarehouseSelect = ({
                   w-full px-4 py-2.5 text-left
                   hover:bg-border/50
                   transition-colors
+                  cursor-pointer
                 "
               >
                 {warehouse.name}

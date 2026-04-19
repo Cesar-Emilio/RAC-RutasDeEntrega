@@ -13,7 +13,6 @@ import { useAlert } from "@/components/layout/AlertProvider";
 interface FormState {
   warehouse: number | null;
   file: File | null;
-  allowOutOfState: boolean;
   kOpt: number;
 }
 
@@ -24,7 +23,6 @@ export function NewRouteForm() {
   const [form, setForm] = useState<FormState>({
     warehouse: null,
     file: null,
-    allowOutOfState: false,
     kOpt: 0,
   });
 
@@ -143,17 +141,10 @@ export function NewRouteForm() {
 
       <RouteOptions
         kOpt={form.kOpt}
-        allowOutOfState={form.allowOutOfState}
         onKOptChange={(value) =>
           setForm((prev) => ({
             ...prev,
             kOpt: Math.max(0, Math.min(10, value || 0)),
-          }))
-        }
-        onToggle={() =>
-          setForm((prev) => ({
-            ...prev,
-            allowOutOfState: !prev.allowOutOfState,
           }))
         }
       />
