@@ -62,17 +62,12 @@ export function ModalEdit<T extends { id: string | number }>({
   }, [fields, item]);
 
   useEffect(() => {
-    if (!isOpen || typeof window === "undefined") {
+    if (!isOpen) {
+      setValues({});
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      setValues(initialValues);
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
+    setValues(initialValues);
   }, [initialValues, isOpen]);
 
   if (!isOpen || !item) {
