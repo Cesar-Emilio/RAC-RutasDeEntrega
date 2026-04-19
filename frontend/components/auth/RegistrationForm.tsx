@@ -131,8 +131,8 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--color-background)] px-4 py-6">
-        <div className="w-full max-w-md rounded-2xl border border-[var(--color-divider)] bg-[var(--color-border)] p-8 shadow-lg">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-6">
+        <div className="w-full max-w-md rounded-2xl border border-divider bg-surface p-8 shadow-lg">
           <div className="mb-6 flex items-center gap-3 rounded-lg bg-red-950/40 p-4">
             <AlertCircle size={20} className="flex-shrink-0 text-red-500" />
             <p className="text-sm text-red-400">
@@ -141,7 +141,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
             </p>
           </div>
 
-          <Link href="/login" className="text-sm text-[var(--color-primary-500)] hover:underline">
+          <Link href="/login" className="text-sm text-primary hover:underline">
             Volver al login →
           </Link>
         </div>
@@ -150,16 +150,16 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--color-background)] px-4 py-6 sm:px-8">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-6 sm:px-8">
       <div className="w-full max-w-2xl">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-[var(--color-text-primary)]">Completa tu registro</h1>
-          <p className="mt-2 text-[var(--color-text-secondary)]">
+          <h1 className="text-3xl font-bold text-primary">Completa tu registro</h1>
+          <p className="mt-2 text-primary">
             Ingresa tus datos personales y de la empresa para acceder
           </p>
         </div>
 
-        <div className="rounded-2xl border border-[var(--color-divider)] bg-[var(--color-border)] shadow-lg">
+        <div className="rounded-2xl border border-divider bg-surface shadow-lg">
           {/* Error Message */}
           {error && (
             <div className="border-l-4 border-red-500 bg-red-950/40 px-6 py-4 text-red-400">
@@ -181,8 +181,8 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
             <div className="space-y-6">
               {/* Datos del Usuario Section */}
               <div>
-                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[var(--color-text-secondary)]">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-primary-strong)] text-xs font-bold text-[var(--color-background)]">
+                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-primary">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-strong text-xs font-bold text-primary">
                     1
                   </span>{" "}
                   Datos Personales
@@ -191,7 +191,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                 <div className="space-y-4">
                   {/* Full Name */}
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-[var(--color-text-secondary)]">
+                    <label htmlFor="name" className="block text-sm font-medium text-secondary">
                       Nombre Completo{" "}
                       <span className="ml-1 text-red-500">*</span>
                     </label>
@@ -202,10 +202,10 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                       value={form.name}
                       onChange={handleInputChange}
                       placeholder="Juan Pérez"
-                      className={`mt-2 w-full rounded-lg border bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:ring-1 ${
+                      className={`mt-2 w-full rounded-lg border bg-surface px-4 py-3 text-sm text-primary placeholder-text-muted outline-none transition focus:ring-1 ${
                         errors.name
                           ? "border-red-500 focus:border-red-500 focus:ring-red-500/30"
-                          : "border-[var(--color-divider)] focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-500)]/30"
+                          : "border-divider focus:border-primary-500 focus:ring-primary-500/30"
                       }`}
                     />
                     {errors.name && (
@@ -215,7 +215,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
 
                   {/* Password */}
                   <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-[var(--color-text-secondary)]">
+                    <label htmlFor="password" className="block text-sm font-medium text-secondary">
                       Contraseña{" "}
                       <span className="ml-1 text-red-500">*</span>
                     </label>
@@ -227,16 +227,16 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                         value={form.password}
                         onChange={handleInputChange}
                         placeholder="Mínimo 8 caracteres"
-                        className={`w-full rounded-lg border bg-[var(--color-surface)] px-4 py-3 pr-10 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:ring-1 ${
+                        className={`w-full rounded-lg border bg-surface px-4 py-3 pr-10 text-sm text-primary placeholder:text-muted outline-none transition focus:ring-1 ${
                           errors.password
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500/30"
-                            : "border-[var(--color-divider)] focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-500)]/30"
+                            : "border-divider focus:border-primary-500 focus:ring-primary-500/30"
                         }`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition cursor-pointer"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition cursor-pointer"
                       >
                         {showPassword ? (
                           <EyeOff size={18} />
@@ -255,7 +255,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
 
                   {/* Confirm Password */}
                   <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-[var(--color-text-secondary)]">
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-secondary">
                       Confirmar Contraseña{" "}
                       <span className="ml-1 text-red-500">*</span>
                     </label>
@@ -267,10 +267,10 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                         value={form.confirmPassword}
                         onChange={handleInputChange}
                         placeholder="Repite tu contraseña"
-                        className={`w-full rounded-lg border bg-[var(--color-surface)] px-4 py-3 pr-10 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:ring-1 ${
+                        className={`w-full rounded-lg border bg-surface px-4 py-3 pr-10 text-sm text-primary placeholder:text-muted outline-none transition focus:ring-1 ${
                           errors.confirmPassword
                             ? "border-red-500 focus:border-red-500 focus:ring-red-500/30"
-                            : "border-[var(--color-divider)] focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-500)]/30"
+                            : "border-divider focus:border-primary-500 focus:ring-primary-500/30"
                         }`}
                       />
                       <button
@@ -278,7 +278,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                         onClick={() =>
                           setShowConfirmPassword(!showConfirmPassword)
                         }
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition cursor-pointer"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition cursor-pointer"
                       >
                         {showConfirmPassword ? (
                           <EyeOff size={18} />
@@ -298,12 +298,12 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
               </div>
 
               {/* Divider */}
-              <div className="border-t border-[var(--color-divider)]" />
+              <div className="border-t border-divider" />
 
               {/* Datos de la Empresa Section */}
               <div>
-                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[var(--color-text-secondary)]">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-primary-strong)] text-xs font-bold text-[var(--color-background)]">
+                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-primary">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-strong text-xs font-bold text-background">
                     2
                   </span>{" "}
                   Datos de la Empresa
@@ -312,7 +312,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                 <div className="space-y-4">
                   {/* Company Name */}
                   <div>
-                    <label htmlFor="companyName" className="block text-sm font-medium text-[var(--color-text-secondary)]">
+                    <label htmlFor="companyName" className="block text-sm font-medium text-secondary">
                       Nombre de la Empresa{" "}
                       <span className="ml-1 text-red-500">*</span>
                     </label>
@@ -323,10 +323,10 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                       value={form.companyName}
                       onChange={handleInputChange}
                       placeholder="Ej: Transportes ABC S.A."
-                      className={`mt-2 w-full rounded-lg border bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition focus:ring-1 ${
+                      className={`mt-2 w-full rounded-lg border bg-surface px-4 py-3 text-sm text-primary placeholder-text-muted outline-none transition focus:ring-1 ${
                         errors.companyName
                           ? "border-red-500 focus:border-red-500 focus:ring-red-500/30"
-                          : "border-[var(--color-divider)] focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-500)]/30"
+                          : "border-divider focus:border-primary-500 focus:ring-primary-500/30"
                       }`}
                     />
                     {errors.companyName && (
@@ -336,7 +336,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
 
                   {/* RFC */}
                   <div>
-                    <label htmlFor="rfc" className="block text-sm font-medium text-[var(--color-text-secondary)]">
+                    <label htmlFor="rfc" className="block text-sm font-medium text-secondary">
                       RFC{" "}
                       <span className="ml-1 text-red-500">*</span>
                     </label>
@@ -361,10 +361,10 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                       }}
                       placeholder="ABC123456XYZ"
                       maxLength={13}
-                      className={`mt-2 w-full rounded-lg border bg-[var(--color-surface)] px-4 py-3 font-mono text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] uppercase outline-none transition focus:ring-1 ${
+                      className={`mt-2 w-full rounded-lg border bg-surface px-4 py-3 font-mono text-sm text-primary placeholder-text-muted uppercase outline-none transition focus:ring-1 ${
                         errors.rfc
                           ? "border-red-500 focus:border-red-500 focus:ring-red-500/30"
-                          : "border-[var(--color-divider)] focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-500)]/30"
+                          : "border-divider focus:border-primary-500 focus:ring-primary-500/30"
                       }`}
                     />
                     {errors.rfc && (
@@ -374,7 +374,7 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
                       <p className="mt-1 text-xs text-green-500">✓ RFC válido</p>
                     )}
                     {!errors.rfc && form.rfc && !/^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/.test(form.rfc) && (
-                      <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                      <p className="mt-1 text-xs text-text-muted">
                         Formato: 3-4 letras, 6 dígitos, 3 caracteres (ej: ABC123456XYZ)
                       </p>
                     )}
@@ -388,20 +388,20 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 cursor-pointer rounded-lg bg-[var(--color-primary-strong)] px-6 py-3 text-center font-semibold text-[var(--color-background)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 cursor-pointer rounded-lg bg-primary-strong px-6 py-3 text-center font-semibold text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? "Completando registro..." : "Completar Registro"}
               </button>
               <Link
                 href="/login"
-                className="flex items-center justify-center rounded-lg border border-[var(--color-divider)] px-6 py-3 font-medium text-[var(--color-text-primary)] transition hover:bg-[var(--color-surface)]"
+                className="flex items-center justify-center rounded-lg border border-divider px-6 py-3 font-medium text-primary transition hover:bg-surface"
               >
                 Cancelar
               </Link>
             </div>
 
             {/* Help Text */}
-            <p className="mt-4 text-center text-xs text-[var(--color-text-muted)]">
+            <p className="mt-4 text-center text-xs text-muted">
               Por favor completa todos los campos correctamente para activar tu
               cuenta.
             </p>
