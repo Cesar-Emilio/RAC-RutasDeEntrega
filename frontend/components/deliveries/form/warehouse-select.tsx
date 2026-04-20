@@ -25,7 +25,7 @@ export const WarehouseSelect = ({
   );
 
   return (
-    <div className="mb-8">
+    <div className="mb-6">
       <SectionHeader
         step={1}
         title="Almacén de partida"
@@ -39,7 +39,7 @@ export const WarehouseSelect = ({
           disabled={loading || !!error}
           className="
             w-full flex items-center justify-between
-            px-4 py-3 rounded-lg
+            px-4 py-2 rounded-lg
             bg-surface border border-border
             text-left
             hover:border-divisor
@@ -66,18 +66,18 @@ export const WarehouseSelect = ({
           )}
 
           <ChevronDown
-            className={`w-5 h-5 transition-transform ${
+            className={`w-4 h-4 transition-transform ${
               isOpen ? "rotate-180" : ""
             }`}
           />
         </button>
 
         {error && (
-          <p className="mt-2 text-sm text-[var(--color-error)]">{error}</p>
+          <p className="mt-2 text-xs text-error">{error}</p>
         )}
 
         {isOpen && !loading && (
-          <div className="absolute z-10 w-full mt-2 py-1 bg-surface border border-border rounded-lg shadow-lg">
+          <div className="absolute z-10 mt-2 w-full rounded-lg border border-border bg-surface py-1 shadow-lg">
             {warehouses.map((warehouse) => (
               <button
                 key={warehouse.id}
@@ -87,7 +87,7 @@ export const WarehouseSelect = ({
                   setIsOpen(false);
                 }}
                 className="
-                  w-full px-4 py-2.5 text-left
+                  w-full px-4 py-1.5 text-left text-sm
                   hover:bg-border/50
                   transition-colors
                   cursor-pointer

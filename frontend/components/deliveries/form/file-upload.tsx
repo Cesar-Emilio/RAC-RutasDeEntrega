@@ -65,25 +65,25 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
   };
 
   return (
-    <div className="mb-8">
+    <div className="mb-6">
         <SectionHeader step={2} title="Archivo de paquetes" description="Sube un archivo .csv, .json o xlsx con las ubicaciones de entrega" />
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-3 flex items-center justify-between">
           <div className="relative group">
             <button
               className="
                 flex items-center gap-2
-                px-3 py-2 rounded-lg
+                px-3 py-1.5 rounded-lg
                 bg-surface border border-border
-                text-text-secondary text-sm
+                text-text-secondary text-xs sm:text-sm
                 hover:border-divisor hover:text-text-primary
                 transition-colors duration-200
                 cursor-pointer
               "
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-3.5 h-3.5" />
               <span>Descargar plantilla</span>
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="w-3.5 h-3.5" />
             </button>
 
             <div
@@ -120,7 +120,7 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
           onDrop={handleDrop}
           className={`
             relative flex flex-col items-center justify-center
-            py-12 px-6 rounded-xl
+            px-6 py-9 rounded-xl
             border-2 border-dashed
             transition-colors duration-200
             ${isDragging 
@@ -129,14 +129,14 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
             }
           `}
         >
-          <div className="flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-surface border border-border">
-            <Upload className="w-5 h-5 text-text-secondary" />
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface">
+            <Upload className="h-4 w-4 text-text-secondary" />
           </div>
           
           {file ? (
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-surface border border-border">
-            <FileText className="w-4 h-4 text-text-secondary shrink-0" />
-            <span className="text-text-primary font-medium text-sm truncate max-w-xs">
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-2">
+            <FileText className="h-4 w-4 shrink-0 text-text-secondary" />
+            <span className="max-w-xs truncate text-sm font-medium text-text-primary">
               {file.name}
             </span>
             <button
@@ -154,8 +154,8 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
           </div>
           ) : (
             <>
-              <p className="text-text-primary mb-1">Arrastra tu archivo aquí</p>
-              <p className="text-sm text-text-secondary">
+              <p className="mb-1 text-sm text-text-primary">Arrastra tu archivo aquí</p>
+              <p className="text-xs text-text-secondary sm:text-sm">
                 o{" "}
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -168,7 +168,7 @@ export const FileUpload = ({ file, onChange }: FileUploadProps) => {
             </>
           )}
           
-          <div className="flex items-center gap-4 mt-4">
+          <div className="mt-3 flex items-center gap-3">
             <span className="px-3 py-1 text-xs font-medium text-text-secondary bg-surface border border-border rounded">
               .csv
             </span>

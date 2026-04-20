@@ -22,6 +22,7 @@ type CrudTableProps<T extends { id: string | number }> = {
   items: T[];
   columns: CrudColumn<T>[];
   isLoading?: boolean;
+  hideHeader?: boolean;
   emptyMessage?: string;
   statusKey?: keyof T;
   onEdit?: (item: T) => void;
@@ -53,6 +54,7 @@ export function CrudTable<T extends { id: string | number }>({
   items,
   columns,
   isLoading = false,
+  hideHeader = false,
   emptyMessage = "Aun no hay registros.",
   statusKey,
   onEdit,
@@ -237,12 +239,16 @@ export function CrudTable<T extends { id: string | number }>({
 
   return (
     <section className="min-w-0">
-      <h2 className="mb-1 text-base font-semibold md:text-lg" style={{ color: "var(--color-text-secondary)" }}>
-        {title}
-      </h2>
-      <p className="mb-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
-        {isLoading ? "Cargando informacion..." : description}
-      </p>
+      {!hideHeader ? (
+        <>
+          <h2 className="mb-1 text-base font-semibold md:text-lg" style={{ color: "var(--color-text-secondary)" }}>
+            {title}
+          </h2>
+          <p className="mb-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
+            {isLoading ? "Cargando informacion..." : description}
+          </p>
+        </>
+      ) : null}
 
       <div
         className="overflow-hidden rounded-xl border"

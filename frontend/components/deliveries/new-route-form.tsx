@@ -99,9 +99,9 @@ export function NewRouteForm() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="text-center mb-10">
-        <h2 className="text-2xl font-semibold text-text-primary mb-3">
+    <div className="mx-auto max-w-2xl px-2 py-4 sm:px-4 sm:py-5">
+      <div className="mb-6 text-center">
+        <h2 className="mb-2 text-xl font-semibold text-text-primary sm:text-2xl">
           Nuevo cálculo de ruta de entrega
         </h2>
 
@@ -122,7 +122,7 @@ export function NewRouteForm() {
           }}
         />
         {errors.warehouse && (
-          <p className="text-error text-sm mt-1 -mt-6 mb-8">{errors.warehouse}</p>
+          <p className="-mt-4 mb-5 text-sm text-error">{errors.warehouse}</p>
         )}
       </div>
 
@@ -135,7 +135,7 @@ export function NewRouteForm() {
           }}
         />
         {errors.file && (
-          <p className="text-error text-sm -mt-6 mb-8">{errors.file}</p>
+          <p className="-mt-4 mb-5 text-sm text-error">{errors.file}</p>
         )}
       </div>
 
@@ -154,7 +154,7 @@ export function NewRouteForm() {
         onClick={handleSubmit}
         disabled={submitting}
         className="
-          w-full py-3.5 rounded-lg
+          w-full rounded-lg py-2.5 text-sm
           bg-primary-500 hover:bg-primary-400
           text-white font-medium
           disabled:opacity-70

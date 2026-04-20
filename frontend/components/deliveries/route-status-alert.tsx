@@ -57,14 +57,14 @@ export function RouteStatusAlert({ status }: RouteStatusAlertProps) {
   return (
     <div
       className={`
-        flex items-center gap-3 px-4 py-3 rounded-lg border
+        mb-4 flex items-center gap-2.5 rounded-lg border px-3 py-2.5
         ${config.bgColor} ${config.borderColor}
       `}
     >
       <Icon
-        className={`w-5 h-5 ${config.iconColor} ${isProcessing ? "animate-spin" : ""}`}
+        className={`h-4 w-4 ${config.iconColor} ${isProcessing ? "animate-spin" : ""}`}
       />
-      <span className={`text-sm font-medium ${config.textColor}`}>
+      <span className={`text-xs font-medium sm:text-sm ${config.textColor}`}>
         {config.message}
       </span>
     </div>

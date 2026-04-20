@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, type SyntheticEvent } from "react";
-import { Mail, AlertCircle, Check } from "lucide-react";
+import { Building2, CheckCircle2, Mail, AlertCircle, Check } from "lucide-react";
 import { ContentShell } from "@/components/layout/ContentShell";
 import { CardStatistics } from "@/components/layout/CardStatistics";
 import { SearchBar } from "@/components/layout/SearchBar";
@@ -245,25 +245,27 @@ export default function AdminCompaniesPage() {
       title="Empresas"
       breadcrumbs={["Admin", "Empresas"]}
     >
-      <div className="bg-background p-6">
+      <div className="flex-1 overflow-y-auto px-6 pb-6">
         {/* Estadísticas */}
         <CardStatistics
           title="Empresas totales"
           description="Administra las empresas del sistema"
           items={[
-            { id: 1, label: "Empresas totales", value: companies.length },
-            { id: 2, label: "Activas", value: companies.filter((c) => c.active).length },
+            { id: 1, label: "Empresas totales", value: companies.length, icon: Building2, accentColor: "orange" },
+            { id: 2, label: "Activas", value: companies.filter((c) => c.active).length, icon: CheckCircle2, accentColor: "green" },
           ]}
+          compact
+          hideHeader
         />
 
         {/* Filtros y Búsqueda */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-5 mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-start">
           <SearchBar
             value={searchTerm}
             onChange={setSearchTerm}
             placeholder="Buscar una empresa..."
           />
-          <div className="flex gap-3">
+          <div className="flex gap-3 sm:flex-none">
             <StatusFilter
               value={statusFilter}
               onChange={setStatusFilter}
@@ -281,6 +283,15 @@ export default function AdminCompaniesPage() {
               Registrar Empresa
             </button>
           </div>
+        </div>
+
+        <div className="mb-4">
+          <h2 className="text-base font-semibold md:text-lg" style={{ color: "var(--color-text-secondary)" }}>
+            Empresas registradas
+          </h2>
+          <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
+            Gestiona las empresas del sistema
+          </p>
         </div>
 
         {/* Tabla de Empresas */}
@@ -304,6 +315,7 @@ export default function AdminCompaniesPage() {
           actionLoadingId={actionLoadingId}
           isLoading={isLoading}
           emptyMessage="No hay empresas que coincidan con los filtros."
+          hideHeader
         />
 
         {/* Modal de Invitación */}

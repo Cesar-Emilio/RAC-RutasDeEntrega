@@ -18,7 +18,7 @@ export function SearchBar({
   const inputSize = Math.max(minChars, placeholder.length);
 
   return (
-    <label className="inline-flex h-8 items-center gap-2 rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-3 text-[var(--color-text-primary)] focus-within:border-[var(--color-primary-500)]">
+    <label className="flex h-8 w-full items-center gap-2 rounded-lg border border-[var(--color-divider)] bg-[var(--color-background)] px-3 text-[var(--color-text-primary)] focus-within:border-[var(--color-primary-500)] sm:flex-1">
       <Search size={14} className="shrink-0 text-[var(--color-text-muted)]" />
       <input
         type="text"
@@ -26,7 +26,7 @@ export function SearchBar({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         size={inputSize}
-        className="bg-transparent text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]"
+        className="w-full min-w-0 bg-transparent text-sm text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]"
       />
     </label>
   );

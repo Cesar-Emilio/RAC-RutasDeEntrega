@@ -17,12 +17,12 @@ interface MetricCardProps {
 
 function MetricCard({ icon: Icon, value, label }: MetricCardProps) {
   return (
-    <div className="flex items-center gap-3 p-3 bg-surface rounded-lg border border-primary-500/30">
-      <div className="w-12 h-12 rounded-lg bg-surface border border-primary-500/50 flex items-center justify-center">
-        <Icon className="w-6 h-6 text-primary-400" />
+    <div className="flex items-center gap-2.5 rounded-lg border border-primary-500/30 bg-surface p-2.5">
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-primary-500/50 bg-surface">
+        <Icon className="h-5 w-5 text-primary-400" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-lg font-semibold text-text-primary truncate">{value}</p>
+        <p className="truncate text-base font-semibold text-text-primary">{value}</p>
         <p className="text-xs text-text-secondary">{label}</p>
       </div>
     </div>
@@ -44,24 +44,24 @@ export function RouteMetrics({ route }: RouteMetricsProps) {
   }
 
   return (
-    <div className="bg-surface rounded-xl border border-border overflow-hidden">
+    <div className="mb-4 overflow-hidden rounded-xl border border-border bg-surface">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-border/30 transition-colors"
+        className="flex w-full items-center justify-between px-4 py-3 hover:bg-border/30 transition-colors"
       >
         <h3 className="text-sm font-medium text-text-primary">
           Información general de la entrega
         </h3>
         {isExpanded ? (
-          <ChevronUp className="w-5 h-5 text-text-secondary" />
+          <ChevronUp className="h-4 w-4 text-text-secondary" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-text-secondary" />
+          <ChevronDown className="h-4 w-4 text-text-secondary" />
         )}
       </button>
 
       {isExpanded && (
-        <div className="px-5 pb-5">
-          <div className="grid grid-cols-3 gap-3">
+        <div className="px-4 pb-4">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
             <MetricCard
               icon={Package}
               value={route.delivery_count}
