@@ -12,13 +12,16 @@ export function StatsCard({ icon: Icon, value, label, iconColor = "orange" }: St
   const iconText = iconColor === "orange" ? "text-primary-500" : "text-green-400";
 
   return (
-    <div className="flex items-center gap-4 bg-surface rounded-2xl border border-border p-5 hover:border-border-subtle transition-colors">
-      <div className={`p-3 rounded-xl ${iconBg}`}>
-        <Icon className={`w-6 h-6 ${iconText}`} />
-      </div>
-      <div>
-        <p className="text-2xl font-bold text-text-primary">{value}</p>
-        <p className="text-sm text-text-secondary">{label}</p>
+    <div className="overflow-hidden rounded-2xl border border-border bg-surface hover:border-border-subtle transition-colors">
+      <div className="h-1 w-full bg-primary-500" />
+      <div className="flex items-center gap-3 px-4 py-3.5">
+        <div className={`p-2.5 rounded-xl ${iconBg}`}>
+          <Icon className={`w-5 h-5 ${iconText}`} />
+        </div>
+        <div>
+          <p className="text-xl font-bold leading-none text-text-primary">{value}</p>
+          <p className="mt-0.5 text-xs text-text-secondary">{label}</p>
+        </div>
       </div>
     </div>
   );

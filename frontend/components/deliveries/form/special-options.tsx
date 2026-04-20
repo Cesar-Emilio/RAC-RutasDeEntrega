@@ -10,7 +10,7 @@ export const RouteOptions = ({
   onKOptChange,
 }: RouteOptionsProps) => {
   return (
-    <div className="mb-10">
+    <div className="mb-6">
       <SectionHeader
         step={3}
         title="Opciones especiales"
@@ -18,13 +18,13 @@ export const RouteOptions = ({
       />
 
       <div className="space-y-4">
-        <div className="p-4 rounded-lg bg-surface border border-border flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-surface p-3.5">
           <div>
-            <h4 className="text-sm font-medium text-text-primary mb-1">
+            <h4 className="mb-1 text-sm font-medium text-text-primary">
               Optimización K-Opt
             </h4>
 
-            <p className="text-sm text-text-secondary">
+            <p className="text-xs text-text-secondary sm:text-sm">
               Nivel de optimización entre 0 y 10.
             </p>
           </div>
@@ -36,7 +36,7 @@ export const RouteOptions = ({
             value={kOpt}
             onChange={(e) => onKOptChange(Number(e.target.value))}
             className="
-              w-20 px-3 py-2 rounded-lg border border-border
+              w-16 rounded-lg border border-border px-2 py-1.5
               text-center bg-background
               [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
             "

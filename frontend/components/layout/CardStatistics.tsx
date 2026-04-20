@@ -5,7 +5,7 @@ type CardStatisticsItem = {
   label: string;
   value: number;
   icon?: LucideIcon;
-  accentClassName?: string;
+  accentColor?: "orange" | "green";
 };
 
 type CardStatisticsProps = {
@@ -13,6 +13,8 @@ type CardStatisticsProps = {
   description: string;
   items: CardStatisticsItem[];
   isLoading?: boolean;
+  compact?: boolean;
+  hideHeader?: boolean;
 };
 
 export function CardStatistics({
@@ -20,55 +22,88 @@ export function CardStatistics({
   description,
   items,
   isLoading = false,
+  compact = false,
+  hideHeader = false,
 }: Readonly<CardStatisticsProps>) {
   return (
-    <section className="mb-8">
-      <div className="mb-4">
-        <h2 className="text-base font-semibold md:text-lg" style={{ color: "var(--color-text-secondary)" }}>
-          {title}
-        </h2>
-        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-          {description}
-        </p>
-      </div>
+    <section className={hideHeader ? "mb-0" : "mb-8"}>
+      {!hideHeader ? (
+        <div className="mb-4">
+          <h2 className="text-base font-semibold md:text-lg" style={{ color: "var(--color-text-secondary)" }}>
+            {title}
+          </h2>
+          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+            {description}
+          </p>
+        </div>
+      ) : null}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className={compact ? "grid grid-cols-1 gap-3 md:grid-cols-2" : "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"}>
         {items.length > 0 ? (
           items.map((item) => (
             <div
               key={item.id}
-              className="group rounded-2xl border p-5 shadow-[0_10px_28px_rgba(0,0,0,0.16)] transition-all duration-200 hover:-translate-y-0.5"
+              className={`group w-full overflow-hidden rounded-2xl border shadow-[0_10px_28px_rgba(0,0,0,0.16)] transition-all duration-200 hover:-translate-y-0.5 ${compact ? "p-0" : "p-5"}`}
               style={{
                 backgroundColor: "var(--color-surface)",
                 borderColor: "var(--color-divider)",
               }}
             >
-              <div className="-mx-5 -mt-5 mb-4 h-1 w-[calc(100%+2.5rem)] rounded-t-2xl" style={{ backgroundColor: "var(--color-primary-500)" }} />
+              <div className="h-1 w-full" style={{ backgroundColor: "var(--color-primary-500)" }} />
 
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>
-                    {item.label}
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold leading-none" style={{ color: "var(--color-text-secondary)" }}>
-                    {item.value}
-                  </p>
-                </div>
+              {compact ? (
+                <div className="flex items-center gap-3 px-4 py-3.5">
+                  {item.icon ? (
+                    <div
+                      className={`p-2.5 rounded-xl ${item.accentColor === "green" ? "bg-green-500/15" : "bg-primary-500/15"}`}
+                      style={{
+                        backgroundColor: item.accentColor === "green"
+                          ? "color-mix(in srgb, var(--color-green-400) 16%, transparent)"
+                          : "color-mix(in srgb, var(--color-primary-500) 16%, transparent)",
+                        borderColor: "transparent",
+                      }}
+                    >
+                      <item.icon size={20} style={{ color: item.accentColor === "green" ? "var(--color-green-400)" : "var(--color-primary-500)" }} />
+                    </div>
+                  ) : null}
 
-                {item.icon ? (
-                  <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border"
-                    style={{
-                      backgroundColor: "transparent",
-                      borderColor: "var(--color-divider)",
-                    }}
-                  >
-                    <item.icon size={21} style={{ color: "var(--color-primary-500)" }} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xl font-bold leading-none text-text-primary">
+                      {item.value}
+                    </p>
+                    <p className="mt-0.5 text-xs text-text-secondary">
+                      {item.label}
+                    </p>
                   </div>
-                ) : null}
-              </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.18em]" style={{ color: "var(--color-text-muted)" }}>
+                        {item.label}
+                      </p>
+                      <p className="mt-2 text-2xl font-semibold leading-none" style={{ color: "var(--color-text-secondary)" }}>
+                        {item.value}
+                      </p>
+                    </div>
 
-              <div className="mt-4 h-px w-full" style={{ backgroundColor: "color-mix(in srgb, var(--color-divider) 60%, transparent)" }} />
+                    {item.icon ? (
+                      <div
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border"
+                        style={{
+                          backgroundColor: "transparent",
+                          borderColor: "var(--color-divider)",
+                        }}
+                      >
+                        <item.icon size={21} style={{ color: "var(--color-primary-500)" }} />
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-4 h-px w-full" style={{ backgroundColor: "color-mix(in srgb, var(--color-divider) 60%, transparent)" }} />
+                </>
+              )}
             </div>
           ))
         ) : (

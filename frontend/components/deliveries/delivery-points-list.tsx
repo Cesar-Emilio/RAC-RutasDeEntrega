@@ -49,12 +49,12 @@ export function DeliveryPointsList({ route }: DeliveryPointsListProps) {
 
   return (
     <div className="bg-surface rounded-xl border border-border overflow-hidden h-full flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
         <div className="flex items-center gap-2">
-          <Navigation className="w-4 h-4 text-primary-400" />
+          <Navigation className="h-3.5 w-3.5 text-primary-400" />
           <h3 className="text-sm font-medium text-primary">Puntos de entrega</h3>
         </div>
-        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary-500/10 text-primary-400 border border-primary-500/20">
+        <span className="rounded-full border border-primary-500/20 bg-primary-500/10 px-2 py-0.5 text-[10px] font-medium text-primary-400">
           {orderedPoints.length} {orderedPoints.length === 1 ? "parada" : "paradas"}
         </span>
       </div>
@@ -67,17 +67,17 @@ export function DeliveryPointsList({ route }: DeliveryPointsListProps) {
           [&::-webkit-scrollbar-thumb]:rounded-full
           hover:[&::-webkit-scrollbar-thumb]:bg-primary-500/40"
       >
-        <ul className="relative px-4 py-3 space-y-1">
-          <div className="absolute left-8.5 top-6 bottom-6 w-px bg-border" />
+        <ul className="relative space-y-1 px-3 py-2.5">
+          <div className="absolute bottom-5 left-7.5 top-5 w-px bg-border" />
 
           {orderedPoints.map((point, i) => {
             return (
               <li
                 key={`${point.id}-${point.orderIndex}`}
-                className="relative flex items-start gap-3 p-2.5 rounded-lg hover:bg-border/40 transition-colors group"
+                className="group relative flex items-start gap-2.5 rounded-lg p-2 hover:bg-border/40 transition-colors"
               >
                 <div className={`
-                  relative z-10 shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
+                  relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold
                   transition-colors
                   "bg-primary-500/20 text-primary-400 border border-primary-500/40 group-hover:bg-primary-500/30"
                 `}>
@@ -85,20 +85,20 @@ export function DeliveryPointsList({ route }: DeliveryPointsListProps) {
                 </div>
 
                 <div className="min-w-0 flex-1 pt-0.5">
-                  <p className="text-sm font-medium text-primary leading-tight">
+                  <p className="text-xs font-medium leading-tight text-primary">
                     {point.receiver_name}
                   </p>
 
-                  <div className="flex items-start gap-1 mt-1">
-                    <MapPin className="w-3 h-3 text-muted mt-0.5 shrink-0" />
-                    <p className="text-xs text-secondary leading-relaxed">
+                  <div className="mt-1 flex items-start gap-1">
+                    <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-muted" />
+                    <p className="text-[11px] leading-relaxed text-secondary">
                       {point.address}
                     </p>
                   </div>
                 </div>
 
                 <div className="shrink-0 flex items-center gap-1 mt-0.5">
-                  <span className="text-xs text-muted tabular-nums">
+                  <span className="text-[10px] text-muted tabular-nums">
                     {point.package_quantity} paquetes
                   </span>
                 </div>

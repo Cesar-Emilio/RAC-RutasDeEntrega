@@ -3,10 +3,11 @@
 import { ContentShell } from "@/components/layout/ContentShell";
 import { useAlert } from "@/components/layout/AlertProvider";
 import { EditWarehouseModal } from "@/components/warehouses/editwarehousemodal";
-import { FiltersBar } from "@/components/warehouses/filtersbar";
 import { StatsCard } from "@/components/warehouses/statscard";
 import type { WarehouseData } from "@/components/warehouses/warehousetable";
 import { WarehouseTable } from "@/components/warehouses/warehousetable";
+import { SearchBar } from "@/components/layout/SearchBar";
+import { StatusFilter } from "@/components/layout/StatusFilter";
 
 import {
   getWarehousesRequest,
@@ -14,7 +15,7 @@ import {
 } from "@/lib/warehouses-api";
 
 import type { Warehouse } from "@/types/warehouses-types";
-import { MapPin, Warehouse as WarehouseIcon } from "lucide-react";
+import { MapPin, Plus, Warehouse as WarehouseIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -114,7 +115,7 @@ export default function CompanyWarehousesPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
           <StatsCard
             icon={WarehouseIcon}
             value={warehouses.length}
@@ -129,14 +130,39 @@ export default function CompanyWarehousesPage() {
           />
         </div>
 
-        <div className="mb-4">
-          <FiltersBar
-            searchValue={searchValue}
-            onSearchChange={setSearchValue}
-            filterValue={filterValue}
-            onFilterChange={setFilterValue}
-            onNewWarehouse={() => router.push("/company/new-warehouses")}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-start">
+          <SearchBar
+            value={searchValue}
+            onChange={setSearchValue}
+            placeholder="Buscar un almacén..."
           />
+          <div className="flex gap-3 sm:flex-none">
+            <StatusFilter
+              value={filterValue}
+              onChange={setFilterValue}
+              options={[
+                { label: "Todos los estados", value: "all" },
+                { label: "Activos", value: "active" },
+                { label: "Inactivos", value: "inactive" },
+              ]}
+            />
+            <button
+              onClick={() => router.push("/company/new-warehouses")}
+              className="inline-flex h-8 items-center gap-2 rounded-lg border border-primary-500 bg-primary-500 px-4 text-sm font-semibold text-background transition hover:opacity-90 cursor-pointer"
+            >
+              <Plus size={16} />
+              Nuevo almacén
+            </button>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <h2 className="text-base font-semibold md:text-lg" style={{ color: "var(--color-text-secondary)" }}>
+            Almacenes registrados
+          </h2>
+          <p className="mt-1 text-sm" style={{ color: "var(--color-text-muted)" }}>
+            Gestiona los almacenes de la empresa
+          </p>
         </div>
 
         <div className="bg-surface rounded-2xl border border-border overflow-hidden">
