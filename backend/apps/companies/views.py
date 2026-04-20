@@ -141,7 +141,39 @@ class CompanyViewSet(viewsets.ModelViewSet):
         actor_id = getattr(request.user, "id", None)
         company_id = kwargs.get("pk")
         try:
+            # Extraer 'active' del body para actualizar el usuario relacionado
+            user_active = request.data.pop("active", None)
+
             response = super().partial_update(request, *args, **kwargs)
+
+            if user_active is not None:
+                company = self.get_object()
+                user = company.users.first()
+                if user:
+                    new_status = bool(user_active)
+                    user.is_active = new_status
+                    user.save(update_fields=["is_active"])
+                    logger.info(
+                        "company | action=toggle_user_active | result=success "
+                        "| company_id={company_id} | target_user_id={target_user_id} "
+                        "| is_active={is_active} | actor_user_id={actor_id}",
+                        company_id=company_id,
+                        target_user_id=user.id,
+                        is_active=new_status,
+                        actor_id=actor_id,
+                    )
+                else:
+                    logger.warning(
+                        "company | action=toggle_user_active | result=no_user_found "
+                        "| company_id={company_id} | actor_user_id={actor_id}",
+                        company_id=company_id,
+                        actor_id=actor_id,
+                    )
+
+            # Refrescar datos del serializer para incluir user_active actualizado
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+
             logger.info(
                 "company | action=partial_update | result=success | company_id={company_id} "
                 "| actor_user_id={actor_id} | status_code=200",
@@ -149,7 +181,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
                 actor_id=actor_id,
             )
             return ApiResponse.success(
-                data=response.data,
+                data=serializer.data,
                 message="Empresa actualizada correctamente.",
                 status=response.status_code,
             )

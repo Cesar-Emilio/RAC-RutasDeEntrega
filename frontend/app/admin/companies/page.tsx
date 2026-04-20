@@ -15,7 +15,8 @@ type Company = {
   name: string;
   email: string;
   rfc: string;
-  active: boolean;
+  user_active: boolean | null;
+  user_email: string | null;
 };
 
 const companiesData: Company[] = [];
@@ -37,7 +38,7 @@ const columns: CrudColumn<Company>[] = [
     align: "left",
   },
   {
-    key: "active",
+    key: "user_active",
     label: "Estado",
     align: "left",
   },
@@ -68,6 +69,8 @@ export default function AdminCompaniesPage() {
       const data = await requestJson<Company[]>(`${API_BASE_URL}/api/companies/`, {
         method: "GET",
       });
+
+      console.log(data);
 
       setCompanies(data);
     } catch (error: unknown) {
@@ -123,8 +126,8 @@ export default function AdminCompaniesPage() {
 
       const matchesStatus =
         statusFilter === "all" ||
-        (statusFilter === "active" && company.active) ||
-        (statusFilter === "inactive" && !company.active);
+        (statusFilter === "active" && company.user_active) ||
+        (statusFilter === "inactive" && !company.user_active);
 
       return matchesSearch && matchesStatus;
     });
@@ -138,13 +141,13 @@ export default function AdminCompaniesPage() {
         `${API_BASE_URL}/api/companies/${company.id}/`,
         {
           method: "PATCH",
-          body: JSON.stringify({ active: !company.active }),
+          body: JSON.stringify({ active: !company.user_active }),
         }
       );
 
       addAlert(
         "success",
-        `Empresa "${company.name}" ${company.active ? "desactivada" : "activada"} correctamente`
+        `Empresa "${company.name}" ${company.user_active ? "desactivada" : "activada"} correctamente`
       );
 
       setReloadCompanies((prev) => prev + 1);
@@ -252,7 +255,7 @@ export default function AdminCompaniesPage() {
           description="Administra las empresas del sistema"
           items={[
             { id: 1, label: "Empresas totales", value: companies.length, icon: Building2, accentColor: "orange" },
-            { id: 2, label: "Activas", value: companies.filter((c) => c.active).length, icon: CheckCircle2, accentColor: "green" },
+            { id: 2, label: "Activas", value: companies.filter((c) => c.user_active).length, icon: CheckCircle2, accentColor: "green" },
           ]}
           compact
           hideHeader
@@ -305,7 +308,7 @@ export default function AdminCompaniesPage() {
           description={isLoading ? "Cargando empresas..." : "Gestiona las empresas del sistema"}
           items={filteredCompanies}
           columns={columns}
-          statusKey="active"
+          statusKey="user_active"
           editFields={[
             { name: "name", label: "Nombre", type: "text", required: true },
             { name: "rfc", label: "RFC", type: "text", required: true },
