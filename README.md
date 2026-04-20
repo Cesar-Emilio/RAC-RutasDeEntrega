@@ -243,6 +243,12 @@ Aplicar migraciones
 python manage.py migrate
 ```
 
+Para poder acceder al sistema es necesario crear un usuario administrador ejecutando:
+```
+
+python manage.py createsuperuser
+```
+
 Ejecutar servidor
 
 ```
