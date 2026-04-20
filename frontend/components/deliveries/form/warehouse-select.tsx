@@ -19,7 +19,6 @@ export const WarehouseSelect = ({
   onSelect,
 }: WarehouseSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  console.log("Almacenes llegando: ", warehouses)
 
   const selectedWarehouse = warehouses.find(
     (warehouse) => warehouse.id === selectedId

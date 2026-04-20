@@ -70,11 +70,8 @@ export default function AdminCompaniesPage() {
         method: "GET",
       });
 
-      console.log(data);
-
       setCompanies(data);
     } catch (error: unknown) {
-      console.error("Error fetching companies:", error);
       const msg = "Error al cargar las empresas. Intenta de nuevo más tarde.";
       setFetchError(msg);
       addAlert("error", msg);
@@ -152,7 +149,6 @@ export default function AdminCompaniesPage() {
 
       setReloadCompanies((prev) => prev + 1);
     } catch (error: unknown) {
-      console.error("Error toggling company status:", error);
       addAlert("error", "Error al cambiar el estado de la empresa");
     } finally {
       setActionLoadingId(null);
@@ -179,7 +175,6 @@ export default function AdminCompaniesPage() {
 
       setReloadCompanies((prev) => prev + 1);
     } catch (error: unknown) {
-      console.error("Error editing company:", error);
       addAlert("error", "Error al editar la empresa");
       throw error;
     }

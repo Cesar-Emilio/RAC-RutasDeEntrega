@@ -123,7 +123,6 @@ export function RegistrationForm({ token }: Readonly<RegistrationFormProps>) {
       }
       
       setError(errorMessage);
-      console.error("Registration error:", err);
     } finally {
       setLoading(false);
     }

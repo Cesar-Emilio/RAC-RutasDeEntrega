@@ -21,7 +21,6 @@ export function RouteMap({ warehouseName, details, origin }: RouteMapProps) {
   const [loadingRoute, setLoadingRoute] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  console.log("DETAILS:", details);
   const stops = useMemo(() => {
     const safeDetails = Array.isArray(details) ? details : [];
     const sorted = [...safeDetails].sort((a, b) => a.order_index - b.order_index);
@@ -49,7 +48,6 @@ export function RouteMap({ warehouseName, details, origin }: RouteMapProps) {
         const data = coords.length >= 2 ? await sendCoordinates(coords) : null;
         setRoute(data);
       } catch (err) {
-        console.error("Error fetching route", err);
         setRoute(null);
       } finally {
         setLoadingRoute(false);

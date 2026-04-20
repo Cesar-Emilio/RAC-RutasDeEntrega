@@ -67,14 +67,12 @@ export default function LoginPage() {
       addAlert("success", "Sesión iniciada correctamente");
       router.push("/");
     } catch (err) {
-      console.log(err)
       const maybeError = err as {
         errors?: { detail?: string | string[] };
         message?: string;
       };
       const detail = maybeError?.errors?.detail;
       let errorMsg: string;
-        console.log(detail)
       if (Array.isArray(detail) && detail.length > 0) {
         errorMsg = String(detail[0]);
       } else if (typeof detail === "string" && detail.trim().length > 0) {
