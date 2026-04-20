@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = ('id', 'name', 'email', 'rfc', 'active', 'created_at', 'updated_at')
+        fields = ('id', 'name', 'email', 'rfc', 'created_at', 'updated_at')
 
     def validate_rfc(self, value):
         try:

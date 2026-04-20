@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from config.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 def _serialize_user(user):
@@ -32,6 +35,12 @@ class LoginSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         user = self.user
         if not getattr(user, "is_active", True):
+            logger.warning(
+                "login | action=authenticate | result=rejected_inactive_user "
+                "| user_id={user_id} | email={email}",
+                user_id=getattr(user, "id", None),
+                email=getattr(user, "email", None),
+            )
             raise serializers.ValidationError("User is inactive.")
         data["user"] = _serialize_user(user)
         return data

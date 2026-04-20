@@ -427,6 +427,20 @@ class GoogleCallbackView(APIView):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
+        if not getattr(user, "is_active", False):
+            logger.warning(
+                "google_callback | action=authenticate | result=rejected_inactive_user "
+                "| user_id={user_id} | email={email} | ip={ip}",
+                user_id=user.id,
+                email=email,
+                ip=ip,
+            )
+            return ApiResponse.error(
+                message="La cuenta de usuario está desactivada.",
+                errors={"detail": "User account is inactive."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         refresh = RefreshToken.for_user(user)
 
         logger.info(

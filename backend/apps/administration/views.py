@@ -58,7 +58,7 @@ class DashboardSummaryView(APIView):
 		)
 
 		if role == "admin":
-			companies_qs = Company.objects.filter(active=True).annotate(
+			companies_qs = Company.objects.annotate(
 				warehousesCount=Count("warehouses", filter=Q(warehouses__active=True))
 			).order_by("-warehousesCount", "-created_at")
 			warehouses_qs = Warehouse.objects.filter(active=True).order_by("-created_at")

@@ -69,10 +69,6 @@ class CompanyViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Company.objects.all().order_by("-created_at")
         search = self.request.query_params.get("search", "").strip()
-        active = self.request.query_params.get("active")
-
-        if active in ["true", "false"]:
-            queryset = queryset.filter(active=(active == "true"))
 
         if search:
             queryset = queryset.filter(

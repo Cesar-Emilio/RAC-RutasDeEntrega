@@ -11,7 +11,6 @@ class Company(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     rfc = models.CharField(max_length=13, unique=True, validators=[rfc_validator])
-    active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
