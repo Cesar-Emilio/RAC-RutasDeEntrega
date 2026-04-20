@@ -19,6 +19,7 @@ export const WarehouseSelect = ({
   onSelect,
 }: WarehouseSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  console.log("Almacenes llegando: ", warehouses)
 
   const selectedWarehouse = warehouses.find(
     (warehouse) => warehouse.id === selectedId
@@ -35,8 +36,8 @@ export const WarehouseSelect = ({
       <div className="relative">
         <button
           type="button"
+          disabled={loading || !!error || warehouses.length === 0}
           onClick={() => setIsOpen(!isOpen)}
-          disabled={loading || !!error}
           className="
             w-full flex items-center justify-between
             px-4 py-2 rounded-lg
@@ -53,7 +54,7 @@ export const WarehouseSelect = ({
               <Loader2 className="w-5 h-5 animate-spin" />
               Cargando almacenes...
             </span>
-          ) : (
+          ) : warehouses.length > 0 ? (
             <span
               className={
                 selectedWarehouse
@@ -63,7 +64,13 @@ export const WarehouseSelect = ({
             >
               {selectedWarehouse?.name ?? "Seleccionar almacén..."}
             </span>
-          )}
+          ) : 
+            <span
+              className="text-text-secondary"
+            >
+              Aun no hay almacenes registrados
+            </span>
+          }
 
           <ChevronDown
             className={`w-4 h-4 transition-transform ${
@@ -76,7 +83,7 @@ export const WarehouseSelect = ({
           <p className="mt-2 text-xs text-error">{error}</p>
         )}
 
-        {isOpen && !loading && (
+        {isOpen && !loading && warehouses.length > 0 && (
           <div className="absolute z-10 mt-2 w-full rounded-lg border border-border bg-surface py-1 shadow-lg">
             {warehouses.map((warehouse) => (
               <button
