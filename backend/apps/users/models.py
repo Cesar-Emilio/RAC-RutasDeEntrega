@@ -33,8 +33,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('company', 'Company'),
     ]
 
-    # campos principales
-    # omitimos id
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
@@ -89,5 +87,10 @@ class User(AbstractBaseUser, PermissionsMixin):
                     models.Q(role='company', company__isnull=False)
                 ),
                 name='user_role_company_consistency'
+            ),
+            models.UniqueConstraint(
+                fields=["company"],
+                condition=models.Q(role="company", is_active=True),
+                name="unique_active_user_per_company",
             ),
         ]

@@ -18,6 +18,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from utils.response_helper import ApiResponse
 from config.logging_utils import get_logger, get_client_ip
+from apps.users.models import User
 
 logger = get_logger(__name__)
 
@@ -222,7 +223,23 @@ class InviteCompanyView(APIView):
                 errors={"detail": "Email is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
+            
+        # Revisar que el usuario no tenga cuenta activa
+        existing_user = User.objects.filter(email__iexact=email).first()
+        if existing_user:
+            logger.warning(
+                "invite | action=send_invitation | result=user_already_active "
+                "| email={email} | actor_user_id={actor_id} | ip={ip}",
+                email=email,
+                actor_id=actor_id,
+                ip=ip,
+            )
+            return ApiResponse.error(
+                message="Ya existe una cuenta activa con ese correo electrónico.",
+                errors={"detail": "El correo ya está registrado en el sistema."},
+                status=status.HTTP_409_CONFLICT,
+            )
+ 
         try:
             # Generar el token con una fecha de expiración de 24 horas
             # El token no se loga para evitar exponer el enlace de invitación

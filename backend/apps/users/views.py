@@ -14,7 +14,7 @@ from rest_framework import status
 from .models import User
 from apps.companies.models import Company
 from utils.response_helper import ApiResponse
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from config.logging_utils import get_logger, get_client_ip
 
 User = get_user_model()
@@ -148,97 +148,112 @@ class CompleteRegisterView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Extraer datos del cuerpo de la solicitud
         email = decoded.get('email')
         name = request.data.get('name')
         password = request.data.get('password')
         role = request.data.get('role', 'company')
         company_name = request.data.get('company_name')
         rfc = request.data.get('rfc')
-
-        if not all([name, password, company_name, rfc]):
-            missing = [f for f, v in {'name': name, 'password': password, 'company_name': company_name, 'rfc': rfc}.items() if not v]
+        
+        missing = [f for f, v in {
+            "name": name, "password": password,
+            "company_name": company_name, "rfc": rfc,
+        }.items() if not v]
+        if missing:
             logger.warning(
                 "complete_register | action=validate_fields | result=missing_fields "
-                "| email={email} | missing_fields={missing} | ip={ip}",
-                email=email,
-                missing=missing,
-                ip=ip,
+                "| email={email} | missing={missing} | ip={ip}",
+                email=email, missing=missing, ip=ip,
             )
             return ApiResponse.error(
                 message="Faltan campos requeridos.",
-                errors={"detail": "Se requieren los campos: name, password, company_name, rfc."},
+                errors={"detail": f"Campos faltantes: {', '.join(missing)}"},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+            
+        if User.objects.filter(email__iexact=email, is_active=True).exists():
+            logger.warning(
+                "complete_register | action=validate_email | result=already_registered "
+                "| email={email} | ip={ip}",
+                email=email, ip=ip,
+            )
+            return ApiResponse.error(
+                message="Ya existe una cuenta activa con ese correo.",
+                errors={"detail": "Este correo ya está registrado."},
+                status=status.HTTP_409_CONFLICT,
+            )
+            
+        if Company.objects.filter(rfc=rfc).exists():
+            logger.warning(
+                "complete_register | action=validate_rfc | result=rfc_taken "
+                "| rfc={rfc} | email={email} | ip={ip}",
+                rfc=rfc, email=email, ip=ip,
+            )
+            return ApiResponse.error(
+                message="El RFC ya está registrado en el sistema.",
+                errors={"detail": "Ya existe una empresa con ese RFC."},
+                status=status.HTTP_409_CONFLICT,
             )
 
         try:
-            company, created = Company.objects.get_or_create(
-                rfc=rfc.upper(),
-                defaults={'name': company_name, 'email': email}
-            )
-
-            if created:
-                logger.info(
-                    "complete_register | action=create_company | result=created "
-                    "| rfc={rfc} | company_name={company_name} | email={email}",
-                    rfc=rfc.upper(),
-                    company_name=company_name,
+            with transaction.atomic():
+                company = Company.objects.create(
+                    name=company_name,
+                    rfc=rfc,
                     email=email,
                 )
-            else:
-                logger.info(
-                    "complete_register | action=create_company | result=existing "
-                    "| rfc={rfc} | company_name={company_name} | email={email}",
-                    rfc=rfc.upper(),
-                    company_name=company_name,
+                user = User.objects.create_user(
                     email=email,
+                    name=name,
+                    password=password,
+                    role=role,
+                    company=company,
+                    is_active=True,
                 )
-
-            user = User.objects.create_user(
-                email=email,
-                name=name,
-                password=password,
-                role=role,
-                company=company,
-                is_active=True
-            )
 
             logger.info(
                 "complete_register | action=create_user | result=success | user_id={user_id} "
-                "| email={email} | role={role} | company_id={company_id} | ip={ip} | status_code=201",
-                user_id=user.id,
-                email=email,
-                role=role,
-                company_id=company.id,
-                ip=ip,
+                "| email={email} | role={role} | company_id={company_id} | ip={ip}",
+                user_id=user.id, email=email, role=role, company_id=company.id, ip=ip,
             )
-
             return ApiResponse.created(
                 message="Usuario registrado correctamente.",
                 data={"user": {"id": user.id, "email": user.email, "name": user.name}},
             )
+
         except IntegrityError as e:
+            # Salvaguarda: si dos requests llegan simultáneamente y pasan las
+            # validaciones al mismo tiempo, la constraint de BD lo detiene aquí.
             error_str = str(e).lower()
-            if "email" in error_str:
-                detail = "Ya existe un usuario registrado con ese correo electrónico."
-            elif "rfc" in error_str:
-                detail = "Ya existe una empresa registrada con ese RFC."
+            if "rfc" in error_str:
+                detail = "Ya existe una empresa con ese RFC."
+            elif "email" in error_str:
+                detail = "Ya existe una cuenta con ese correo."
+            elif "unique_active_user_per_company" in error_str:
+                detail = "Esta empresa ya tiene un usuario registrado."
             else:
-                detail = "Conflicto en la base de datos. Verifica los datos enviados."
+                detail = "Conflicto en la base de datos."
             logger.warning(
                 "complete_register | action=create_user | result=integrity_error "
                 "| email={email} | detail={detail} | ip={ip}",
-                email=email,
-                detail=detail,
-                ip=ip,
+                email=email, detail=detail, ip=ip,
             )
             return ApiResponse.error(
                 message="Error de registro.",
                 errors={"detail": detail},
                 status=status.HTTP_409_CONFLICT,
             )
-
         except Exception as e:
+            logger.error(
+                "complete_register | action=create_user | result=unexpected_error "
+                "| email={email} | error={error} | ip={ip}",
+                email=email, error=str(e), ip=ip,
+            )
+            return ApiResponse.error(
+                message="Error al registrar usuario.",
+                errors={"detail": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
             logger.error(
                 "complete_register | action=create_user | result=unexpected_error "
                 "| email={email} | error={error} | ip={ip}",
