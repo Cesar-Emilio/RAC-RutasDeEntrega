@@ -1,4 +1,5 @@
 import { ChevronRight, Package } from "lucide-react";
+import Link from "next/link";
 import type { RefObject } from "react";
 import { HorizontalCardScroller } from "./HorizontalCardScroller";
 
@@ -8,6 +9,7 @@ export type CompanyRouteCard = {
   date: string;
   location: string;
   status: string;
+  href?: string;
 };
 
 type CompanyRoutesCardsProps = {
@@ -47,8 +49,9 @@ export function CompanyRoutesCards({
       linkHref={linkHref}
       linkLabel={linkLabel}
       renderCard={(route) => (
-        <div
+        <Link
           key={route.id}
+          href={route.href ?? `/company/deliveries/${route.id}`}
           className="w-42 flex-none cursor-pointer rounded-xl border p-3 transition-all duration-200 hover:border-primary-500/50 md:w-44 md:p-4"
           style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-divider)" }}
         >
@@ -72,7 +75,7 @@ export function CompanyRoutesCards({
           <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
             {route.date} | {route.location}
           </p>
-        </div>
+        </Link>
       )}
     />
   );

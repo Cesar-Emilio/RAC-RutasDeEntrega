@@ -1,6 +1,7 @@
 import time
 
 from django.contrib.auth import get_user_model
+from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -57,7 +58,9 @@ class DashboardSummaryView(APIView):
 		)
 
 		if role == "admin":
-			companies_qs = Company.objects.filter(active=True).order_by("-created_at")
+			companies_qs = Company.objects.filter(active=True).annotate(
+				warehousesCount=Count("warehouses", filter=Q(warehouses__active=True))
+			).order_by("-warehousesCount", "-created_at")
 			warehouses_qs = Warehouse.objects.filter(active=True).order_by("-created_at")
 			users_qs = User.objects.filter(is_active=True).order_by("-created_at")
 
@@ -75,6 +78,15 @@ class DashboardSummaryView(APIView):
 					"location": _warehouse_location(warehouse),
 				}
 				for warehouse in warehouses_qs[:8]
+			]
+
+			companies = [
+				{
+					"id": company.id,
+					"name": company.name,
+					"warehousesCount": company.warehousesCount,
+				}
+				for company in companies_qs[:8]
 			]
 
 			recent_activity = []
@@ -142,6 +154,7 @@ class DashboardSummaryView(APIView):
 				message="Dashboard summary retrieved.",
 				data={
 					"stats": stats,
+					"companies": companies,
 					"warehouses": warehouses,
 					"recentActivity": recent_activity,
 				},
@@ -199,6 +212,7 @@ class DashboardSummaryView(APIView):
 				message="Dashboard summary retrieved.",
 				data={
 					"stats": stats,
+					"companies": [],
 					"warehouses": warehouses,
 					"recentActivity": recent_activity,
 				},

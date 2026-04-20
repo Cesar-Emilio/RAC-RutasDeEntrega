@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft } from "lucide-react";
 import { ContentShell } from "@/components/layout/ContentShell";
 import { DeliveryPointsList } from "@/components/deliveries/delivery-points-list";
 import { RouteMap } from "@/components/deliveries/route-map";
@@ -7,7 +8,7 @@ import { RouteMetrics } from "@/components/deliveries/route-metrics";
 import { RouteStatusAlert } from "@/components/deliveries/route-status-alert";
 import { getRouteByIdRequest } from "@/lib/routes-api";
 import { RouteDetail } from "@/types/routes-types";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAlert } from "@/components/layout/AlertProvider";
 
@@ -26,6 +27,7 @@ function formatDate(dateString: string): string {
 export default function CreateRoutePage() {
     const params = useParams();
     const id = params.id as string;
+  const router = useRouter();
     const { addAlert } = useAlert();
     
     const [route, setRoute] = useState<RouteDetail | null>(null);
@@ -90,14 +92,24 @@ export default function CreateRoutePage() {
       breadcrumbs={["Empresa", "Entregas"]}
     >
         <div className="flex-1 overflow-y-auto">
-            
-          <div>
-            <h2 className="text-2xl font-bold text-text-primary">
-              Ruta de entrega {route.id}
-            </h2>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-bold text-text-primary">
+                Ruta de entrega {route.id}
+              </h2>
             <p className="text-sm text-text-secondary mt-1">
               Calculada el {formattedDate} desde {route.warehouse_name}, CDMX
             </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-text-secondary transition hover:border-primary-500/50 hover:text-primary-400"
+              aria-label="Volver al historial de entregas"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
           </div>
 
           <RouteStatusAlert status={route.status} />

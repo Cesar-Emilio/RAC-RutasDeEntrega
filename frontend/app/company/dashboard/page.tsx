@@ -116,6 +116,7 @@ export default function CompanyDashboardPage() {
     date: formatRouteDate(route.created_at),
     location: route.warehouse_name,
     status: route.status,
+    href: `/company/deliveries/${route.id}`,
   });
 
   const skeletonActivityRows = useMemo<WarehouseActivityRow[]>(
@@ -343,7 +344,7 @@ export default function CompanyDashboardPage() {
                         Total rutas
                       </p>
                       <p className="mt-2 text-3xl font-semibold leading-none" style={{ color: "var(--color-text-secondary)" }}>
-                        {isLoadingRoutes ? "--" : routes.length}
+                        {isLoadingRoutes ? "--" : deliveryRows.length}
                       </p>
                       <p className="mt-2 text-xs" style={{ color: "var(--color-text-muted)" }}>
                         Estado consolidado de las rutas registradas

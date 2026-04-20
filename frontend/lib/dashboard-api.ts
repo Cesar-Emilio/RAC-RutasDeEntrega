@@ -7,6 +7,12 @@ export type DashboardStat = {
   value: number;
 };
 
+export type DashboardCompany = {
+  id: number;
+  name: string;
+  warehousesCount: number;
+};
+
 export type DashboardWarehouse = {
   id: number;
   name: string;
@@ -24,6 +30,7 @@ export type DashboardActivity = {
 
 export type DashboardSummary = {
   stats: DashboardStat[];
+  companies: DashboardCompany[];
   warehouses: DashboardWarehouse[];
   recentActivity: DashboardActivity[];
 };

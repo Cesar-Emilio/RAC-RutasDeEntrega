@@ -4,40 +4,40 @@ import { useEffect, useRef, useState } from "react";
 import { Building2, Route, Users, Warehouse } from "lucide-react";
 import { ContentShell } from "@/components/layout/ContentShell";
 import { CardStatistics } from "@/components/layout/CardStatistics";
-import { WarehouseCards } from "@/components/layout/WarehouseCards";
+import { HorizontalCardScroller } from "@/components/layout/HorizontalCardScroller";
 import { TableHistory } from "@/components/layout/TableHistory";
 import {
   getDashboardSummary,
+  type DashboardCompany,
   type DashboardActivity,
   type DashboardStat,
-  type DashboardWarehouse,
 } from "@/lib/dashboard-api";
 
 export default function DashboardAdminPage() {
-  const warehousesScrollRef = useRef<HTMLDivElement>(null);
-  const [warehousesScrollProgress, setWarehousesScrollProgress] = useState(0);
+  const companiesScrollRef = useRef<HTMLDivElement>(null);
+  const [companiesScrollProgress, setCompaniesScrollProgress] = useState(0);
   const [stats, setStats] = useState<DashboardStat[]>([]);
-  const [warehouses, setWarehouses] = useState<DashboardWarehouse[]>([]);
+  const [companies, setCompanies] = useState<DashboardCompany[]>([]);
   const [recentActivity, setRecentActivity] = useState<DashboardActivity[]>([]);
   const [isLoadingSummary, setIsLoadingSummary] = useState(true);
 
-  const handleWarehousesScroll = () => {
-    if (!warehousesScrollRef.current) {
+  const handleCompaniesScroll = () => {
+    if (!companiesScrollRef.current) {
       return;
     }
 
-    const { scrollLeft, scrollWidth, clientWidth } = warehousesScrollRef.current;
+    const { scrollLeft, scrollWidth, clientWidth } = companiesScrollRef.current;
     const maxScroll = scrollWidth - clientWidth;
     const progress = maxScroll > 0 ? (scrollLeft / maxScroll) * 100 : 0;
-    setWarehousesScrollProgress(progress);
+    setCompaniesScrollProgress(progress);
   };
 
   useEffect(() => {
-    const warehousesEl = warehousesScrollRef.current;
-    warehousesEl?.addEventListener("scroll", handleWarehousesScroll);
+    const companiesEl = companiesScrollRef.current;
+    companiesEl?.addEventListener("scroll", handleCompaniesScroll);
 
     return () => {
-      warehousesEl?.removeEventListener("scroll", handleWarehousesScroll);
+      companiesEl?.removeEventListener("scroll", handleCompaniesScroll);
     };
   }, []);
 
@@ -75,7 +75,7 @@ export default function DashboardAdminPage() {
         }
 
         setStats(summary.stats ?? []);
-        setWarehouses(summary.warehouses ?? []);
+        setCompanies(summary.companies ?? []);
         setRecentActivity(summary.recentActivity ?? []);
       } catch {
         if (!isMounted) {
@@ -83,7 +83,7 @@ export default function DashboardAdminPage() {
         }
 
         setStats([]);
-        setWarehouses([]);
+        setCompanies([]);
         setRecentActivity([]);
       } finally {
         if (isMounted) {
@@ -114,15 +114,48 @@ export default function DashboardAdminPage() {
             isLoading={isLoadingSummary}
           />
 
-          <WarehouseCards
-            title="Almacenes"
-            description={`${warehouses.length} almacenes activos`}
-            items={warehouses}
+          <HorizontalCardScroller
+            title="Empresas"
+            description={`${companies.length} empresas activas`}
+            items={companies}
             isLoading={isLoadingSummary}
-            scrollRef={warehousesScrollRef}
-            scrollProgress={warehousesScrollProgress}
+            loadingText="Cargando empresas..."
+            emptyText="Aun no hay empresas registradas."
+            scrollRef={companiesScrollRef}
+            scrollProgress={companiesScrollProgress}
             linkHref="/admin/companies"
-            linkLabel="Administrar almacenes"
+            linkLabel="Administrar empresas"
+            renderCard={(company) => (
+              <div
+                key={company.id}
+                className="group w-44 flex-none cursor-pointer overflow-hidden rounded-2xl border shadow-[0_10px_24px_rgba(0,0,0,0.14)] transition-all duration-200 hover:-translate-y-0.5 md:w-48"
+                style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-divider)" }}
+              >
+                <div className="h-1 w-full" style={{ backgroundColor: "var(--color-primary-500)" }} />
+
+                <div className="flex flex-col items-center gap-4 px-4 py-5 md:px-5 md:py-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border" style={{ borderColor: "var(--color-divider)" }}>
+                    <Building2 size={22} style={{ color: "var(--color-primary-500)" }} />
+                  </div>
+
+                  <div className="text-center">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em]" style={{ color: "var(--color-text-muted)" }}>
+                      Empresa
+                    </p>
+                    <h3 className="mt-2 text-sm font-semibold leading-tight tracking-[0.02em] md:text-[15px]" style={{ color: "var(--color-text-secondary)" }}>
+                      {company.name}
+                    </h3>
+                  </div>
+
+                  <div className="flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-center" style={{ borderColor: "var(--color-divider)" }}>
+                    <Warehouse size={12} style={{ color: "var(--color-primary-500)" }} />
+                    <p className="text-xs leading-snug" style={{ color: "var(--color-text-muted)" }}>
+                      {company.warehousesCount} {company.warehousesCount === 1 ? "almacén" : "almacenes"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           />
 
           <TableHistory
