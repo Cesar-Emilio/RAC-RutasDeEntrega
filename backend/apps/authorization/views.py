@@ -20,7 +20,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 
 from .permissions import IsActiveUser
-from .serializers import LoginSerializer, MeSerializer, _serialize_user
+from .serializers import LoginSerializer, MeSerializer, _serialize_user, _validate_user_login_access
 from .throttles import LoginRateThrottle
 from utils.response_helper import ApiResponse
 from config.logging_utils import get_logger, get_client_ip
@@ -426,6 +426,20 @@ class GoogleCallbackView(APIView):
                     errors={"detail": "Account does not exist."},
                     status=status.HTTP_404_NOT_FOUND,
                 )
+
+        try:
+            _validate_user_login_access(user)
+        except ValidationError as exc:
+            logger.warning(
+                "google_callback | action=authenticate | result=blocked_user | user_id={user_id} | ip={ip}",
+                user_id=getattr(user, "id", None),
+                ip=ip,
+            )
+            return ApiResponse.error(
+                message="Login failed.",
+                errors={"detail": exc.detail},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         refresh = RefreshToken.for_user(user)
 

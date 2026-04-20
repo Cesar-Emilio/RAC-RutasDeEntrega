@@ -5,6 +5,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from apps.companies.models import Company
 from apps.users.models import User
 
 
@@ -46,3 +47,32 @@ class LoginSecurityTests(APITestCase):
 		self.assertIn("access", data)
 		self.assertIn("refresh", data)
 		self.assertEqual(data.get("user", {}).get("email"), self.user.email)
+
+	def test_login_rejects_inactive_company_user(self):
+		company = Company.objects.create(
+			name="Inactive Co",
+			email="inactive-company@example.com",
+			rfc="ABC123456XYZ",
+			active=False,
+		)
+		company_user = User.objects.create_user(
+			email="company-user@example.com",
+			password=self.password,
+			name="Company User",
+			role="company",
+			company=company,
+			is_active=True,
+		)
+
+		response = self.client.post(
+			self.url,
+			data={
+				"email": company_user.email,
+				"password": self.password,
+			},
+			format="json",
+		)
+
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+		detail = response.data.get("errors", {}).get("detail", "")
+		self.assertIn("Company is inactive", str(detail))
