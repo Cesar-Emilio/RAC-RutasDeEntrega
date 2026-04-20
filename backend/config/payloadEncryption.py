@@ -35,8 +35,8 @@ class PayloadEncryptionMiddleware:
             return JsonResponse(
                 {
                     "success": False,
-                    "message": "Invalid JSON body.",
-                    "errors": {"detail": "Malformed encrypted request payload."},
+                    "message": "Cuerpo JSON inválido.",
+                    "errors": {"detail": "El payload cifrado de la petición es inválido."},
                 },
                 status=400,
             )
@@ -46,8 +46,8 @@ class PayloadEncryptionMiddleware:
             return JsonResponse(
                 {
                     "success": False,
-                    "message": "Invalid encrypted payload.",
-                    "errors": {"detail": "Encrypted payload must be a base64 string."},
+                    "message": "Payload cifrado inválido.",
+                    "errors": {"detail": "El payload cifrado debe ser una cadena base64."},
                 },
                 status=400,
             )
@@ -65,8 +65,8 @@ class PayloadEncryptionMiddleware:
             return JsonResponse(
                 {
                     "success": False,
-                    "message": "Unable to decrypt payload.",
-                    "errors": {"detail": "Encrypted payload is invalid."},
+                    "message": "No se pudo descifrar el payload.",
+                    "errors": {"detail": "El payload cifrado es inválido."},
                 },
                 status=400,
             )

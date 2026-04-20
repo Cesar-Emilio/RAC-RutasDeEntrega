@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useRoleRedirect } from "@/components/auth/useRoleRedirect";
@@ -13,6 +13,35 @@ type FormState = {
   password: string;
   remember: boolean;
 };
+
+function extractErrorMessage(value: unknown): string | null {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const nested = extractErrorMessage(item);
+      if (nested) {
+        return nested;
+      }
+    }
+    return null;
+  }
+
+  if (value && typeof value === "object") {
+    const objectValues = Object.values(value as Record<string, unknown>);
+    for (const item of objectValues) {
+      const nested = extractErrorMessage(item);
+      if (nested) {
+        return nested;
+      }
+    }
+  }
+
+  return null;
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,6 +56,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<LoginFormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitLockRef = useRef(false);
 
   const onChange = (field: keyof FormState) =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,6 +72,11 @@ export default function LoginPage() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (submitLockRef.current) {
+      return;
+    }
+
     setError(null);
     setFieldErrors({});
 
@@ -60,6 +95,7 @@ export default function LoginPage() {
       return;
     }
 
+    submitLockRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -68,26 +104,29 @@ export default function LoginPage() {
       router.push("/");
     } catch (err) {
       const maybeError = err as {
-        errors?: { detail?: string | string[] };
-        message?: string;
+        errors?: unknown;
+        message?: unknown;
       };
-      const detail = maybeError?.errors?.detail;
-      let errorMsg: string;
-      if (Array.isArray(detail) && detail.length > 0) {
-        errorMsg = String(detail[0]);
-      } else if (typeof detail === "string" && detail.trim().length > 0) {
-        errorMsg = detail;
-      } else {
-        errorMsg = maybeError?.message || "Credenciales inválidas o cuenta inactiva.";
-      }
+
+      const errorMsg =
+        extractErrorMessage(maybeError?.errors) ||
+        extractErrorMessage(maybeError?.message) ||
+        "Credenciales inválidas o cuenta inactiva.";
+
       setError(errorMsg);
       addAlert("error", errorMsg);
     } finally {
       setIsSubmitting(false);
+      submitLockRef.current = false;
     }
   };
 
   const onGoogleLogin = () => {
+    if (submitLockRef.current) {
+      return;
+    }
+    submitLockRef.current = true;
+    setIsSubmitting(true);
     globalThis.location.href = `${API_BASE_URL}/api/auth/google/login/`;
   };
 
@@ -116,6 +155,7 @@ export default function LoginPage() {
                   type="email"
                   value={form.email}
                   onChange={onChange("email")}
+                  disabled={isSubmitting}
                   className={`mt-2 w-full rounded-lg border bg-surface px-4 py-2 text-sm text-primary outline-none transition focus:ring-2 ${
                     fieldErrors.email
                       ? "border-red-500 ring-red-500/30 focus:ring-red-500/30"
@@ -133,6 +173,7 @@ export default function LoginPage() {
                   type="password"
                   value={form.password}
                   onChange={onChange("password")}
+                  disabled={isSubmitting}
                   className={`mt-2 w-full rounded-lg border bg-surface px-4 py-2 text-sm text-primary outline-none transition focus:ring-2 ${
                     fieldErrors.password
                       ? "border-red-500 ring-red-500/30 focus:ring-red-500/30"
@@ -149,6 +190,7 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={form.remember}
                   onChange={onChange("remember")}
+                  disabled={isSubmitting}
                   className="h-3.5 w-3.5 rounded border border-border bg-surface cursor-pointer"
                 />
                 <span>Mantener la sesion iniciada</span>
@@ -172,7 +214,8 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={onGoogleLogin}
-              className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-divider bg-border px-4 py-2 text-sm text-primary"
+              disabled={isSubmitting}
+              className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-divider bg-border px-4 py-2 text-sm text-primary disabled:cursor-not-allowed disabled:opacity-70"
             >
               <svg
                 aria-hidden="true"

@@ -219,7 +219,7 @@ class InviteCompanyView(APIView):
             )
             return ApiResponse.error(
                 message="El campo email es requerido.",
-                errors={"detail": "Email is required."},
+                errors={"detail": "El correo electrónico es obligatorio."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -268,7 +268,7 @@ class InviteCompanyView(APIView):
             )
             return ApiResponse.error(
                 message="No se pudo enviar la invitación.",
-                errors={"detail": "Unable to send invitation."},
+                errors={"detail": "No fue posible enviar la invitación."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

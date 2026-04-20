@@ -11,7 +11,7 @@ class ApiResponseRenderer(JSONRenderer):
 
         formatted = {
             "success": success,
-            "message": "Success" if success else "Error",
+            "message": "Éxito" if success else "Error",
             "data": data if success else None,
             "errors": data if not success else None,
         }

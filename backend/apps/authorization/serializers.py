@@ -20,12 +20,12 @@ def _serialize_user(user):
 
 def _validate_user_login_access(user):
     if not getattr(user, "is_active", True):
-        raise serializers.ValidationError("User is inactive.")
+        raise serializers.ValidationError("Usuario inactivo.")
 
     is_company_user = getattr(user, "role", None) == "company"
     company = getattr(user, "company", None)
     if is_company_user and company is not None and not getattr(company, "active", True):
-        raise serializers.ValidationError("Company is inactive.")
+        raise serializers.ValidationError("Empresa inactiva.")
 
 
 class LoginSerializer(TokenObtainPairSerializer):

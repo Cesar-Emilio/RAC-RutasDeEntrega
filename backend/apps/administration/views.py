@@ -151,7 +151,7 @@ class DashboardSummaryView(APIView):
 			)
 
 			return ApiResponse.success(
-				message="Dashboard summary retrieved.",
+				message="Resumen del dashboard obtenido.",
 				data={
 					"stats": stats,
 					"companies": companies,
@@ -209,7 +209,7 @@ class DashboardSummaryView(APIView):
 			)
 
 			return ApiResponse.success(
-				message="Dashboard summary retrieved.",
+				message="Resumen del dashboard obtenido.",
 				data={
 					"stats": stats,
 					"companies": [],
@@ -225,7 +225,7 @@ class DashboardSummaryView(APIView):
 			**ctx,
 		)
 		return ApiResponse.error(
-			message="Unsupported role.",
-			errors={"detail": "User role not supported for dashboard summary."},
+			message="Rol no soportado.",
+			errors={"detail": "El rol del usuario no está soportado para el resumen del dashboard."},
 			status=403,
 		)

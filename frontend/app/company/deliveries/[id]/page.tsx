@@ -47,7 +47,7 @@ export default function CreateRoutePage() {
         setRoute(data);
         } catch (err: unknown) {
           addAlert("error", "Error al cargar la ruta");
-          const message = err instanceof Error ? err.message : "Error loading route";
+          const message = err instanceof Error ? err.message : "Error al cargar la ruta";
           setError(message);
         } finally {
         setLoading(false);
@@ -55,7 +55,7 @@ export default function CreateRoutePage() {
     };
 
     fetchRoute();
-    }, [id]);
+    }, [id, addAlert]);
 
     if (loading) {
       return (

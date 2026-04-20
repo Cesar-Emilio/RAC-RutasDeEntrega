@@ -51,8 +51,8 @@ class LoginView(APIView):
                 ip=ip,
             )
             return ApiResponse.error(
-                message="Invalid credentials.",
-                errors={"detail": "Invalid credentials."},
+                message="Credenciales inválidas.",
+                errors={"detail": "Credenciales inválidas."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         except AuthenticationFailed as exc:
@@ -63,8 +63,8 @@ class LoginView(APIView):
                 detail=str(exc.detail),
             )
             return ApiResponse.error(
-                message="Invalid credentials.",
-                errors={"detail": exc.detail},
+                message="Credenciales inválidas.",
+                errors={"detail": "Credenciales inválidas."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         except ValidationError as exc:
@@ -74,7 +74,7 @@ class LoginView(APIView):
                 ip=ip,
             )
             return ApiResponse.error(
-                message="Login failed.",
+                message="No se pudo iniciar sesión.",
                 errors={"detail": exc.detail},
             )
         except Exception as exc:
@@ -85,8 +85,8 @@ class LoginView(APIView):
                 error=str(exc),
             )
             return ApiResponse.error(
-                message="Login failed.",
-                errors={"detail": "Unable to process login."},
+                message="No se pudo iniciar sesión.",
+                errors={"detail": "No fue posible procesar el inicio de sesión."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -101,7 +101,7 @@ class LoginView(APIView):
         )
 
         return ApiResponse.success(
-            message="Login successful.",
+            message="Inicio de sesión exitoso.",
             data=user_data,
         )
 
@@ -124,8 +124,8 @@ class RefreshView(TokenRefreshView):
                 ip=ip,
             )
             return ApiResponse.error(
-                message="Invalid refresh token.",
-                errors={"detail": "Invalid refresh token."},
+                message="Token de refresco inválido.",
+                errors={"detail": "Token de refresco inválido."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
@@ -134,7 +134,7 @@ class RefreshView(TokenRefreshView):
             ip=ip,
         )
         return ApiResponse.success(
-            message="Token refreshed.",
+            message="Token renovado.",
             data=response.data,
         )
 
@@ -153,7 +153,7 @@ class MeView(APIView):
         )
         serializer = MeSerializer(instance=request.user)
         return ApiResponse.success(
-            message="User profile retrieved.",
+            message="Perfil de usuario obtenido.",
             data=serializer.data,
             status=status.HTTP_200_OK,
         )
@@ -185,9 +185,9 @@ class LogoutView(APIView):
                         ip=get_client_ip(request),
                     )
                     return ApiResponse.error(
-                        message="Refresh token does not belong to the authenticated user.",
+                        message="El token de refresco no pertenece al usuario autenticado.",
                         errors={
-                            "detail": "Refresh token does not belong to the authenticated user."
+                            "detail": "El token de refresco no pertenece al usuario autenticado."
                         },
                         status=status.HTTP_403_FORBIDDEN,
                     )
@@ -201,8 +201,8 @@ class LogoutView(APIView):
                     ip=get_client_ip(request),
                 )
                 return ApiResponse.error(
-                    message="Invalid refresh token.",
-                    errors={"detail": "Invalid refresh token."},
+                    message="Token de refresco inválido.",
+                    errors={"detail": "Token de refresco inválido."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -212,7 +212,7 @@ class LogoutView(APIView):
             ip=get_client_ip(request),
         )
         return ApiResponse.success(
-            message="Logout successful.",
+            message="Sesión cerrada correctamente.",
             data=None,
             status=status.HTTP_200_OK,
         )
@@ -235,8 +235,8 @@ class GoogleLoginView(APIView):
                 ip=get_client_ip(request),
             )
             return ApiResponse.error(
-                message="Google OAuth not configured.",
-                errors={"detail": "Missing Google OAuth configuration."},
+                message="Google OAuth no está configurado.",
+                errors={"detail": "Falta configuración de Google OAuth."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -298,8 +298,8 @@ class GoogleCallbackView(APIView):
                 ip=ip,
             )
             return ApiResponse.error(
-                message="Missing authorization code.",
-                errors={"detail": "Missing code."},
+                message="Falta el código de autorización.",
+                errors={"detail": "Falta el código de autorización."},
             )
 
         if not state or state != expected_state:
@@ -309,8 +309,8 @@ class GoogleCallbackView(APIView):
                 ip=ip,
             )
             return ApiResponse.error(
-                message="Invalid Google OAuth state.",
-                errors={"detail": "Invalid state."},
+                message="Estado de Google OAuth inválido.",
+                errors={"detail": "Estado inválido."},
             )
 
         request.session.pop("google_oauth_state", None)
@@ -325,8 +325,8 @@ class GoogleCallbackView(APIView):
                 ip=ip,
             )
             return ApiResponse.error(
-                message="Google OAuth not configured.",
-                errors={"detail": "Missing Google OAuth configuration."},
+                message="Google OAuth no está configurado.",
+                errors={"detail": "Falta configuración de Google OAuth."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -349,8 +349,8 @@ class GoogleCallbackView(APIView):
                 http_status=token_response.status_code,
             )
             return ApiResponse.error(
-                message="Google authentication failed.",
-                errors={"detail": "Unable to complete Google authentication."},
+                message="Falló la autenticación con Google.",
+                errors={"detail": "No fue posible completar la autenticación con Google."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -363,8 +363,8 @@ class GoogleCallbackView(APIView):
                 ip=ip,
             )
             return ApiResponse.error(
-                message="Google token missing.",
-                errors={"detail": "Missing id_token."},
+                message="Falta el token de Google.",
+                errors={"detail": "Falta id_token."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -382,8 +382,8 @@ class GoogleCallbackView(APIView):
                 error=str(exc),
             )
             return ApiResponse.error(
-                message="Google token invalid.",
-                errors={"detail": "Invalid Google token."},
+                message="Token de Google inválido.",
+                errors={"detail": "Token de Google inválido."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -396,8 +396,8 @@ class GoogleCallbackView(APIView):
                 ip=ip,
             )
             return ApiResponse.error(
-                message="Google user data missing.",
-                errors={"detail": "Missing google id or email."},
+                message="Faltan datos de usuario de Google.",
+                errors={"detail": "Falta google id o correo electrónico."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -422,8 +422,8 @@ class GoogleCallbackView(APIView):
                     ip=ip,
                 )
                 return ApiResponse.error(
-                    message="User account not found.",
-                    errors={"detail": "Account does not exist."},
+                    message="Cuenta de usuario no encontrada.",
+                    errors={"detail": "La cuenta no existe."},
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
@@ -436,7 +436,7 @@ class GoogleCallbackView(APIView):
                 ip=ip,
             )
             return ApiResponse.error(
-                message="Login failed.",
+                message="No se pudo iniciar sesión.",
                 errors={"detail": exc.detail},
                 status=status.HTTP_403_FORBIDDEN,
             )
