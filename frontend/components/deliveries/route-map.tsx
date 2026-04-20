@@ -23,7 +23,8 @@ export function RouteMap({ warehouseName, details, origin }: RouteMapProps) {
 
   console.log("DETAILS:", details);
   const stops = useMemo(() => {
-    const sorted = [...details].sort((a, b) => a.order_index - b.order_index);
+    const safeDetails = Array.isArray(details) ? details : [];
+    const sorted = [...safeDetails].sort((a, b) => a.order_index - b.order_index);
 
     const originStop = origin
       ? [{ lat: Number(origin.latitude), lng: Number(origin.longitude), label: `🏭 ${origin.name ?? warehouseName}` }]
