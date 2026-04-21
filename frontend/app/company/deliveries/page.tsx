@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ContentShell } from "@/components/layout/ContentShell";
 import { RoutesTable } from "@/components/deliveries/routes-table";
 import { useRouter } from "next/navigation";
-import { getDeliveriesRequest } from "@/lib/routes-api";
+import { deleteRouteRequest, getDeliveriesRequest } from "@/lib/routes-api";
 import { RouteTableItem } from "@/types/routes-types";
 import { useAlert } from "@/components/layout/AlertProvider";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { StatusFilter } from "@/components/layout/StatusFilter";
 import { Plus } from "lucide-react";
+import { ModalConfirm } from "@/components/layout/ModalConfirm";
 
 export default function CompanyRoutesPage() {
   const router = useRouter();
@@ -22,25 +23,33 @@ export default function CompanyRoutesPage() {
   const [searchValue, setSearchValue] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  useEffect(() => {
-    async function fetchRoutes() {
-      try {
-        setLoading(true);
-        setError(null);
+  const [reloadRoutes, setReloadRoutes] = useState(0);
 
-        const data = await getDeliveriesRequest();
-        setRoutes(data);
-      } catch (err: unknown) {
-        addAlert("error", "Error al cargar la tabla de entregas");
-        const message = err instanceof Error ? err.message : "Error al cargar las entregas";
-        setError(message)
-      } finally {
-        setLoading(false);
-      }
+  const [routeToDelete, setRouteToDelete] = useState<RouteTableItem | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+
+  const fetchRoutes = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await getDeliveriesRequest();
+      setRoutes(data);
+    } catch (err: unknown) {
+      addAlert("error", "Error al cargar la tabla de entregas");
+      const message =
+        err instanceof Error ? err.message : "Error al cargar las entregas";
+      setError(message);
+    } finally {
+      setLoading(false);
     }
+  }, [addAlert]);
 
+  useEffect(() => {
     fetchRoutes();
-  }, [])
+  }, [fetchRoutes, reloadRoutes]);
 
   const filteredRoutes = routes.filter((route) => {
     const matchesSearch =
@@ -60,6 +69,38 @@ export default function CompanyRoutesPage() {
 
   const handleViewRoute = (route: RouteTableItem) => {
     router.push(`/company/deliveries/${route.id}`)
+  };
+
+  const handleOpenDeleteModal = (route: RouteTableItem) => {
+    setRouteToDelete(route);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    if (isDeleting) return;
+    setIsDeleteModalOpen(false);
+    setRouteToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!routeToDelete) return;
+
+    try {
+      setIsDeleting(true);
+
+      await deleteRouteRequest(routeToDelete.id);
+
+      addAlert("success", `Entrega ${routeToDelete.id} eliminada correctamente`);
+
+      setIsDeleteModalOpen(false);
+      setRouteToDelete(null);
+
+      setReloadRoutes((prev) => prev + 1);
+    } catch (error: unknown) {
+      addAlert("error", "Error al eliminar la entrega");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -112,9 +153,24 @@ export default function CompanyRoutesPage() {
         </div>
 
         <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-          <RoutesTable data={filteredRoutes} onViewRoute={handleViewRoute} isLoading={loading} />
+          <RoutesTable data={filteredRoutes} onViewRoute={handleViewRoute} onDeleteRoute={handleOpenDeleteModal} isLoading={loading} />
         </div>
       </div>
+
+      <ModalConfirm
+        isOpen={isDeleteModalOpen}
+        title="Eliminar entrega"
+        message={
+          routeToDelete
+            ? `¿Deseas eliminar la entrega ${routeToDelete.id}? Esta acción no se puede deshacer.`
+            : "¿Deseas eliminar esta entrega? Esta acción no se puede deshacer."
+        }
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        isSubmitting={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCloseDeleteModal}
+      />
     </ContentShell>
   );
 }
