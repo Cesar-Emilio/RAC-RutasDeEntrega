@@ -32,7 +32,7 @@ services:
     env_file:
       - .env
     environment:
-      DJANGO_SETTINGS_MODULE: config.settings.base
+      DJANGO_SETTINGS_MODULE: config.settings.prod
       DB_HOST: db
     volumes:
       - rac_logs:/app/logs
@@ -53,7 +53,7 @@ services:
     env_file:
       - .env
     environment:
-      DJANGO_SETTINGS_MODULE: config.settings.base
+      DJANGO_SETTINGS_MODULE: config.settings.prod
       DB_HOST: db
     volumes:
       - rac_logs:/app/logs
