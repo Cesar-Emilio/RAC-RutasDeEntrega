@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
 import { RouteTableItem } from "@/types/routes-types";
-import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Power } from "lucide-react";
 
 interface RoutesTableProps {
   readonly data: RouteTableItem[];
@@ -104,9 +104,13 @@ export function RoutesTable({ data, onViewRoute, onDeleteRoute, isLoading = fals
                   </button>
                   <button
                     onClick={() => onDeleteRoute(route)}
-                    className="inline-flex h-7 items-center justify-center rounded-md bg-danger-500/20 px-3 text-xs font-medium text-danger-400 transition-colors duration-200 hover:bg-danger-500/30 hover:text-danger-300 cursor-pointer"
+                    className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border transition disabled:cursor-not-allowed disabled:opacity-60 ml-2"
+                    style={{
+                      borderColor: "rgba(239,68,68,0.35)",
+                      color: "var(--color-error)",
+                    }}
                   >
-                    Eliminar
+                    <Power size={13} />
                   </button>
                 </td>
               </tr>
