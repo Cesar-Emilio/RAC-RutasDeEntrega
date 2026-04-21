@@ -77,6 +77,17 @@ class RouteCreateSerializer(serializers.ModelSerializer):
 
         return route
 
+class RouteDeleteSerializer(serializers.ModelSerializer):
+    """
+    Serializador para la eliminación física de una ruta (DELETE /<id>).
+
+    Solo expone el id de la ruta a eliminar.
+    """
+
+    class Meta:
+        model = Route
+        fields = ["id"]
+        read_only_fields = ["id"]
 
 class DeliveryPointSerializer(serializers.ModelSerializer):
     """

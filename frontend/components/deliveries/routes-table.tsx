@@ -3,16 +3,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
 import { RouteTableItem } from "@/types/routes-types";
-import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Power } from "lucide-react";
 
 interface RoutesTableProps {
   readonly data: RouteTableItem[];
   readonly onViewRoute: (route: RouteTableItem) => void;
   readonly isLoading?: boolean;
   readonly pageSize?: number;
+  readonly onDeleteRoute: (route: RouteTableItem) => void;
 }
 
-export function RoutesTable({ data, onViewRoute, isLoading = false, pageSize = 5 }: RoutesTableProps) {
+export function RoutesTable({ data, onViewRoute, onDeleteRoute, isLoading = false, pageSize = 5 }: RoutesTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const safePageSize = Math.max(1, pageSize);
   const totalPages = Math.max(1, Math.ceil(data.length / safePageSize));
@@ -100,6 +101,16 @@ export function RoutesTable({ data, onViewRoute, isLoading = false, pageSize = 5
                     className="inline-flex h-7 items-center justify-center rounded-md bg-primary-500/20 px-3 text-xs font-medium text-primary-400 transition-colors duration-200 hover:bg-primary-500/30 hover:text-primary-300 cursor-pointer"
                   >
                     Ir a la entrega
+                  </button>
+                  <button
+                    onClick={() => onDeleteRoute(route)}
+                    className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border transition disabled:cursor-not-allowed disabled:opacity-60 ml-2"
+                    style={{
+                      borderColor: "rgba(239,68,68,0.35)",
+                      color: "var(--color-error)",
+                    }}
+                  >
+                    <Power size={13} />
                   </button>
                 </td>
               </tr>

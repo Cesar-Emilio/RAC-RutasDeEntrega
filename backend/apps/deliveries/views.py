@@ -8,7 +8,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from .models import Route
-from .serializers import RouteListSerializer, RouteCreateSerializer, RouteDetailSerializer
+from .serializers import RouteListSerializer, RouteCreateSerializer, RouteDetailSerializer, RouteDeleteSerializer
 from .tasks import enqueue_process_route
 from .permissions import IsAdminOrCompanyUser, IsCompanyUser
 from utils.response_helper import ApiResponse
@@ -240,6 +240,68 @@ class RouteCreateView(generics.CreateAPIView):
             )
             raise
 
+@extend_schema(
+    description=(
+        "Elimina físicamente una ruta de entrega. "
+        "Solo usuarios de empresa pueden eliminar rutas de su propia compañía."
+    ),
+    parameters=[
+        OpenApiParameter(
+            name="id",
+            location=OpenApiParameter.PATH,
+            required=True,
+            type=OpenApiTypes.INT,
+            description="ID de la ruta de entrega a eliminar.",
+        ),
+    ],
+    responses={
+        204: OpenApiResponse(description="Ruta eliminada correctamente."),
+        404: OpenApiResponse(description="Ruta no encontrada."),
+    },
+)
+class RouteDeleteView(CompanyScopedMixin, generics.DestroyAPIView):
+    """
+    Elimina físicamente una ruta de entrega.
+    """
+
+    serializer_class = RouteDeleteSerializer
+    permission_classes = [IsCompanyUser]
+
+    def get_queryset(self):
+        ctx = build_request_context(self.request)
+        route_id = self.kwargs.get("pk")
+        logger.debug(
+            "route_delete | action=get_queryset | route_id={route_id} "
+            "| request_id={request_id} | user_id={user_id}",
+            route_id=route_id,
+            **ctx,
+        )
+        queryset = Route.objects.all()
+        return self.get_company_filtered_queryset(queryset)
+
+    def destroy(self, request, *args, **kwargs):
+        ctx = build_request_context(request)
+        start = time.perf_counter()
+
+        instance = self.get_object()
+        route_id = instance.id
+
+        self.perform_destroy(instance)
+
+        elapsed_ms = int((time.perf_counter() - start) * 1000)
+        logger.info(
+            "route_delete | action=delete_route | result=success | route_id={route_id} "
+            "| execution_time_ms={elapsed_ms} | request_id={request_id} | user_id={user_id} "
+            "| endpoint={endpoint} | method={method} | status_code=200",
+            route_id=route_id,
+            elapsed_ms=elapsed_ms,
+            **ctx,
+        )
+
+        return ApiResponse.success(
+            data=None,
+            status=status.HTTP_200_OK,
+    )
 
 @extend_schema(
     description=(
