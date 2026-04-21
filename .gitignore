@@ -32,3 +32,6 @@ logs/*
 .github
 backend/client_secret*.json
 backend/routes/
+docker/nginx/certs
+*.pem
+*.key
