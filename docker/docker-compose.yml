@@ -4,6 +4,7 @@ services:
     image: mysql:8.0
     container_name: rac_db
     restart: unless-stopped
+    command: ["--event-scheduler=ON"]
     env_file:
       - .env
     environment:
@@ -78,6 +79,28 @@ services:
     networks:
       - rac_net
  
+  backup:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backup
+    container_name: rac_backup
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - rac_backups:/app/db/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - rac_net
+
   nginx:
     image: nginx:1.25-alpine
     container_name: rac_nginx
@@ -100,6 +123,7 @@ volumes:
   rac_logs:
   rac_static:
   rac_routes:
+  rac_backups:
 
 networks:
   rac_net:
