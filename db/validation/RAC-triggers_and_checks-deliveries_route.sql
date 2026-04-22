@@ -8,7 +8,7 @@ DROP CHECK chk_deliveries_route_status_valid;
 
 ALTER TABLE deliveries_route
 ADD CONSTRAINT chk_deliveries_route_status_valid
-CHECK (LOWER(TRIM(status)) IN ('pending', 'in_progress', 'completed', 'cancelled'));
+CHECK (LOWER(TRIM(status)) IN ('pending', 'processing', 'completed', 'error'));
 
 -- =========================================
 -- TRIGGERS: deliveries_route
