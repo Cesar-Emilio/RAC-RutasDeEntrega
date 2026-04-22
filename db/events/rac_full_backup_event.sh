@@ -9,7 +9,7 @@ DB_PORT="${DB_PORT:-3306}"
 DB_NAME="${DB_NAME:-}"
 DB_USER="${DB_USER:-root}"
 DB_PASSWORD="${DB_PASSWORD:-}"
-BACKUP_ROOT="${BACKUP_ROOT:-${PROJECT_ROOT}/db/backups/full}"
+BACKUP_ROOT="${BACKUP_ROOT:-/app/db/backups/full}"
 
 if [[ -z "${DB_NAME}" ]]; then
   echo "ERROR: DB_NAME is required." >&2
@@ -67,7 +67,7 @@ for table in "${TABLES[@]}"; do
 
   "${MYSQLDUMP_BASE[@]}" \
     --skip-comments \
-    --set-gtid-purged=OFF \
+    --no-tablespaces \
     --single-transaction \
     --routines=false \
     --events=false \
@@ -77,7 +77,7 @@ for table in "${TABLES[@]}"; do
 
   "${MYSQLDUMP_BASE[@]}" \
     --skip-comments \
-    --set-gtid-purged=OFF \
+    --no-tablespaces \
     --single-transaction \
     --no-create-info \
     --skip-triggers \
@@ -87,7 +87,13 @@ for table in "${TABLES[@]}"; do
   printf "%s|%s|%s\n" "${table}" "$(basename "${schema_file}")" "$(basename "${data_file}")" >> "${META_DIR}/manifest.txt"
 done
 
-# Extra metadata useful for full recovery context.
-"${MYSQLDUMP_BASE[@]}" --skip-comments --set-gtid-purged=OFF --no-data --routines --events --triggers "${DB_NAME}" > "${META_DIR}/database_objects.sql"
+"${MYSQLDUMP_BASE[@]}" \
+  --skip-comments \
+  --no-tablespaces \
+  --no-data \
+  --routines \
+  --events \
+  --triggers \
+  "${DB_NAME}" > "${META_DIR}/database_objects.sql"
 
 printf "\nBackup completed successfully at: %s\n" "${TARGET_DIR}"
