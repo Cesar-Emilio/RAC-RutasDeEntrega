@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
 import { RouteTableItem } from "@/types/routes-types";
 import { ChevronLeft, ChevronRight, MapPin, Power } from "lucide-react";
-import { StatusBadge } from "./status-badge";
 
 interface RoutesTableProps {
   readonly data: RouteTableItem[];
