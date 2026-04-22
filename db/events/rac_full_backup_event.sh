@@ -67,7 +67,6 @@ for table in "${TABLES[@]}"; do
 
   "${MYSQLDUMP_BASE[@]}" \
     --skip-comments \
-    --set-gtid-purged=OFF \
     --single-transaction \
     --routines=false \
     --events=false \
@@ -77,7 +76,6 @@ for table in "${TABLES[@]}"; do
 
   "${MYSQLDUMP_BASE[@]}" \
     --skip-comments \
-    --set-gtid-purged=OFF \
     --single-transaction \
     --no-create-info \
     --skip-triggers \
@@ -88,6 +86,6 @@ for table in "${TABLES[@]}"; do
 done
 
 # Extra metadata useful for full recovery context.
-"${MYSQLDUMP_BASE[@]}" --skip-comments --set-gtid-purged=OFF --no-data --routines --events --triggers "${DB_NAME}" > "${META_DIR}/database_objects.sql"
+"${MYSQLDUMP_BASE[@]}" --skip-comments --no-data --routines --events --triggers "${DB_NAME}" > "${META_DIR}/database_objects.sql"
 
 printf "\nBackup completed successfully at: %s\n" "${TARGET_DIR}"
