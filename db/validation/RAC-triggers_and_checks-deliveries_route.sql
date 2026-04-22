@@ -4,6 +4,9 @@
 
 -- Status dentro de los estados permitidos:
 ALTER TABLE deliveries_route
+DROP CHECK chk_deliveries_route_status_valid;
+
+ALTER TABLE deliveries_route
 ADD CONSTRAINT chk_deliveries_route_status_valid
 CHECK (LOWER(TRIM(status)) IN ('pending', 'in_progress', 'completed', 'cancelled'));
 
