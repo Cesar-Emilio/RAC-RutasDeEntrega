@@ -13,6 +13,7 @@ type ContentShellProps = {
   isLoading?: boolean;
   loadingTitle?: string;
   loadingMessage?: string;
+  onRetry?: () => void;
 };
 
 
@@ -24,6 +25,7 @@ export function ContentShell({
   isLoading = false,
   loadingTitle = "Cargando contenido...",
   loadingMessage = "Espera un momento mientras terminamos de cargar la informacion.",
+  onRetry,
 }: Readonly<ContentShellProps>) {
   return (
     <div className="min-h-screen bg-background text-white">
@@ -44,6 +46,15 @@ export function ContentShell({
                       {loadingMessage}
                     </p>
                   </div>
+                  {onRetry ? (
+                    <button
+                      type="button"
+                      onClick={onRetry}
+                      className="inline-flex items-center rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-text-secondary transition hover:border-primary-500/50 hover:text-primary-400"
+                    >
+                      Reintentar
+                    </button>
+                  ) : null}
                 </div>
               </div>
             ) : (
