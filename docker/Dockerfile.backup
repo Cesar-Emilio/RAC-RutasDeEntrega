@@ -1,0 +1,30 @@
+FROM alpine:3.19
+
+# Instalar dependencias
+RUN apk add --no-cache \
+    bash \
+    mysql-client \
+    dcron \
+    ca-certificates \
+    tini
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar script de backup
+COPY db/events/rac_full_backup_event.sh /app/
+
+# Dar permisos de ejecución
+RUN chmod +x /app/rac_full_backup_event.sh
+
+# Crear directorio de backups
+RUN mkdir -p /app/db/backups/full
+
+# Crear crontab file
+RUN echo "0 2 * * * /app/rac_full_backup_event.sh >> /app/db/backups/backup.log 2>&1" | crontab -
+
+# Usar tini como init para manejar signals correctamente
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Ejecutar crond en foreground
+CMD ["crond", "-f", "-l", "2"]

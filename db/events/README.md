@@ -31,7 +31,7 @@ crontab -e
 Agregar:
 
 ```cron
-0 2 * * * DB_NAME=test_db DB_USER=desWeb DB_PASSWORD=desWeb1234 /ruta/al/proyecto/db/events/rac_full_backup_event.sh >> /ruta/al/proyecto/db/backups/backup.log 2>&1
+0 2 * * * DB_NAME=rac_db DB_USER=root DB_PASSWORD=tu_password /ruta/al/proyecto/db/events/rac_full_backup_event.sh >> /ruta/al/proyecto/db/backups/backup.log 2>&1
 ```
 
 Salida esperada:

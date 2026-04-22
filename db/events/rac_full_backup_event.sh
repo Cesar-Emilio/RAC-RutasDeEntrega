@@ -59,7 +59,7 @@ mapfile -t TABLES < <(
     WHERE table_schema='${DB_NAME}'
       AND table_type='BASE TABLE'
     ORDER BY table_name;
-  " | tr -d '\r'
+  "
 )
 
 if [[ ${#TABLES[@]} -eq 0 ]]; then
@@ -72,10 +72,6 @@ printf "Generated: %s\n" "$(date -Iseconds)" >> "${META_DIR}/manifest.txt"
 printf "Tables: %s\n\n" "${#TABLES[@]}" >> "${META_DIR}/manifest.txt"
 
 for table in "${TABLES[@]}"; do
-  # Normalize possible CRLF artifacts from shell/CLI interop on Windows.
-  table="${table//$'\r'/}"
-  [[ -z "${table}" ]] && continue
-
   schema_file="${TARGET_DIR}/${table}_schema.sql"
   data_file="${TARGET_DIR}/${table}_data.sql"
 
