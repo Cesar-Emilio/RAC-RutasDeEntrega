@@ -12,26 +12,19 @@ from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
 from loguru import logger
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     settings_module = os.getenv("DJANGO_SETTINGS_MODULE", "")
-    if settings_module.endswith(".dev"):
-        # Local fallback only for development convenience.
-        SECRET_KEY = "dev-only-insecure-secret-key-change-for-prod"
-    else:
-        raise ImproperlyConfigured("DJANGO_SECRET_KEY or SECRET_KEY must be set.")
+    if not settings_module.endswith(".dev"):
+        raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set.")
+    SECRET_KEY = "dev-only-insecure-secret-key-change-for-prod"
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = []
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -144,7 +137,7 @@ SPECTACULAR_SETTINGS = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
@@ -163,7 +156,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 
 STATIC_URL = 'static/'
-
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 def _env_list(name, default=None):
     value = os.getenv(name, "")

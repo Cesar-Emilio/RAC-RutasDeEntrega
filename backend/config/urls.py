@@ -28,8 +28,6 @@ router.register(r'companies', CompanyViewSet, basename='company')
 router.register(r'warehouses', WarehouseViewSet, basename='warehouse')
 
 urlpatterns = [
-    path('django-admin/', admin.site.urls),
-
     path('api/companies/invite/', InviteCompanyView.as_view(), name='company-invite'),
 
     # Entregas API

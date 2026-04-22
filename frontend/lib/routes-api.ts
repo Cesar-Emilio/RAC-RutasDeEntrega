@@ -54,3 +54,9 @@ export async function sendCoordinates(coords: any) {
   if (!res.ok) throw new Error(`ORS error: ${res.status}`);
   return res.json();
 }
+
+export async function deleteRouteRequest(id: number) {
+  return requestJson<null>(`${API_BASE_URL}/api/deliveries/${id}/delete/`, {
+    method: "DELETE",
+  });
+}

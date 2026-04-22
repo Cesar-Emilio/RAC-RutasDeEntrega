@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   db:
@@ -32,7 +30,7 @@ services:
     env_file:
       - .env
     environment:
-      DJANGO_SETTINGS_MODULE: config.settings.base
+      DJANGO_SETTINGS_MODULE: config.settings.prod
       DB_HOST: db
     volumes:
       - rac_logs:/app/logs
@@ -53,7 +51,7 @@ services:
     env_file:
       - .env
     environment:
-      DJANGO_SETTINGS_MODULE: config.settings.base
+      DJANGO_SETTINGS_MODULE: config.settings.prod
       DB_HOST: db
     volumes:
       - rac_logs:/app/logs
@@ -65,11 +63,14 @@ services:
       - rac_net
 
   frontend:
-    image: cesarzpll/rac-frontend:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_ORS_API_KEY: ${NEXT_PUBLIC_ORS_API_KEY}
     container_name: rac_frontend
     restart: unless-stopped
-    env_file:
-      - .env
     depends_on:
       - backend
     networks:
