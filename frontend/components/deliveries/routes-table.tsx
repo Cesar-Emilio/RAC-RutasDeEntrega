@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
 import { RouteTableItem } from "@/types/routes-types";
-import { ChevronLeft, ChevronRight, MapPin, Power } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Power, Trash2 } from "lucide-react";
 
 interface RoutesTableProps {
   readonly data: RouteTableItem[];
@@ -110,7 +110,7 @@ export function RoutesTable({ data, onViewRoute, onDeleteRoute, isLoading = fals
                       color: "var(--color-error)",
                     }}
                   >
-                    <Power size={13} />
+                    <Trash2 size={13} />
                   </button>
                 </td>
               </tr>
