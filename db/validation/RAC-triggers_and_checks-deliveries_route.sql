@@ -39,8 +39,7 @@ BEGIN
             'id', NEW.id,
             'status', NEW.status,
             'company_id', NEW.company_id,
-            'created_at', NEW.created_at,
-            'updated_at', NEW.updated_at
+            'created_at', NEW.created_at
         )
     );
 END$$
@@ -65,15 +64,13 @@ BEGIN
             'id', OLD.id,
             'status', OLD.status,
             'company_id', OLD.company_id,
-            'created_at', OLD.created_at,
-            'updated_at', OLD.updated_at
+            'created_at', OLD.created_at
         ),
         JSON_OBJECT(
             'id', NEW.id,
             'status', NEW.status,
             'company_id', NEW.company_id,
-            'created_at', NEW.created_at,
-            'updated_at', NEW.updated_at
+            'created_at', NEW.created_at
         )
     );
 END$$
