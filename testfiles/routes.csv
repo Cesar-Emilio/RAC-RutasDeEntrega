@@ -1,6 +1,6 @@
-address,latitude,longitude
-"Av. Reforma 123, Ciudad de México",19.432608,-99.133209
-"Calle 5 de Mayo 456, Puebla",19.041440,-98.206272
-"Av. Universidad 789, Guadalajara",20.659698,-103.349609
-"Blvd. Díaz Ordaz 321, Monterrey",25.686614,-100.316113
-"Calle 60 #123, Mérida",20.967370,-89.592586
+address,latitude,longitude,receiver_name,package_quantity
+"Av. Reforma 123, Ciudad de México",19.432608,-99.133209,Juan Pérez,3
+"Calle 5 de Mayo 456, Puebla",19.041440,-98.206272,Juan Pérez,3
+"Av. Universidad 789, Guadalajara",20.659698,-103.349609,Juan Pérez,3
+"Blvd. Díaz Ordaz 321, Monterrey",25.686614,-100.316113,Juan Pérez,3
+"Calle 60 #123, Mérida",20.967370,-89.592586,Juan Pérez,3
