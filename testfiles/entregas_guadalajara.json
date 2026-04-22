@@ -1,0 +1,23 @@
+[
+  {
+    "address": "Av. López Mateos Sur 2077, Guadalajara, Jalisco, México",
+    "latitude": 20.659700,
+    "longitude": -103.349600,
+    "receiver_name": "Juan Pérez",
+    "package_quantity": 5
+  },
+  {
+    "address": "Av. López Mateos Sur 2077, Guadalajara, Jalisco, México",
+    "latitude": 20.661000,
+    "longitude": -103.351000,
+    "receiver_name": "Ana López",
+    "package_quantity": 3
+  },
+  {
+    "address": "Av. López Mateos Sur 2077, Guadalajara, Jalisco, México",
+    "latitude": 20.658000,
+    "longitude": -103.348000,
+    "receiver_name": "Carlos Martínez",
+    "package_quantity": 7
+  }
+]

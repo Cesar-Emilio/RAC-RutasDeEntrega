@@ -1,0 +1,233 @@
+[
+  {
+    "address": "Blvd. Adolfo López Mateos 1502, León, Guanajuato, México",
+    "latitude": 21.122300,
+    "longitude": -101.683300,
+    "receiver_name": "Pedro Martínez",
+    "package_quantity": 6
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1503, León, Guanajuato, México",
+    "latitude": 21.123000,
+    "longitude": -101.684400,
+    "receiver_name": "Ana López",
+    "package_quantity": 5
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1504, León, Guanajuato, México",
+    "latitude": 21.123400,
+    "longitude": -101.685500,
+    "receiver_name": "Carlos Sánchez",
+    "package_quantity": 7
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1505, León, Guanajuato, México",
+    "latitude": 21.123800,
+    "longitude": -101.686600,
+    "receiver_name": "Ricardo Gómez",
+    "package_quantity": 4
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1506, León, Guanajuato, México",
+    "latitude": 21.124200,
+    "longitude": -101.687700,
+    "receiver_name": "Verónica Díaz",
+    "package_quantity": 6
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1507, León, Guanajuato, México",
+    "latitude": 21.124600,
+    "longitude": -101.688800,
+    "receiver_name": "Juan Pérez",
+    "package_quantity": 5
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1508, León, Guanajuato, México",
+    "latitude": 21.125000,
+    "longitude": -101.689900,
+    "receiver_name": "Luis Rodríguez",
+    "package_quantity": 8
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1509, León, Guanajuato, México",
+    "latitude": 21.125400,
+    "longitude": -101.691000,
+    "receiver_name": "Patricia Martínez",
+    "package_quantity": 6
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1510, León, Guanajuato, México",
+    "latitude": 21.125800,
+    "longitude": -101.692100,
+    "receiver_name": "Fernando Torres",
+    "package_quantity": 7
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1511, León, Guanajuato, México",
+    "latitude": 21.126200,
+    "longitude": -101.693200,
+    "receiver_name": "Claudia Ruiz",
+    "package_quantity": 5
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1512, León, Guanajuato, México",
+    "latitude": 21.126600,
+    "longitude": -101.694300,
+    "receiver_name": "Raúl González",
+    "package_quantity": 6
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1513, León, Guanajuato, México",
+    "latitude": 21.127000,
+    "longitude": -101.695400,
+    "receiver_name": "Marta López",
+    "package_quantity": 4
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1514, León, Guanajuato, México",
+    "latitude": 21.127400,
+    "longitude": -101.696500,
+    "receiver_name": "José Rodríguez",
+    "package_quantity": 3
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1515, León, Guanajuato, México",
+    "latitude": 21.127800,
+    "longitude": -101.697600,
+    "receiver_name": "Carlos Martínez",
+    "package_quantity": 7
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1516, León, Guanajuato, México",
+    "latitude": 21.128200,
+    "longitude": -101.698700,
+    "receiver_name": "Ricardo Pérez",
+    "package_quantity": 6
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1517, León, Guanajuato, México",
+    "latitude": 21.128600,
+    "longitude": -101.699800,
+    "receiver_name": "Claudia Sánchez",
+    "package_quantity": 5
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1518, León, Guanajuato, México",
+    "latitude": 21.129000,
+    "longitude": -101.700900,
+    "receiver_name": "Juan González",
+    "package_quantity": 8
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1519, León, Guanajuato, México",
+    "latitude": 21.129400,
+    "longitude": -101.702000,
+    "receiver_name": "Patricia Ruiz",
+    "package_quantity": 6
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1520, León, Guanajuato, México",
+    "latitude": 21.129800,
+    "longitude": -101.703100,
+    "receiver_name": "Luis Hernández",
+    "package_quantity": 4
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1521, León, Guanajuato, México",
+    "latitude": 21.130200,
+    "longitude": -101.704200,
+    "receiver_name": "José Jiménez",
+    "package_quantity": 3
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1522, León, Guanajuato, México",
+    "latitude": 21.130600,
+    "longitude": -101.705300,
+    "receiver_name": "Ricardo González",
+    "package_quantity": 5
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1523, León, Guanajuato, México",
+    "latitude": 21.131000,
+    "longitude": -101.706400,
+    "receiver_name": "José Hernández",
+    "package_quantity": 7
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1524, León, Guanajuato, México",
+    "latitude": 21.131400,
+    "longitude": -101.707500,
+    "receiver_name": "Verónica Rodríguez",
+    "package_quantity": 6
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1525, León, Guanajuato, México",
+    "latitude": 21.131800,
+    "longitude": -101.708600,
+    "receiver_name": "Carlos Gómez",
+    "package_quantity": 8
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1526, León, Guanajuato, México",
+    "latitude": 21.132200,
+    "longitude": -101.709700,
+    "receiver_name": "Ana González",
+    "package_quantity": 4
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1527, León, Guanajuato, México",
+    "latitude": 21.132600,
+    "longitude": -101.710800,
+    "receiver_name": "Ricardo Díaz",
+    "package_quantity": 6
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1528, León, Guanajuato, México",
+    "latitude": 21.133000,
+    "longitude": -101.711900,
+    "receiver_name": "José Rodríguez",
+    "package_quantity": 5
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1529, León, Guanajuato, México",
+    "latitude": 21.133400,
+    "longitude": -101.713000,
+    "receiver_name": "Claudia Jiménez",
+    "package_quantity": 4
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1530, León, Guanajuato, México",
+    "latitude": 21.133800,
+    "longitude": -101.714100,
+    "receiver_name": "José Pérez",
+    "package_quantity": 3
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1531, León, Guanajuato, México",
+    "latitude": 21.134200,
+    "longitude": -101.715200,
+    "receiver_name": "Carlos López",
+    "package_quantity": 5
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1532, León, Guanajuato, México",
+    "latitude": 21.134600,
+    "longitude": -101.716300,
+    "receiver_name": "Ricardo López",
+    "package_quantity": 6
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1533, León, Guanajuato, México",
+    "latitude": 21.135000,
+    "longitude": -101.717400,
+    "receiver_name": "Ana Pérez",
+    "package_quantity": 7
+  },
+  {
+    "address": "Blvd. Adolfo López Mateos 1534, León, Guanajuato, México",
+    "latitude": 21.135400,
+    "longitude": -101.718500,
+    "receiver_name": "Carlos Jiménez",
+    "package_quantity": 8
+  }
+]

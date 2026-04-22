@@ -1,0 +1,198 @@
+[
+  {
+    "address": "Av. Universidad 1000, Monterrey, Nuevo León, México",
+    "latitude": 25.723600,
+    "longitude": -100.313100,
+    "receiver_name": "Luis Hernández",
+    "package_quantity": 6
+  },
+  {
+    "address": "Av. Universidad 1001, Monterrey, Nuevo León, México",
+    "latitude": 25.724000,
+    "longitude": -100.314000,
+    "receiver_name": "Marta Sánchez",
+    "package_quantity": 4
+  },
+  {
+    "address": "Av. Universidad 1002, Monterrey, Nuevo León, México",
+    "latitude": 25.724400,
+    "longitude": -100.315100,
+    "receiver_name": "José González",
+    "package_quantity": 3
+  },
+  {
+    "address": "Av. Universidad 1003, Monterrey, Nuevo León, México",
+    "latitude": 25.724800,
+    "longitude": -100.316200,
+    "receiver_name": "Carlos Pérez",
+    "package_quantity": 5
+  },
+  {
+    "address": "Av. Universidad 1004, Monterrey, Nuevo León, México",
+    "latitude": 25.725200,
+    "longitude": -100.317300,
+    "receiver_name": "Ana López",
+    "package_quantity": 8
+  },
+  {
+    "address": "Av. Universidad 1005, Monterrey, Nuevo León, México",
+    "latitude": 25.725600,
+    "longitude": -100.318400,
+    "receiver_name": "Ricardo Torres",
+    "package_quantity": 7
+  },
+  {
+    "address": "Av. Universidad 1006, Monterrey, Nuevo León, México",
+    "latitude": 25.726000,
+    "longitude": -100.319500,
+    "receiver_name": "Luis Martínez",
+    "package_quantity": 6
+  },
+  {
+    "address": "Av. Universidad 1007, Monterrey, Nuevo León, México",
+    "latitude": 25.726400,
+    "longitude": -100.320600,
+    "receiver_name": "Verónica Jiménez",
+    "package_quantity": 5
+  },
+  {
+    "address": "Av. Universidad 1008, Monterrey, Nuevo León, México",
+    "latitude": 25.726800,
+    "longitude": -100.321700,
+    "receiver_name": "Javier Ruiz",
+    "package_quantity": 4
+  },
+  {
+    "address": "Av. Universidad 1009, Monterrey, Nuevo León, México",
+    "latitude": 25.727200,
+    "longitude": -100.322800,
+    "receiver_name": "Claudia Pérez",
+    "package_quantity": 3
+  },
+  {
+    "address": "Av. Universidad 1010, Monterrey, Nuevo León, México",
+    "latitude": 25.727600,
+    "longitude": -100.323900,
+    "receiver_name": "Héctor Gómez",
+    "package_quantity": 9
+  },
+  {
+    "address": "Av. Universidad 1011, Monterrey, Nuevo León, México",
+    "latitude": 25.728000,
+    "longitude": -100.325000,
+    "receiver_name": "Paula Díaz",
+    "package_quantity": 2
+  },
+  {
+    "address": "Av. Universidad 1012, Monterrey, Nuevo León, México",
+    "latitude": 25.728400,
+    "longitude": -100.326100,
+    "receiver_name": "Juan Pérez",
+    "package_quantity": 6
+  },
+  {
+    "address": "Av. Universidad 1013, Monterrey, Nuevo León, México",
+    "latitude": 25.728800,
+    "longitude": -100.327200,
+    "receiver_name": "Luis Rodríguez",
+    "package_quantity": 7
+  },
+  {
+    "address": "Av. Universidad 1014, Monterrey, Nuevo León, México",
+    "latitude": 25.729200,
+    "longitude": -100.328300,
+    "receiver_name": "Raúl Sánchez",
+    "package_quantity": 8
+  },
+  {
+    "address": "Av. Universidad 1015, Monterrey, Nuevo León, México",
+    "latitude": 25.729600,
+    "longitude": -100.329400,
+    "receiver_name": "José González",
+    "package_quantity": 6
+  },
+  {
+    "address": "Av. Universidad 1016, Monterrey, Nuevo León, México",
+    "latitude": 25.730000,
+    "longitude": -100.330500,
+    "receiver_name": "Ricardo Torres",
+    "package_quantity": 4
+  },
+  {
+    "address": "Av. Universidad 1017, Monterrey, Nuevo León, México",
+    "latitude": 25.730400,
+    "longitude": -100.331600,
+    "receiver_name": "Claudia López",
+    "package_quantity": 5
+  },
+  {
+    "address": "Av. Universidad 1018, Monterrey, Nuevo León, México",
+    "latitude": 25.730800,
+    "longitude": -100.332700,
+    "receiver_name": "Carlos Jiménez",
+    "package_quantity": 6
+  },
+  {
+    "address": "Av. Universidad 1019, Monterrey, Nuevo León, México",
+    "latitude": 25.731200,
+    "longitude": -100.333800,
+    "receiver_name": "José García",
+    "package_quantity": 7
+  },
+  {
+    "address": "Av. Universidad 1020, Monterrey, Nuevo León, México",
+    "latitude": 25.731600,
+    "longitude": -100.334900,
+    "receiver_name": "Marta Pérez",
+    "package_quantity": 8
+  },
+  {
+    "address": "Av. Universidad 1021, Monterrey, Nuevo León, México",
+    "latitude": 25.732000,
+    "longitude": -100.336000,
+    "receiver_name": "Juan Martínez",
+    "package_quantity": 6
+  },
+  {
+    "address": "Av. Universidad 1022, Monterrey, Nuevo León, México",
+    "latitude": 25.732400,
+    "longitude": -100.337100,
+    "receiver_name": "Ana Ruiz",
+    "package_quantity": 5
+  },
+  {
+    "address": "Av. Universidad 1023, Monterrey, Nuevo León, México",
+    "latitude": 25.732800,
+    "longitude": -100.338200,
+    "receiver_name": "Carlos González",
+    "package_quantity": 3
+  },
+  {
+    "address": "Av. Universidad 1024, Monterrey, Nuevo León, México",
+    "latitude": 25.733200,
+    "longitude": -100.339300,
+    "receiver_name": "Javier López",
+    "package_quantity": 4
+  },
+  {
+    "address": "Av. Universidad 1025, Monterrey, Nuevo León, México",
+    "latitude": 25.733600,
+    "longitude": -100.340400,
+    "receiver_name": "Ricardo Pérez",
+    "package_quantity": 6
+  },
+  {
+    "address": "Av. Universidad 1026, Monterrey, Nuevo León, México",
+    "latitude": 25.734000,
+    "longitude": -100.341500,
+    "receiver_name": "Verónica González",
+    "package_quantity": 2
+  },
+  {
+    "address": "Av. Universidad 1027, Monterrey, Nuevo León, México",
+    "latitude": 25.734400,
+    "longitude": -100.342600,
+    "receiver_name": "Luis Jiménez",
+    "package_quantity": 7
+  }
+]
