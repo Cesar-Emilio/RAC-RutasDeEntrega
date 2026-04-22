@@ -29,6 +29,11 @@ logger = get_logger(__name__)
 
 
 class LoginView(APIView):
+    """
+    Endpoint de autenticacion por credenciales.
+
+    Autentica por email/password y devuelve tokens JWT junto con datos del usuario.
+    """
     permission_classes = [AllowAny]
     throttle_classes = [LoginRateThrottle]
 
@@ -38,6 +43,15 @@ class LoginView(APIView):
         responses={200: LoginSerializer},
     )
     def post(self, request):
+        """
+        Procesa el login por credenciales.
+
+        Parametros:
+            request: HTTP request con payload JSON {"email", "password"}.
+
+        Retorna:
+            ApiResponse con tokens JWT (access/refresh) y datos del usuario.
+        """
         ip = get_client_ip(request)
         email = request.data.get("email", "")
 
