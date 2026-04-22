@@ -546,6 +546,17 @@ refactor(deliveries): extraer lógica de geocodificación a servicio
 chore(docker): añadir healthcheck a servicio de base de datos
 ```
 
+### Ramas
+
+| Rama | Propósito |
+|------|-----------|
+| `master` | Versión estable lista para producción (rama por defecto) |
+| `feature/<modulo>` | Desarrollo de nuevas funcionalidades (ej. `feature/ui-components`, `feature/security-tests`) |
+| `db/<modulo>` | Cambios relacionados a base de datos (ej. `db/constraints`) |
+| `fix/<modulo>` | Corrección de errores (ej. `fix/sonar-fixes-frontend`, `fix/warehouses-responses`) |
+
+---
+
 ## 11. Seguridad
 
 | Mecanismo | Implementación |
