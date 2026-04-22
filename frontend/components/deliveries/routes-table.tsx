@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
 import { RouteTableItem } from "@/types/routes-types";
 import { ChevronLeft, ChevronRight, MapPin, Power } from "lucide-react";
+import { StatusBadge } from "./status-badge";
 
 interface RoutesTableProps {
   readonly data: RouteTableItem[];
@@ -36,22 +37,22 @@ export function RoutesTable({ data, onViewRoute, onDeleteRoute, isLoading = fals
   return (
     <div className="">
       <div className="overflow-x-auto rounded-xl bg-surface border border-border">
-        <table className="w-full min-w-160">
+        <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              <th className="px-3 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-text-light">
+              <th className="px-3 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-text-light hidden lg:table-cell">
                 ID
               </th>
-              <th className="px-3 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-text-light">
+              <th className="px-3 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-text-light hidden sm:table-cell">
                 Fecha
               </th>
               <th className="px-3 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-text-light">
                 Almacen
               </th>
-              <th className="px-3 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-text-light">
+              <th className="px-3 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-text-light hidden sm:table-cell" >
                 Paquetes
               </th>
-              <th className="px-3 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-text-light">
+              <th className="px-3 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-text-light hidden lg:table-cell">
                 Archivo
               </th>
               <th className="px-3 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-text-light">
@@ -75,10 +76,10 @@ export function RoutesTable({ data, onViewRoute, onDeleteRoute, isLoading = fals
                 className="border-t border-border transition-colors duration-150 hover:bg-surface"
                 style={{ borderColor: "var(--color-divider)" }}
               >
-                <td className="px-3 py-2.5 text-center text-xs text-text-secondary align-middle">
+                <td className="hidden lg:table-cell px-3 py-2.5 text-center text-xs text-text-secondary align-middle">
                   {route.id}
                 </td>
-                <td className="px-3 py-2.5 text-center text-xs text-text-primary align-middle">
+                <td className="hidden sm:table-cell px-3 py-2.5 text-center text-xs text-text-primary align-middle">
                   {route.created_at}
                 </td>
                 <td className="px-3 py-2.5 align-middle text-center">
@@ -89,10 +90,10 @@ export function RoutesTable({ data, onViewRoute, onDeleteRoute, isLoading = fals
                     </span>
                   </div>
                 </td>
-                <td className="px-3 py-2.5 text-center text-xs text-text-primary align-middle">
+                <td className="hidden sm:table-cell px-3 py-2.5 text-center text-xs text-text-primary align-middle">
                   {route.delivery_count}
                 </td>
-                <td className="max-w-45 truncate px-3 py-2.5 text-center text-xs text-text-secondary align-middle">
+                <td className="hidden lg:table-cell max-w-45 truncate px-3 py-2.5 text-center text-xs text-text-secondary align-middle">
                   {route.file_name}
                 </td>
                 <td className="px-3 py-2.5 text-center align-middle">

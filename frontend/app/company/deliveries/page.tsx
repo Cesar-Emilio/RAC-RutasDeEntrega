@@ -117,16 +117,6 @@ export default function CompanyRoutesPage() {
             placeholder="Buscar un almacén..."
           />
           <div className="flex gap-3 sm:flex-none">
-            <StatusFilter
-              value={statusFilter}
-              onChange={setStatusFilter}
-              options={[
-                { label: "Todos los estados", value: "all" },
-                { label: "Pendiente", value: "pending" },
-                { label: "En progreso", value: "in-progress" },
-                { label: "Completado", value: "completed" },
-              ]}
-            />
             <button
               onClick={handleNewRoute}
               className="inline-flex h-8 items-center gap-2 rounded-lg border border-primary-500 bg-primary-500 px-4 text-sm font-semibold text-background transition hover:opacity-90 cursor-pointer"
