@@ -34,6 +34,7 @@ services:
       DB_HOST: db
     volumes:
       - rac_logs:/app/logs
+      - rac_routes:/app/routes
     depends_on:
       db:
         condition: service_healthy
@@ -55,6 +56,7 @@ services:
       DB_HOST: db
     volumes:
       - rac_logs:/app/logs
+      - rac_routes:/app/routes
     depends_on:
       db:
         condition: service_healthy
@@ -97,6 +99,7 @@ volumes:
   rac_mysql_data:
   rac_logs:
   rac_static:
+  rac_routes:
 
 networks:
   rac_net:

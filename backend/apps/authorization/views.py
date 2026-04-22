@@ -292,15 +292,18 @@ class GoogleCallbackView(APIView):
         state = request.query_params.get("state")
         expected_state = request.session.get("google_oauth_state")
 
+        frontend_base = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000").rstrip("/")
+        
+        def redirect_with_error(message):
+            params = urllib.parse.urlencode({"error": message})
+            return HttpResponseRedirect(f"{frontend_base}/login?{params}")
+
         if not code:
             logger.warning(
                 "google_callback | action=validate | result=missing_code | ip={ip}",
                 ip=ip,
             )
-            return ApiResponse.error(
-                message="Missing authorization code.",
-                errors={"detail": "Missing code."},
-            )
+            return redirect_with_error("google_auth_failed")
 
         if not state or state != expected_state:
             logger.warning(
@@ -308,10 +311,7 @@ class GoogleCallbackView(APIView):
                 "| possible_csrf=true",
                 ip=ip,
             )
-            return ApiResponse.error(
-                message="Invalid Google OAuth state.",
-                errors={"detail": "Invalid state."},
-            )
+            return redirect_with_error("google_auth_failed")
 
         request.session.pop("google_oauth_state", None)
 
@@ -324,11 +324,7 @@ class GoogleCallbackView(APIView):
                 "google_callback | action=token_exchange | result=misconfigured | ip={ip}",
                 ip=ip,
             )
-            return ApiResponse.error(
-                message="Google OAuth not configured.",
-                errors={"detail": "Missing Google OAuth configuration."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return redirect_with_error("google_auth_failed")
 
         token_url = "https://oauth2.googleapis.com/token"
         token_payload = {
@@ -348,11 +344,7 @@ class GoogleCallbackView(APIView):
                 ip=ip,
                 http_status=token_response.status_code,
             )
-            return ApiResponse.error(
-                message="Google authentication failed.",
-                errors={"detail": "Unable to complete Google authentication."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return redirect_with_error("google_auth_failed")
 
         token_data = token_response.json()
         id_token_value = token_data.get("id_token")
@@ -362,11 +354,7 @@ class GoogleCallbackView(APIView):
                 "google_callback | action=token_exchange | result=missing_id_token | ip={ip}",
                 ip=ip,
             )
-            return ApiResponse.error(
-                message="Google token missing.",
-                errors={"detail": "Missing id_token."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return redirect_with_error("google_auth_failed")
 
         try:
             id_info = id_token.verify_oauth2_token(
@@ -381,11 +369,7 @@ class GoogleCallbackView(APIView):
                 ip=ip,
                 error=str(exc),
             )
-            return ApiResponse.error(
-                message="Google token invalid.",
-                errors={"detail": "Invalid Google token."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return redirect_with_error("google_token_invalid")
 
         google_id = id_info.get("sub")
         email = id_info.get("email")
@@ -395,11 +379,7 @@ class GoogleCallbackView(APIView):
                 "google_callback | action=extract_user_info | result=missing_data | ip={ip}",
                 ip=ip,
             )
-            return ApiResponse.error(
-                message="Google user data missing.",
-                errors={"detail": "Missing google id or email."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return redirect_with_error("google_auth_failed")
 
         User = get_user_model()
         user = User.objects.filter(google_id=google_id).first()
@@ -421,11 +401,7 @@ class GoogleCallbackView(APIView):
                     email=email,
                     ip=ip,
                 )
-                return ApiResponse.error(
-                    message="User account not found.",
-                    errors={"detail": "Account does not exist."},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+                return redirect_with_error("account_not_found")
 
         if not getattr(user, "is_active", False):
             logger.warning(
@@ -435,11 +411,7 @@ class GoogleCallbackView(APIView):
                 email=email,
                 ip=ip,
             )
-            return ApiResponse.error(
-                message="La cuenta de usuario está desactivada.",
-                errors={"detail": "User account is inactive."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            return redirect_with_error("account_inactive")
 
         refresh = RefreshToken.for_user(user)
 
@@ -456,8 +428,6 @@ class GoogleCallbackView(APIView):
             "refresh": str(refresh),
             "user": _serialize_user(user),
         }
-
-        frontend_base = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000").rstrip("/")
         fragment = urllib.parse.urlencode({
             "access": data["access"],
             "refresh": data["refresh"],

@@ -62,7 +62,7 @@ DROP VIEW IF EXISTS vw_route_deliverypoint_detail;
 CREATE VIEW vw_route_deliverypoint_detail AS
 SELECT
     r.id AS route_id,
-    r.date AS route_date,
+    r.created_at AS route_date,
     r.status AS route_status,
     c.id AS company_id,
     c.name AS company_name,
