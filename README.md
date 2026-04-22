@@ -278,7 +278,7 @@ python manage.py migrate
 # 7. Crear superusuario administrador
 python manage.py createsuperuser
 
-# 8. (Opcional) Iniciar el worker de tareas asíncronas en una segunda terminal
+# 8. Iniciar el worker de tareas asíncronas en una segunda terminal
 python manage.py qcluster
 
 # 9. Levantar servidor de desarrollo
@@ -313,7 +313,7 @@ npm run dev
 | Parámetro | Valor sugerido |
 |-----------|---------------|
 | AMI | Ubuntu Server 22.04 LTS |
-| Tipo de instancia | t3.small (mínimo) / t3.medium (recomendado) |
+| Tipo de instancia | c7i-flex.large |
 | Almacenamiento | 20 GB gp3 |
 | Puertos (Security Group) | 22 (SSH), 80 (HTTP), 443 (HTTPS) |
 
@@ -545,16 +545,6 @@ docs(readme): generar README profesional completo
 refactor(deliveries): extraer lógica de geocodificación a servicio
 chore(docker): añadir healthcheck a servicio de base de datos
 ```
-
-### Ramas
-
-| Rama | Propósito |
-|------|-----------|
-| `master` | Versión estable lista para producción |
-| `develop/<modulo>` | Desarrollo de nuevas funcionalidades (ej. `develop/warehouses`) |
-| `fix/<modulo>` | Corrección de errores (ej. `fix/auth-token`) |
-
----
 
 ## 11. Seguridad
 
