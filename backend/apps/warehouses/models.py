@@ -40,6 +40,27 @@ MEXICAN_STATES = [
 
 
 class Warehouse(models.Model):
+    """
+    Modelo que representa un almacén físico asociado a una empresa.
+
+    Almacena la ubicación del almacén mediante dirección postal y/o coordenadas
+    geográficas. Todos los almacenes están restringidos al territorio mexicano,
+    tanto a nivel de validación como de constraints en base de datos.
+
+    Attributes:
+        company (ForeignKey): Empresa propietaria del almacén.
+        name (CharField): Nombre del almacén.
+        address (CharField): Dirección física del almacén.
+        city (CharField): Ciudad donde se ubica.
+        state (CharField): Estado de la república mexicana.
+        country (CharField): País, siempre 'México', no editable.
+        postal_code (CharField): Código postal de 5 dígitos.
+        latitude (DecimalField): Latitud geográfica dentro del rango del territorio mexicano.
+        longitude (DecimalField): Longitud geográfica dentro del rango del territorio mexicano.
+        active (BooleanField): Indica si el almacén está activo (borrado lógico).
+        created_at (DateTimeField): Fecha y hora de creación, asignada automáticamente.
+        updated_at (DateTimeField): Fecha y hora de última actualización, asignada automáticamente.
+    """
     postal_code_validator = RegexValidator(
         regex=r'^\d{5}$',
         message='El código postal debe contener exactamente 5 dígitos numéricos'
@@ -109,9 +130,25 @@ class Warehouse(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
+        """
+        Retorna una representación legible del almacén.
+
+        Returns:
+            str: Cadena con formato 'Nombre - Ciudad, Estado'.
+        """
         return f"{self.name} - {self.city}, {self.state}"
 
     def clean(self):
+        """
+        Validaciones a nivel de modelo ejecutadas antes de guardar.
+
+        Verifica que la ubicación sea consistente: si se proporcionan coordenadas,
+        ambas (latitud y longitud) deben estar presentes. También verifica que
+        exista al menos una forma de ubicación (dirección completa o coordenadas).
+
+        Raises:
+            ValidationError: Si la combinación de campos de ubicación es inválida.
+        """
         from django.core.exceptions import ValidationError
 
         has_address = all([self.address, self.city, self.state, self.postal_code])
