@@ -1,18 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Full backup by table (2 files per table):
-# - <table>_schema.sql : table structure
-# - <table>_data.sql   : table data
-#
-# Usage:
-#   DB_NAME=rac_db DB_USER=root DB_PASSWORD=secret ./db/events/rac_full_backup_event.sh
-#
-# Optional vars:
-#   DB_HOST (default: 127.0.0.1)
-#   DB_PORT (default: 3306)
-#   BACKUP_ROOT (default: ./db/backups/full)
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
