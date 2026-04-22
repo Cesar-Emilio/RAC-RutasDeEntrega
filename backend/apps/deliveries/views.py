@@ -178,7 +178,7 @@ class RouteCreateView(generics.CreateAPIView):
                     if any(cell is not None for cell in row)
                 )
         except Exception:
-            return 0
+            return ApiResponse.error("Error en el archivo enviado")
  
     def create(self, request, *args, **kwargs):
         ctx = build_request_context(request)

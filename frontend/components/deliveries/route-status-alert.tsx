@@ -1,11 +1,12 @@
 "use client";
 
-import { AlertCircle, Clock, Loader2 } from "lucide-react";
+import { AlertCircle, Clock, Loader2, RefreshCw } from "lucide-react";
 
 type RouteStatus = "pending" | "processing" | "completed" | "error";
 
 interface RouteStatusAlertProps {
   readonly status: RouteStatus;
+  readonly onRetry?: () => void;
 }
 
 const statusConfig: Record<
@@ -46,8 +47,9 @@ const statusConfig: Record<
   },
 };
 
-export function RouteStatusAlert({ status }: RouteStatusAlertProps) {
+export function RouteStatusAlert({ status, onRetry }: RouteStatusAlertProps) {
   const config = statusConfig[status];
+  const showRetry = onRetry && (status === "error" || status === "pending");
 
   if (!config) return null;
 
@@ -67,6 +69,21 @@ export function RouteStatusAlert({ status }: RouteStatusAlertProps) {
       <span className={`text-xs font-medium sm:text-sm ${config.textColor}`}>
         {config.message}
       </span>
+
+      {showRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className={`
+            inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium
+            transition hover:opacity-80 cursor-pointer
+            ${config.borderColor} ${config.textColor}
+          `}
+        >
+          <RefreshCw className="h-3 w-3" />
+          Reintentar
+        </button>
+      )}
     </div>
   );
 }

@@ -27,12 +27,13 @@ function formatDate(dateString: string): string {
 export default function CreateRoutePage() {
     const params = useParams();
     const id = params.id as string;
-  const router = useRouter();
+    const router = useRouter();
     const { addAlert } = useAlert();
     
     const [route, setRoute] = useState<RouteDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [reloadKey, setReloadKey] = useState(0);
 
     useEffect(() => {
     if (!id) return;
@@ -55,7 +56,9 @@ export default function CreateRoutePage() {
     };
 
     fetchRoute();
-    }, [id]);
+    }, [id, reloadKey]);
+
+    const handleReload = () => setReloadKey((k) => k + 1)
 
     if (loading) {
       return (
@@ -66,6 +69,7 @@ export default function CreateRoutePage() {
           isLoading
           loadingTitle="Cargando entrega..."
           loadingMessage="Estamos trayendo la informacion de la ruta de entrega seleccionada."
+          onRetry={handleReload}
         />
       );
     }
@@ -112,7 +116,7 @@ export default function CreateRoutePage() {
             </button>
           </div>
 
-          <RouteStatusAlert status={route.status} />
+          <RouteStatusAlert status={route.status} onRetry={handleReload} />
 
           <RouteMetrics route={route} />
 
