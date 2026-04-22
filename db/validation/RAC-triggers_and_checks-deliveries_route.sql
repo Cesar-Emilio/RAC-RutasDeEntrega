@@ -34,7 +34,6 @@ BEGIN
         NULL,
         JSON_OBJECT(
             'id', NEW.id,
-            'date', NEW.date,
             'status', NEW.status,
             'company_id', NEW.company_id,
             'created_at', NEW.created_at,
@@ -61,7 +60,6 @@ BEGIN
         NEW.id,
         JSON_OBJECT(
             'id', OLD.id,
-            'date', OLD.date,
             'status', OLD.status,
             'company_id', OLD.company_id,
             'created_at', OLD.created_at,
@@ -69,7 +67,6 @@ BEGIN
         ),
         JSON_OBJECT(
             'id', NEW.id,
-            'date', NEW.date,
             'status', NEW.status,
             'company_id', NEW.company_id,
             'created_at', NEW.created_at,
