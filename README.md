@@ -585,6 +585,9 @@ python manage.py test
 # Ejecutar pruebas de un módulo específico
 python manage.py test apps.deliveries
 python manage.py test apps.authorization
+python manage.py test apps.warehouses
+python manage.py test apps.users
+python manage.py test apps.companies
 ```
 
 Tipos de pruebas implementadas:
@@ -616,5 +619,3 @@ docker compose logs -f backend
 ```
 
 ---
-
-*Documentación generada el 2026-04-21 | RAC — Smart Route Planner v1.0.0*
