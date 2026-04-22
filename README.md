@@ -588,6 +588,7 @@ python manage.py test apps.authorization
 python manage.py test apps.warehouses
 python manage.py test apps.users
 python manage.py test apps.companies
+python manage.py test apps.audit
 ```
 
 Tipos de pruebas implementadas:
